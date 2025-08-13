@@ -1,8 +1,7 @@
+import React from 'react';
+
 function App() {
-  return (
-    <div style={{ padding: '20px', fontSize: '20px' }}>
-      🚀 Hello from OneStopProject!
-    </div>
-  );
+  return <h1>Hello World</h1>;
 }
+
 export default App;
