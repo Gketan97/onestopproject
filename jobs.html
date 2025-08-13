@@ -4,247 +4,122 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>OneStopCareers - Job Board</title>
-  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background-color: #222;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+    }
+    .container {
+      max-width: 900px;
+      margin: 2rem auto;
+      background: white;
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .job {
+      border-bottom: 1px solid #ddd;
+      padding: 1rem 0;
+    }
+    .job:last-child {
+      border-bottom: none;
+    }
+    .job h3 {
+      margin: 0 0 0.5rem;
+    }
+    .job p {
+      margin: 0.25rem 0;
+    }
+    button {
+      display: block;
+      width: 100%;
+      padding: 0.75rem;
+      margin-top: 1rem;
+      border: none;
+      background: #007bff;
+      color: white;
+      font-size: 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+  </style>
 </head>
 <body>
   <header>
-    <h1>OneStopCareers</h1>
-    <p>Your career struggle ends here</p>
+    <h1>OneStopCareers - Job Board</h1>
   </header>
-
-  <!-- Tabs -->
-  <div class="tabs">
-    <button id="jobs-tab" class="active">Jobs</button>
-    <button id="referrals-tab">Referrals</button>
-  </div>
-
-  <!-- Desktop Filters -->
-  <div class="filters-desktop">
-    <input type="text" id="desktopSearchInput" placeholder="Search jobs..." />
-    <select id="desktopLocationFilter">
-      <option value="">All Locations</option>
-      <option value="Remote">Remote</option>
-      <option value="Onsite">Onsite</option>
-    </select>
-    <select id="desktopRoleFilter">
-      <option value="">All Roles</option>
-      <option value="Developer">Developer</option>
-      <option value="Analyst">Analyst</option>
-    </select>
-    <button id="desktopResetFilters">Clear</button>
-  </div>
-
-  <!-- Mobile Filters -->
-  <div class="filters-mobile">
-    <button id="mobileFilterToggle">Filter</button>
-  </div>
-
-  <!-- Mobile Filter Screen -->
-  <div id="mobileFilterScreen" class="mobile-filter-screen">
-    <button id="closeFilterBtn">Close</button>
-    <input type="text" id="mobileSearchInput" placeholder="Search jobs..." />
-    <select id="mobileLocationFilter">
-      <option value="">All Locations</option>
-      <option value="Remote">Remote</option>
-      <option value="Onsite">Onsite</option>
-    </select>
-    <select id="mobileRoleFilter">
-      <option value="">All Roles</option>
-      <option value="Developer">Developer</option>
-      <option value="Analyst">Analyst</option>
-    </select>
-    <button id="applyFiltersBtn">Apply</button>
-    <button id="clearFiltersBtn">Clear</button>
-  </div>
-
-  <!-- Job Listings -->
-  <div id="jobs-container"></div>
-  <button id="loadMoreBtn">Load More</button>
-
-  <!-- Referrals Listings -->
-  <div id="referrals-container" style="display:none;"></div>
-  <button id="referralLoadMoreBtn" style="display:none;">Load More</button>
-
-  <!-- Job Modal -->
-  <div id="jobModal" class="modal">
-    <div class="modal-content">
-      <span class="close-btn" id="closeJobModal">&times;</span>
-      <div id="jobModalBody"></div>
-    </div>
-  </div>
-
-  <!-- Referral Modal -->
-  <div id="referralModal" class="modal">
-    <div class="modal-content">
-      <span class="close-btn" id="closeReferralModal">&times;</span>
-      <div id="referralModalBody"></div>
-    </div>
+  <div class="container">
+    <div id="job-list"></div>
+    <button id="load-more" style="display:none;">Load More</button>
   </div>
 
   <script>
-    const JOBS_JSON_URL = 'jobs.json';
-    const REFERRALS_JSON_URL = 'referrals.json';
+    const jobsUrl = "https://ketangoel16-creator.github.io/onestopcareers-data/jobs.json";
+    const referralsUrl = "https://ketangoel16-creator.github.io/onestopcareers-data/referrals.json";
 
-    const state = {
-      allJobs: [],
-      allReferrals: [],
-      filteredJobs: [],
-      filteredReferrals: [],
-      currentPage: 1,
-      currentReferralPage: 1,
-      itemsPerPage: 10,
-      ui: { isFilterScreenOpen: false }
-    };
+    let jobsData = [];
+    let displayCount = 0;
+    const perPage = 5;
 
-    const jobsContainer = document.getElementById('jobs-container');
-    const referralsContainer = document.getElementById('referrals-container');
-    const loadMoreBtn = document.getElementById('loadMoreBtn');
-    const referralLoadMoreBtn = document.getElementById('referralLoadMoreBtn');
+    async function fetchData() {
+      try {
+        const [jobsRes, referralsRes] = await Promise.all([
+          fetch(jobsUrl),
+          fetch(referralsUrl)
+        ]);
+        const jobsJson = await jobsRes.json();
+        const referralsJson = await referralsRes.json();
 
-    const desktopSearchInput = document.getElementById('desktopSearchInput');
-    const desktopLocationFilter = document.getElementById('desktopLocationFilter');
-    const desktopRoleFilter = document.getElementById('desktopRoleFilter');
-    const desktopResetFilters = document.getElementById('desktopResetFilters');
+        jobsData = [...jobsJson, ...referralsJson];
+        jobsData.sort((a, b) => new Date(b.date) - new Date(a.date)); // Latest first
 
-    const mobileFilterToggle = document.getElementById('mobileFilterToggle');
-    const mobileFilterScreen = document.getElementById('mobileFilterScreen');
-    const closeFilterBtn = document.getElementById('closeFilterBtn');
-    const mobileSearchInput = document.getElementById('mobileSearchInput');
-    const mobileLocationFilter = document.getElementById('mobileLocationFilter');
-    const mobileRoleFilter = document.getElementById('mobileRoleFilter');
-    const applyFiltersBtn = document.getElementById('applyFiltersBtn');
-    const clearFiltersBtn = document.getElementById('clearFiltersBtn');
-
-    const jobsTab = document.getElementById('jobs-tab');
-    const referralsTab = document.getElementById('referrals-tab');
-
-    const jobModal = document.getElementById('jobModal');
-    const jobModalBody = document.getElementById('jobModalBody');
-    const closeJobModal = document.getElementById('closeJobModal');
-
-    const referralModal = document.getElementById('referralModal');
-    const referralModalBody = document.getElementById('referralModalBody');
-    const closeReferralModal = document.getElementById('closeReferralModal');
-
-    function applyFilters() {
-      const search = (desktopSearchInput.value || mobileSearchInput.value).toLowerCase();
-      const location = desktopLocationFilter.value || mobileLocationFilter.value;
-      const role = desktopRoleFilter.value || mobileRoleFilter.value;
-
-      state.filteredJobs = state.allJobs.filter(job => {
-        return (!search || job.title.toLowerCase().includes(search)) &&
-               (!location || job.location === location) &&
-               (!role || job.role === role);
-      });
-
-      state.currentPage = 1;
-      renderJobs();
-    }
-
-    function clearFilters() {
-      desktopSearchInput.value = '';
-      desktopLocationFilter.value = '';
-      desktopRoleFilter.value = '';
-      mobileSearchInput.value = '';
-      mobileLocationFilter.value = '';
-      mobileRoleFilter.value = '';
-      applyFilters();
+        renderJobs();
+      } catch (error) {
+        console.error("Error loading data:", error);
+        document.getElementById("job-list").innerHTML = "<p>Error loading jobs.</p>";
+      }
     }
 
     function renderJobs() {
-      jobsContainer.innerHTML = '';
-      const start = 0;
-      const end = state.currentPage * state.itemsPerPage;
-      const jobsToShow = state.filteredJobs.slice(start, end);
+      const jobList = document.getElementById("job-list");
+      const jobsToShow = jobsData.slice(displayCount, displayCount + perPage);
 
       jobsToShow.forEach(job => {
-        const div = document.createElement('div');
-        div.classList.add('job-card');
-        div.innerHTML = `<h3>${job.title}</h3><p>${job.location} | ${job.role}</p>`;
-        div.addEventListener('click', () => {
-          jobModalBody.innerHTML = `<h2>${job.title}</h2><p>${job.description}</p>`;
-          jobModal.style.display = 'block';
-        });
-        jobsContainer.appendChild(div);
+        const jobDiv = document.createElement("div");
+        jobDiv.className = "job";
+        jobDiv.innerHTML = `
+          <h3>${job.title}</h3>
+          <p><strong>Company:</strong> ${job.company || "N/A"}</p>
+          <p><strong>Location:</strong> ${job.location || "Remote"}</p>
+          <p><strong>Date:</strong> ${job.date || ""}</p>
+          <p><a href="${job.link}" target="_blank">View Job</a></p>
+        `;
+        jobList.appendChild(jobDiv);
       });
 
-      loadMoreBtn.style.display = state.filteredJobs.length > end ? 'block' : 'none';
+      displayCount += jobsToShow.length;
+
+      if (displayCount < jobsData.length) {
+        document.getElementById("load-more").style.display = "block";
+      } else {
+        document.getElementById("load-more").style.display = "none";
+      }
     }
 
-    function renderReferrals() {
-      referralsContainer.innerHTML = '';
-      const start = 0;
-      const end = state.currentReferralPage * state.itemsPerPage;
-      const refsToShow = state.allReferrals.slice(start, end);
+    document.getElementById("load-more").addEventListener("click", renderJobs);
 
-      refsToShow.forEach(ref => {
-        const div = document.createElement('div');
-        div.classList.add('referral-card');
-        div.innerHTML = `<h3>${ref.company}</h3><p>${ref.position}</p>`;
-        div.addEventListener('click', () => {
-          referralModalBody.innerHTML = `<h2>${ref.company}</h2><p>${ref.details}</p>`;
-          referralModal.style.display = 'block';
-        });
-        referralsContainer.appendChild(div);
-      });
-
-      referralLoadMoreBtn.style.display = state.allReferrals.length > end ? 'block' : 'none';
-    }
-
-    function openFilterScreen() {
-      mobileFilterScreen.style.transform = "translateX(0)";
-      state.ui.isFilterScreenOpen = true;
-    }
-
-    function closeFilterScreen() {
-      mobileFilterScreen.style.transform = "translateX(100%)";
-      state.ui.isFilterScreenOpen = false;
-    }
-
-    // Event Listeners
-    mobileFilterToggle.addEventListener('click', openFilterScreen);
-    closeFilterBtn.addEventListener('click', closeFilterScreen);
-    applyFiltersBtn.addEventListener('click', () => { applyFilters(); closeFilterScreen(); });
-    clearFiltersBtn.addEventListener('click', clearFilters);
-
-    desktopSearchInput.addEventListener('input', applyFilters);
-    desktopLocationFilter.addEventListener('change', applyFilters);
-    desktopRoleFilter.addEventListener('change', applyFilters);
-    desktopResetFilters.addEventListener('click', clearFilters);
-
-    loadMoreBtn.addEventListener('click', () => { state.currentPage++; renderJobs(); });
-    referralLoadMoreBtn.addEventListener('click', () => { state.currentReferralPage++; renderReferrals(); });
-
-    closeJobModal.addEventListener('click', () => jobModal.style.display = 'none');
-    closeReferralModal.addEventListener('click', () => referralModal.style.display = 'none');
-
-    jobsTab.addEventListener('click', () => {
-      jobsTab.classList.add('active');
-      referralsTab.classList.remove('active');
-      jobsContainer.style.display = 'block';
-      referralsContainer.style.display = 'none';
-      loadMoreBtn.style.display = 'block';
-      referralLoadMoreBtn.style.display = 'none';
-    });
-
-    referralsTab.addEventListener('click', () => {
-      referralsTab.classList.add('active');
-      jobsTab.classList.remove('active');
-      jobsContainer.style.display = 'none';
-      referralsContainer.style.display = 'block';
-      loadMoreBtn.style.display = 'none';
-      referralLoadMoreBtn.style.display = 'block';
-    });
-
-    // Init load
-    Promise.all([
-      fetch(JOBS_JSON_URL).then(res => res.json()),
-      fetch(REFERRALS_JSON_URL).then(res => res.json())
-    ]).then(([jobs, referrals]) => {
-      state.allJobs = jobs;
-      state.allReferrals = referrals;
-      applyFilters();
-    });
+    fetchData();
   </script>
 </body>
 </html>
