@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { decisionTree } from '../../data/appData.js';
+import { decisionTree } from '../../data/appData.jsx';
 
 const DecisionTreePage = ({ setCurrentPage }) => {
   const [currentQuestionId, setCurrentQuestionId] = useState(null);
@@ -52,4 +52,3 @@ const DecisionTreePage = ({ setCurrentPage }) => {
 };
 
 export default DecisionTreePage;
-
