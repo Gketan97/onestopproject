@@ -3,5 +3,10 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  base: '/', // ✅ absolute root path for Netlify
+  base: '/', 
+  build: {
+    rollupOptions: {
+      external: ['firebase/app', 'firebase/auth', 'firebase/firestore']
+    }
+  }
 })
