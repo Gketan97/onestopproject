@@ -8,7 +8,7 @@ import DecisionTreePage from './components/pages/DecisionTreePage.jsx';
 import Header from './components/layout/Header.jsx';
 import MobileNav from './components/layout/MobileNav.jsx';
 
-// Corrected import path
+// Corrected import path for appData.js
 import { stages } from './data/appData.js';
 
 const firebaseServices = (() => {
