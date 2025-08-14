@@ -1,7 +1,3 @@
-// =================================================================
-// FILE (UPDATE): package.json
-// PURPOSE: Add the react-router-dom library as a dependency.
-// =================================================================
 {
   "name": "onestopproject",
   "version": "1.0.0",
