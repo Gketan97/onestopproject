@@ -1,7 +1,3 @@
-// =================================================================
-// FILE (UPDATE): src/components/pages/HomePage.jsx
-// PURPOSE: Use Link component for navigation.
-// =================================================================
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { stages, testimonials, whyItWorks } from '../../data/appData';
