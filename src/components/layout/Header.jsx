@@ -1,7 +1,3 @@
-// =================================================================
-// FILE (UPDATE): src/components/layout/Header.jsx
-// PURPOSE: Use the Link component for navigation instead of state.
-// =================================================================
 import React from 'react';
 import { Link } from 'react-router-dom';
 
