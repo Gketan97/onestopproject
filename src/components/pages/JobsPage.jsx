@@ -1,9 +1,130 @@
 // =================================================================
+// FILE (NEW): src/components/cards/Jobcard.jsx
+// PURPOSE: A redesigned, compact job card for the grid layout.
+// =================================================================
+import React from 'react';
+
+const JobCard = ({ job, onOpenModal }) => {
+  return (
+    <div 
+      onClick={() => onOpenModal(job)}
+      className="dark-theme-card-bg rounded-xl dark-theme-border border-2 flex flex-col p-4 transition-all duration-300 ease-in-out hover:dark-theme-card-hover cursor-pointer h-full"
+    >
+      <div className="flex items-start gap-4">
+        <img 
+          src={job['Company Logo URL']} 
+          alt={`${job.Company || 'Company'} logo`} 
+          className="w-12 h-12 rounded-lg object-contain bg-white flex-shrink-0"
+          onError={(e) => { e.target.onerror = null; e.target.src='https://placehold.co/48x48/ffffff/1a1a1a?text=Logo'; }}
+        />
+        <div className="flex-grow">
+          <h3 className="text-md font-bold text-white line-clamp-2">{job['Job Title'] || 'Job Title Not Available'}</h3>
+          <p className="text-sm text-gray-400 mt-1">{job.Company || 'Company Name'}</p>
+        </div>
+      </div>
+      <div className="mt-4 flex-grow">
+        <p className="text-xs text-gray-500 line-clamp-3">{job.Description || 'No description provided.'}</p>
+      </div>
+      <div className="mt-4 pt-4 border-t border-gray-700 w-full">
+        <p className="text-xs text-gray-400 font-semibold">{job.Location || 'Remote'}</p>
+      </div>
+    </div>
+  );
+};
+
+export default JobCard;
+
+
+// =================================================================
+// FILE (NEW): src/components/modals/JobDetailModal.jsx
+// PURPOSE: A modal to display detailed job info and handle deep linking.
+// =================================================================
+import React, { useEffect } from 'react';
+
+const JobDetailModal = ({ job, onClose }) => {
+  // Handle deep linking and escape key press
+  useEffect(() => {
+    const handleEsc = (event) => {
+      if (event.keyCode === 27) onClose();
+    };
+    window.addEventListener('keydown', handleEsc);
+    
+    // Update URL hash for deep linking
+    window.location.hash = `job-${job.id}`;
+
+    return () => {
+      window.removeEventListener('keydown', handleEsc);
+      // Clear hash on close
+      if (window.history.pushState) {
+        window.history.pushState("", document.title, window.location.pathname + window.location.search);
+      } else {
+        window.location.hash = '';
+      }
+    };
+  }, [job, onClose]);
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(window.location.href)
+      .then(() => alert('Link copied to clipboard!'))
+      .catch(() => alert('Failed to copy link.'));
+  };
+
+  if (!job) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div 
+        className="dark-theme-card-bg rounded-xl dark-theme-border border-2 w-full max-w-2xl max-h-[90vh] flex flex-col"
+        onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside
+      >
+        <header className="p-6 border-b border-gray-700 flex justify-between items-start">
+          <div className="flex items-start gap-4">
+            <img 
+              src={job['Company Logo URL']} 
+              alt={`${job.Company} logo`} 
+              className="w-16 h-16 rounded-lg object-contain bg-white"
+              onError={(e) => { e.target.onerror = null; e.target.src='https://placehold.co/64x64/ffffff/1a1a1a?text=Logo'; }}
+            />
+            <div>
+              <h2 className="text-2xl font-bold text-white">{job['Job Title']}</h2>
+              <p className="text-gray-400">{job.Company} - {job.Location}</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="text-gray-500 hover:text-white text-3xl leading-none">&times;</button>
+        </header>
+        
+        <div className="p-6 overflow-y-auto flex-grow">
+          <h3 className="font-bold text-white mb-2">Job Description</h3>
+          <p className="text-gray-400 whitespace-pre-wrap">{job.Description}</p>
+        </div>
+
+        <footer className="p-6 border-t border-gray-700 flex flex-col sm:flex-row justify-between items-center gap-4">
+          <button onClick={handleCopyLink} className="text-sm text-gray-400 hover:text-white">
+            Copy Share Link
+          </button>
+          <a 
+            href={job['Link']} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="px-8 py-3 brand-button font-bold rounded-lg"
+          >
+            Apply Now
+          </a>
+        </footer>
+      </div>
+    </div>
+  );
+};
+
+export default JobDetailModal;
+
+
+// =================================================================
 // FILE (UPDATE): src/components/pages/JobsPage.jsx
 // PURPOSE: Implement grid layout, new search/filter UI, and modal logic.
 // =================================================================
 import React, { useState, useEffect, useCallback } from 'react';
-import JobCard from '../cards/Jobcard.jsx'; // FIX: Corrected filename case
+import JobCard from '../cards/Jobcard.jsx';
 import JobDetailModal from '../modals/JobDetailModal.jsx';
 
 const useDebounce = (value, delay) => {
@@ -36,7 +157,6 @@ const JobsPage = () => {
       const response = await fetch('https://ketangoel16-creator.github.io/onestopcareers-data/jobs.json');
       if (!response.ok) throw new Error('Network response was not ok');
       const data = await response.json();
-      // Add a unique ID to each job for deep linking
       const jobsWithIds = data.map((job, index) => ({ ...job, id: index }));
       setAllJobs(jobsWithIds);
     } catch (e) {
@@ -71,7 +191,6 @@ const JobsPage = () => {
     }
   }, [page, filteredJobs, JOBS_PER_PAGE]);
 
-  // Handle opening modal from deep link
   useEffect(() => {
     if (allJobs.length > 0 && window.location.hash) {
       const jobId = parseInt(window.location.hash.replace('#job-', ''), 10);
@@ -89,24 +208,28 @@ const JobsPage = () => {
   return (
     <>
       <div className="w-full max-w-7xl mx-auto p-4 md:p-8 flex-grow z-10">
-        <header className="text-center mb-12">
-          <h1 className="text-4xl sm:text-6xl font-extrabold text-white">
-            Find Your <span className="gradient-text">Next Opportunity</span>
+        <header className="text-center mb-8">
+          <h1 className="text-4xl font-extrabold text-white">
+            Job <span className="gradient-text">Opportunities</span>
           </h1>
-          <p className="mt-4 text-lg text-gray-400">Search thousands of jobs from top companies.</p>
         </header>
 
-        <div className="sticky top-20 bg-black/50 backdrop-blur-md p-4 rounded-xl z-20 mb-8 flex flex-col sm:flex-row gap-4">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search by title, company..."
-            className="flex-grow p-3 bg-gray-800 text-white rounded-lg border-2 border-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-500"
-          />
-          <button className="bg-gray-700 text-white px-4 py-3 rounded-lg font-semibold hover:bg-gray-600">
-            Filters
-          </button>
+        <div className="sticky top-4 md:top-20 bg-black/50 backdrop-blur-md p-2 rounded-xl z-20 mb-8">
+          <div className="relative">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search by title, company..."
+              className="w-full p-3 pl-4 pr-12 bg-gray-800 text-white rounded-lg border-2 border-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-500"
+            />
+            <button className="absolute inset-y-0 right-0 flex items-center justify-center px-4 text-gray-400 hover:text-white">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <title>Filter Icon</title>
+                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+              </svg>
+            </button>
+          </div>
         </div>
 
         {loading && <p className="text-center text-gray-400">Loading jobs...</p>}
