@@ -1,11 +1,7 @@
-// =================================================================
-// FILE (UPDATE): src/App.jsx
-// PURPOSE: Remove state-based navigation and use React Router for page rendering.
-// =================================================================
 import React, { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { initializeApp } from 'firebase/app';
-import { getAuth, onAuthStateChanged, signInAnonymously, signInWithCustomToken } from 'firebase/auth';
+import { getAuth, onAuthStateChanged, signInAnonymously } from 'firebase/auth';
 import { getFirestore, doc, setDoc, onSnapshot } from 'firebase/firestore';
 
 import HomePage from './components/pages/HomePage.jsx';
@@ -25,6 +21,8 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -51,9 +49,9 @@ class ErrorBoundary extends React.Component {
 
 const App = () => {
   const [userId, setUserId] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
 
   useEffect(() => {
-    const auth = getAuth(app);
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setUserId(user.uid);
@@ -63,6 +61,27 @@ const App = () => {
     });
     return () => unsubscribe();
   }, []);
+
+  // THIS HOOK WAS MISSING - IT IS NOW RESTORED
+  useEffect(() => {
+    if (!userId) return;
+
+    const userProfileRef = doc(db, 'users', userId);
+    const unsubscribe = onSnapshot(userProfileRef, (docSnap) => {
+      if (docSnap.exists()) {
+        setUserProfile(docSnap.data());
+      } else {
+        // Create the profile if it doesn't exist
+        setDoc(userProfileRef, { createdAt: new Date(), progress: {} })
+          .catch(error => console.error("Error creating user profile:", error));
+      }
+    }, (error) => {
+      console.error("Error listening to user profile:", error);
+    });
+
+    return () => unsubscribe();
+  }, [userId]);
+
 
   const darkThemeStyles = `
     .dark-theme-bg { background-color: #1a1a1a; }
