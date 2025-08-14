@@ -1,7 +1,3 @@
-// =================================================================
-// FILE (UPDATE): src/data/appData.jsx
-// PURPOSE: Expanding the decision tree to have 5+ questions per module.
-// =================================================================
 import React from 'react';
 
 export const decisionTree = {
