@@ -1,7 +1,3 @@
-// =================================================================
-// FILE (UPDATE): src/components/pages/DecisionTreePage.jsx
-// PURPOSE: Use Link component for navigation and restore full component logic.
-// =================================================================
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { decisionTree } from '../../data/appData';
