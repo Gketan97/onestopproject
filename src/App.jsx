@@ -171,7 +171,6 @@ const App = () => {
             ></div>
           ))}
         </div>
-        {/* FIX: Pass setCurrentPage to the Header */}
         <Header userId={userId} setCurrentPage={setCurrentPage} />
         <MobileNav currentPage={currentPage} setCurrentPage={setCurrentPage} />
         {currentPage === 'home' && <HomePage setCurrentPage={setCurrentPage} />}
