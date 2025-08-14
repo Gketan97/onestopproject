@@ -1,3 +1,7 @@
+// =================================================================
+// FILE: src/App.jsx
+// REASON: Pass the setCurrentPage function to the Header component.
+// =================================================================
 import React, { useState, useEffect } from 'react';
 import { initializeApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged, signInAnonymously, signInWithCustomToken } from 'firebase/auth';
@@ -8,9 +12,6 @@ import DecisionTreePage from './components/pages/DecisionTreePage.jsx';
 import Header from './components/layout/Header.jsx';
 import MobileNav from './components/layout/MobileNav.jsx';
 
-import { stages } from './data/appData.jsx';
-
-// ----- THIS IS THE UPDATED SECTION -----
 // Build the Firebase config from Netlify's environment variables
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -28,8 +29,6 @@ const firebaseServices = {
   db: getFirestore(app),
   auth: getAuth(app)
 };
-// ----- END OF UPDATED SECTION -----
-
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -172,7 +171,8 @@ const App = () => {
             ></div>
           ))}
         </div>
-        <Header userId={userId} />
+        {/* FIX: Pass setCurrentPage to the Header */}
+        <Header userId={userId} setCurrentPage={setCurrentPage} />
         <MobileNav currentPage={currentPage} setCurrentPage={setCurrentPage} />
         {currentPage === 'home' && <HomePage setCurrentPage={setCurrentPage} />}
         {currentPage === 'decisionTree' && <DecisionTreePage setCurrentPage={setCurrentPage} />}
