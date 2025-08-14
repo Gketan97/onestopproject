@@ -1,6 +1,6 @@
 // =================================================================
 // FILE: src/data/appData.jsx
-// REASON: Provide new, consistent SVG icons and add more stages to fix missing content.
+// REASON: Adding a new "whyItWorks" export for the redesigned section.
 // =================================================================
 import React from 'react';
 
@@ -182,4 +182,45 @@ export const stages = [
       </svg>
     ),
   },
+];
+
+export const whyItWorks = [
+    {
+        title: 'Hyper-Personalized Pathways',
+        description: 'Our dynamic system adapts to your answers, ensuring the guidance you receive is uniquely yours. No more generic advice.',
+        icon: (props) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+                <path d="M6 3v18"/>
+                <path d="M18 3v18"/>
+                <path d="M10 12H6"/>
+                <path d="M14 12h4"/>
+                <path d="M10 6H6"/>
+                <path d="M14 18h4"/>
+                <path d="M10 18h-4"/>
+                <path d="M14 6h4"/>
+            </svg>
+        ),
+    },
+    {
+        title: 'Data-Driven Clarity',
+        description: 'We translate your career ambiguity into actionable, data-backed recommendations, so you can make your next move with confidence.',
+        icon: (props) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+                <path d="M12 20V10"/>
+                <path d="M18 20V4"/>
+                <path d="M6 20V16"/>
+            </svg>
+        ),
+    },
+    {
+        title: 'Actionable Ecosystem',
+        description: 'We bridge the gap between insight and action, connecting you directly to curated resources, job opportunities, and mentors.',
+        icon: (props) => (
+             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+                <path d="M18 13V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8"/>
+                <path d="m14 9 7.5 7.5"/>
+                <path d="m21 11-5 5"/>
+             </svg>
+        ),
+    }
 ];
