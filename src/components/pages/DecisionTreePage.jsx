@@ -1,28 +1,39 @@
+// =================================================================
+// FILE: src/components/pages/DecisionTreePage.jsx
+// REASON: Add a "Start Over" button to navigate home when the quiz ends.
+// =================================================================
 import React, { useState } from 'react';
-import { decisionTree } from '../../data/appData.jsx';
+import { decisionTree } from '../../data/appData'; // Make sure this path is correct
 
 const DecisionTreePage = ({ setCurrentPage }) => {
   const [currentQuestionId, setCurrentQuestionId] = useState(null);
-  const currentStage = 'stage1'; 
-
-  const questions = decisionTree[currentStage];
+  const decisionTreeData = decisionTree['stage1'];
+  
   const currentQuestion = currentQuestionId 
-    ? questions.find(q => q.id === currentQuestionId)
-    : questions[0];
+    ? decisionTreeData.find(q => q.id === currentQuestionId)
+    : decisionTreeData[0];
 
-  const handleAnswer = (nextQuestionId) => {
-    if (nextQuestionId) {
-      setCurrentQuestionId(nextQuestionId);
+  const handleOptionClick = (nextId) => {
+    if (nextId) {
+      setCurrentQuestionId(nextId);
     } else {
-      setCurrentPage('results');
+      // This marks the end of the quiz
+      setCurrentQuestionId('results');
     }
   };
 
   if (!currentQuestion) {
-    return (
-      <div className="min-h-screen dark-theme-bg flex items-center justify-center">
-        <p className="text-white text-2xl font-bold">Thank you for your responses! Generating your results...</p>
-      </div>
+     return (
+        <div className="min-h-screen dark-theme-bg flex flex-col items-center justify-center p-4 text-center">
+            <h2 className="text-white text-3xl font-bold mb-4">Thank you for your responses!</h2>
+            <p className="text-gray-400 mb-8">Your personalized career roadmap is being generated.</p>
+            <button
+                onClick={() => setCurrentPage('home')}
+                className="px-8 py-4 brand-button font-bold text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 focus:outline-none focus:ring-4 focus:ring-gray-300 focus:ring-opacity-50"
+            >
+                Return to Home
+            </button>
+        </div>
     );
   }
 
@@ -36,7 +47,7 @@ const DecisionTreePage = ({ setCurrentPage }) => {
           {currentQuestion.options.map((option, index) => (
             <button
               key={index}
-              onClick={() => handleAnswer(option.nextQuestionId)}
+              onClick={() => handleOptionClick(option.nextQuestionId)}
               className="w-full px-6 py-4 dark-theme-card-bg text-white rounded-lg dark-theme-border border-2 transition-all duration-300 ease-in-out hover:dark-theme-card-hover hover:scale-105"
             >
               {option.text}
