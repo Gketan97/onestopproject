@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import JobCard from '../cards/JobCard.jsx'; // ✅ import instead of defining inline
+import JobCard from '../cards/Jobcard.jsx'; // ✅ import instead of defining inline
 
 const JobsPage = () => {
   const [allJobs, setAllJobs] = useState([]);
