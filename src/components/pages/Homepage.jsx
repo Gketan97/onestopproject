@@ -1,5 +1,5 @@
 import React from 'react';
-import { testimonials, stages } from '../../data/appData.js';
+import { testimonials, stages } from '../../data/appData.jsx';
 
 const HomePage = ({ setCurrentPage }) => {
   const handleStartJourney = () => {
@@ -102,4 +102,3 @@ const HomePage = ({ setCurrentPage }) => {
 };
 
 export default HomePage;
-
