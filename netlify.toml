@@ -1,0 +1,7 @@
+[build]
+  # This command tells Netlify to run your build script.
+  command = "npm run build"
+  
+  # This tells Netlify which directory to publish to.
+  # Vite's default output directory is 'dist'.
+  publish = "dist"
