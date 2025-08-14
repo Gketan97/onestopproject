@@ -1,7 +1,3 @@
-/ =================================================================
-// FILE (UPDATE): src/components/layout/MobileNav.jsx
-// PURPOSE: Use the Link component and useLocation hook for navigation.
-// =================================================================
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
