@@ -10,19 +10,26 @@ import MobileNav from './components/layout/MobileNav.jsx';
 
 import { stages } from './data/appData.jsx';
 
-const firebaseServices = (() => {
-  try {
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-    if (Object.keys(firebaseConfig).length > 0) {
-      const app = initializeApp(firebaseConfig, appId);
-      return { db: getFirestore(app), auth: getAuth(app) };
-    }
-  } catch (e) {
-    console.error("Firebase initialization failed:", e);
-  }
-  return { db: null, auth: null };
-})();
+// ----- THIS IS THE UPDATED SECTION -----
+// Build the Firebase config from Netlify's environment variables
+const firebaseConfig = {
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
+};
+
+// Initialize Firebase using the config object
+const app = initializeApp(firebaseConfig);
+const firebaseServices = {
+  db: getFirestore(app),
+  auth: getAuth(app)
+};
+// ----- END OF UPDATED SECTION -----
+
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
