@@ -1,7 +1,3 @@
-// =================================================================
-// FILE (NEW): src/components/cards/Jobcard.jsx
-// PURPOSE: A redesigned, compact job card for the grid layout.
-// =================================================================
 import React from 'react';
 
 const JobCard = ({ job, onOpenModal }) => {
