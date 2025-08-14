@@ -1,127 +1,51 @@
 // =================================================================
-// FILE: src/data/appData.jsx
-// REASON: Adding a new "whyItWorks" export for the redesigned section.
+// FILE (UPDATE): src/data/appData.jsx
+// PURPOSE: Expanding the decision tree to have 5+ questions per module.
 // =================================================================
 import React from 'react';
 
 export const decisionTree = {
   stage1: [
-    // --- Initial Questions ---
+    // --- Diagnostic Question ---
     {
-      question: "What's your primary career motivation?",
+      id: "start",
+      question: "What is the biggest challenge in your career right now?",
       options: [
-        { text: "Building something new and innovative.", nextQuestionId: "q1_a1" },
-        { text: "Solving complex problems and helping others.", nextQuestionId: "q1_a2" },
-        { text: "Leading teams and shaping strategy.", nextQuestionId: "q1_a3" },
-        { text: "Financial stability and growth.", nextQuestionId: "q1_a4" },
+        { text: "I'm not sure what career path is right for me.", nextQuestionId: "exploration_1" },
+        { text: "I know my path, but I'm missing key skills.", nextQuestionId: "upskilling_1" },
+        { text: "I'm getting interviews, but not passing them.", nextQuestionId: "interview_1" },
+        { text: "My job search feels disorganized and ineffective.", nextQuestionId: "job_hunt_1" },
       ],
-      insight: "Understanding your core motivation helps us filter for roles that will truly energize you.",
-    },
-    // ... other initial questions from before ...
-
-    // --- Interview Readiness Questions ---
-    {
-      id: "interview_start",
-      question: "How confident are you about technical interviews?",
-      options: [
-        { text: "Very confident, I just need a refresher.", nextQuestionId: "interview_q2" },
-        { text: "Somewhat confident, but need practice.", nextQuestionId: "interview_q3" },
-        { text: "Not confident at all, I need to start from basics.", nextQuestionId: "interview_q4" },
-      ],
-      insight: "Assessing your confidence helps us tailor the preparation intensity.",
-    },
-    {
-      id: "interview_q2",
-      question: "Which area needs the most focus for your refresher?",
-      options: [
-        { text: "Data Structures & Algorithms.", nextQuestionId: "job_hunt_start" },
-        { text: "System Design and Architecture.", nextQuestionId: "job_hunt_start" },
-        { text: "Behavioral and situational questions.", nextQuestionId: "job_hunt_start" },
-      ],
-      insight: "Pinpointing a specific area makes your preparation more efficient.",
-    },
-    {
-      id: "interview_q3",
-      question: "What type of practice would be most helpful?",
-      options: [
-        { text: "Mock interviews with peers.", nextQuestionId: "job_hunt_start" },
-        { text: "Solving coding challenges online.", nextQuestionId: "job_hunt_start" },
-        { text: "Reviewing company-specific interview questions.", nextQuestionId: "job_hunt_start" },
-      ],
-      insight: "The right practice method can significantly boost your performance.",
-    },
-    {
-      id: "interview_q4",
-      question: "What's your preferred way to learn foundational concepts?",
-      options: [
-        { text: "Structured online courses.", nextQuestionId: "job_hunt_start" },
-        { text: "Reading books and technical articles.", nextQuestionId: "job_hunt_start" },
-        { text: "Hands-on projects and building.", nextQuestionId: "job_hunt_start" },
-      ],
-      insight: "Your learning style determines the best resources for you.",
-    },
-    {
-      id: "interview_q5",
-      question: "Have you prepared your 'Tell me about yourself' pitch?",
-      options: [
-        { text: "Yes, it's polished and ready.", nextQuestionId: "job_hunt_start" },
-        { text: "I have a rough idea, but it needs work.", nextQuestionId: "job_hunt_start" },
-        { text: "No, I haven't started on it yet.", nextQuestionId: "job_hunt_start" },
-      ],
-      insight: "This is your first impression—it's crucial to get it right.",
+      insight: "Pinpointing your main obstacle helps us provide the most relevant guidance.",
     },
 
-    // --- Job Hunt Strategy Questions ---
-    {
-      id: "job_hunt_start",
-      question: "How are you currently finding job opportunities?",
-      options: [
-        { text: "Mainly through online job boards (LinkedIn, Indeed).", nextQuestionId: "job_hunt_q2" },
-        { text: "Networking and referrals.", nextQuestionId: "job_hunt_q3" },
-        { text: "Company career pages directly.", nextQuestionId: "job_hunt_q4" },
-      ],
-      insight: "A multi-channel approach is often the most effective job hunt strategy.",
-    },
-    {
-      id: "job_hunt_q2",
-      question: "What is the biggest challenge with online applications?",
-      options: [
-        { text: "Not hearing back after applying.", nextQuestionId: null },
-        { text: "Tailoring my resume for each application.", nextQuestionId: null },
-        { text: "Finding roles that truly match my skills.", nextQuestionId: null },
-      ],
-      insight: "Identifying the bottleneck helps us suggest targeted solutions.",
-    },
-    {
-      id: "job_hunt_q3",
-      question: "How actively are you growing your professional network?",
-      options: [
-        { text: "Very actively, I connect with people weekly.", nextQuestionId: null },
-        { text: "Somewhat, I attend events occasionally.", nextQuestionId: null },
-        { text: "Not actively, I find it difficult.", nextQuestionId: null },
-      ],
-      insight: "Your network is one of your most powerful career assets.",
-    },
-    {
-      id: "job_hunt_q4",
-      question: "Do you customize your application for each company?",
-      options: [
-        { text: "Yes, I write a new cover letter and tweak my resume.", nextQuestionId: null },
-        { text: "Sometimes, for roles I'm very interested in.", nextQuestionId: null },
-        { text: "No, I use the same resume for all applications.", nextQuestionId: null },
-      ],
-      insight: "Personalization can dramatically increase your response rate.",
-    },
-    {
-      id: "job_hunt_q5",
-      question: "How do you track your job applications?",
-      options: [
-        { text: "Using a spreadsheet or a dedicated tool.", nextQuestionId: null },
-        { text: "I keep track in my head or with email flags.", nextQuestionId: null },
-        { text: "I don't have a system for tracking.", nextQuestionId: null },
-      ],
-      insight: "An organized job hunt prevents missed opportunities and helps you follow up effectively.",
-    },
+    // --- 1. Exploration Module ---
+    { id: "exploration_1", question: "What's your primary career motivation?", options: [{ text: "Building something new.", nextQuestionId: "exploration_2" }, { text: "Solving complex problems.", nextQuestionId: "exploration_2" }, { text: "Leading teams and strategy.", nextQuestionId: "exploration_2" }], insight: "This helps us understand what drives you." },
+    { id: "exploration_2", question: "Which work environment do you prefer?", options: [{ text: "A fast-paced startup.", nextQuestionId: "exploration_3" }, { text: "A large, established corporation.", nextQuestionId: "exploration_3" }, { text: "Freelance or remote work.", nextQuestionId: "exploration_3" }], insight: "Your preferred environment is a key factor in job satisfaction." },
+    { id: "exploration_3", question: "How do you feel about taking risks in your career?", options: [{ text: "I'm risk-averse and prefer stability.", nextQuestionId: "exploration_4" }, { text: "I'm open to calculated risks for high rewards.", nextQuestionId: "exploration_4" }, { text: "I thrive on risk and uncertainty.", nextQuestionId: "exploration_4" }], insight: "Your risk tolerance can point towards different types of roles and companies." },
+    { id: "exploration_4", question: "What kind of impact do you want to make?", options: [{ text: "Impact on a small, dedicated team.", nextQuestionId: "exploration_5" }, { text: "Impact on millions of users.", nextQuestionId: "exploration_5" }, { text: "Impact on a specific industry.", nextQuestionId: "exploration_5" }], insight: "The scale of impact you desire is an important career compass." },
+    { id: "exploration_5", question: "Which of these activities energizes you the most?", options: [{ text: "Creative brainstorming and ideation.", nextQuestionId: null }, { text: "Deep, focused analytical work.", nextQuestionId: null }, { text: "Collaborating and communicating with others.", nextQuestionId: null }], insight: "Aligning your work with what energizes you is crucial for long-term fulfillment." },
+
+    // --- 2. Upskilling Module ---
+    { id: "upskilling_1", question: "Which area of skill development is your priority?", options: [{ text: "Technical skills (e.g., coding).", nextQuestionId: "upskilling_2" }, { text: "Soft skills (e.g., communication).", nextQuestionId: "upskilling_2" }, { text: "Industry-specific knowledge.", nextQuestionId: "upskilling_2" }], insight: "Focusing on one area at a time leads to more effective learning." },
+    { id: "upskilling_2", question: "How do you prefer to learn?", options: [{ text: "Structured online courses.", nextQuestionId: "upskilling_3" }, { text: "Hands-on projects.", nextQuestionId: "upskilling_3" }, { text: "Mentorship and 1-on-1 guidance.", nextQuestionId: "upskilling_3" }], insight: "Your learning style determines the best resources for you." },
+    { id: "upskilling_3", question: "What is your budget for upskilling?", options: [{ text: "Free resources only.", nextQuestionId: "upskilling_4" }, { text: "A modest budget for courses/books.", nextQuestionId: "upskilling_4" }, { text: "Willing to invest significantly in a certification or bootcamp.", nextQuestionId: "upskilling_4" }], insight: "Budget constraints help us recommend realistic options." },
+    { id: "upskilling_4", question: "How much time can you commit per week?", options: [{ text: "1-5 hours.", nextQuestionId: "upskilling_5" }, { text: "5-10 hours.", nextQuestionId: "upskilling_5" }, { text: "10+ hours (intensive).", nextQuestionId: "upskilling_5" }], insight: "Time commitment is a practical factor in choosing a learning path." },
+    { id: "upskilling_5", question: "What is the primary goal of this upskilling?", options: [{ text: "To get a promotion in my current role.", nextQuestionId: null }, { text: "To pivot to a new career field.", nextQuestionId: null }, { text: "To become a recognized expert.", nextQuestionId: null }], insight: "The end goal shapes the skills you should prioritize." },
+
+    // --- 3. Interview Readiness Module ---
+    { id: "interview_1", question: "What part of the interview process is most challenging?", options: [{ text: "Technical coding challenges.", nextQuestionId: "interview_2" }, { text: "System design questions.", nextQuestionId: "interview_2" }, { text: "Behavioral questions.", nextQuestionId: "interview_2" }], insight: "Knowing your weakness is the first step to turning it into a strength." },
+    { id: "interview_2", question: "How do you prepare for behavioral interviews?", options: [{ text: "I use the STAR method for my stories.", nextQuestionId: "interview_3" }, { text: "I just 'wing it' and answer naturally.", nextQuestionId: "interview_3" }, { text: "I'm not sure how to prepare for them.", nextQuestionId: "interview_3" }], insight: "A structured approach to behavioral questions can make a huge difference." },
+    { id: "interview_3", question: "How many of your past experiences have you written down as STAR stories?", options: [{ text: "None, I do it on the fly.", nextQuestionId: "interview_4" }, { text: "1-3 stories.", nextQuestionId: "interview_4" }, { text: "5+ stories ready to go.", nextQuestionId: "interview_4" }], insight: "Having a bank of prepared stories saves you from thinking under pressure." },
+    { id: "interview_4", question: "How comfortable are you with salary negotiations?", options: [{ text: "Very comfortable, I know my worth.", nextQuestionId: "interview_5" }, { text: "Somewhat, but I could be better.", nextQuestionId: "interview_5" }, { text: "Not at all, I find it very stressful.", nextQuestionId: "interview_5" }], insight: "Negotiation is a skill you can learn to significantly increase your compensation." },
+    { id: "interview_5", question: "Do you prepare questions to ask the interviewer?", options: [{ text: "Yes, I always have a list of thoughtful questions.", nextQuestionId: null }, { text: "Sometimes, if I remember.", nextQuestionId: null }, { text: "No, I usually just ask about next steps.", nextQuestionId: null }], insight: "Asking insightful questions shows your engagement and intelligence." },
+
+    // --- 4. Job Hunt Strategy Module ---
+    { id: "job_hunt_1", question: "What is the biggest frustration in your job search?", options: [{ text: "Sending applications but getting no replies.", nextQuestionId: "job_hunt_2" }, { text: "Not sure how to find the right companies.", nextQuestionId: "job_hunt_2" }, { text: "Struggling with networking.", nextQuestionId: "job_hunt_2" }], insight: "A targeted strategy is more effective than applying everywhere." },
+    { id: "job_hunt_2", question: "How tailored is your resume for each role?", options: [{ text: "Highly tailored for every application.", nextQuestionId: "job_hunt_3" }, { text: "I have a few versions I use.", nextQuestionId: "job_hunt_3" }, { text: "I use the same one for everything.", nextQuestionId: "job_hunt_3" }], insight: "Customization helps you get past automated filters." },
+    { id: "job_hunt_3", question: "How are you leveraging your professional network?", options: [{ text: "I'm actively seeking referrals.", nextQuestionId: "job_hunt_4" }, { text: "I occasionally ask for connections.", nextQuestionId: "job_hunt_4" }, { text: "I'm not using my network at all.", nextQuestionId: "job_hunt_4" }], insight: "A referral is the single best way to get an interview." },
+    { id: "job_hunt_4", question: "How do you track your applications?", options: [{ text: "Using a spreadsheet or a tool.", nextQuestionId: "job_hunt_5" }, { text: "I keep track in my head.", nextQuestionId: "job_hunt_5" }, { text: "I don't have a system for tracking.", nextQuestionId: "job_hunt_5" }], insight: "An organized job hunt prevents missed opportunities." },
+    { id: "job_hunt_5", question: "How much of your job search time is spent on 'cold' applications vs. networking?", options: [{ text: "Mostly applications (80%+).", nextQuestionId: null }, { text: "A healthy mix of both (50/50).", nextQuestionId: null }, { text: "Mostly networking (80%+).", nextQuestionId: null }], insight: "Shifting focus from cold applications to networking can dramatically improve results." },
   ],
 };
 
