@@ -3,93 +3,24 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged, signInAnonymously, signInWithCustomToken } from 'firebase/auth';
 import { getFirestore, collection, doc, setDoc, onSnapshot } from 'firebase/firestore';
 
-// Initialize Firebase with global variables provided by the environment
-const initializeFirebase = () => {
-  console.log('DEBUG: Attempting to initialize Firebase...');
+// ===================================================================================================
+// 1. GLOBAL CONFIGURATION & DATA
+// (These are outside of any component to prevent re-creation on re-render)
+// ===================================================================================================
+
+const firebaseServices = (() => {
   try {
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
     const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-
     if (Object.keys(firebaseConfig).length > 0) {
       const app = initializeApp(firebaseConfig, appId);
-      console.log('DEBUG: Firebase app initialized successfully.');
-      return {
-        db: getFirestore(app),
-        auth: getAuth(app),
-      };
+      return { db: getFirestore(app), auth: getAuth(app) };
     }
   } catch (e) {
-    console.error("DEBUG: Firebase initialization failed with an error.", e);
+    console.error("Firebase initialization failed:", e);
   }
-  console.log('DEBUG: Firebase services are null or config is empty.');
   return { db: null, auth: null };
-};
-
-const firebaseServices = initializeFirebase();
-
-const MobileNav = ({ currentPage, setCurrentPage }) => {
-  console.log('DEBUG: MobileNav is rendering.');
-  const navItems = [
-    { name: "Home", icon: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg> },
-    { name: "Jobs", icon: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M16 11V7a4 4 0 0 0-8 0v4"/><rect x="5" y="9" width="14" height="14" rx="2" ry="2"/></svg> },
-    { name: "Resources", icon: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> },
-    { name: "Mentors", icon: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6M23 11h-6"/></svg> },
-  ];
-
-  return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-black/80 backdrop-blur-sm border-t border-gray-800 z-50">
-      <div className="flex justify-around items-center h-16">
-        {navItems.map((item) => (
-          <button
-            key={item.name}
-            onClick={() => setCurrentPage(item.name.toLowerCase())}
-            className={`flex flex-col items-center justify-center p-2 text-xs font-bold transition-colors duration-300 ${currentPage === item.name.toLowerCase() ? 'text-orange-500' : 'text-gray-400 hover:text-white'}`}
-          >
-            <item.icon size="1.2rem" />
-            <span className="mt-1">{item.name}</span>
-          </button>
-        ))}
-      </div>
-    </nav>
-  );
-};
-
-// Header component for desktop view
-const Header = ({ userId }) => {
-  console.log('DEBUG: Header is rendering.');
-  return (
-    <header className="bg-black/80 backdrop-blur-sm sticky top-0 z-50 border-b border-gray-800 hidden md:block">
-      <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-        <a href="#" className="flex items-center gap-3">
-          <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect width="40" height="40" rx="8" fill="#27272A"/>
-            <defs>
-              <linearGradient id="brandGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style={{stopColor:'#F97316',stopOpacity:1}} />
-                <stop offset="100%" style={{stopColor:'#FB923C',stopOpacity:1}} />
-              </linearGradient>
-            </defs>
-            <path d="M9 20C9 17.5 10 15.5 12.5 14C15 12.5 16 15 16 16.5C16 18 14 19 13 21C12 23 14 25 16.5 25.5" stroke="#666" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M16.5 25.5C19 26 22 24 24 22L31 15" stroke="url(#brandGradient)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M26 15L31 15L31 20" stroke="url(#brandGradient)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          <span className="text-2xl font-extrabold text-white">
-            <span className="font-bold">OneStop</span><span className="font-medium text-gray-300">Careers</span>
-          </span>
-        </a>
-
-        <div className="hidden md:flex items-center space-x-8">
-          <nav className="flex items-center space-x-8">
-            <a href="#" className="nav-link text-gray-300 hover:text-white font-bold transition-colors">Home</a>
-            <a href="#" className="nav-link text-gray-300 hover:text-white font-bold transition-colors">Find Jobs</a>
-            <a href="#" className="nav-link text-gray-300 hover:text-white font-bold transition-colors">Resources</a>
-            <a href="#" className="nav-link text-gray-300 hover:text-white font-bold transition-colors">Mentors</a>
-          </nav>
-        </div>
-      </div>
-    </header>
-  );
-};
+})();
 
 // Data structure for the decision tree questions
 const decisionTree = {
@@ -104,7 +35,6 @@ const decisionTree = {
       ],
       insight: "Understanding your core motivation helps us filter for roles that will truly energize you. Some people are driven by creation, others by impact, and a few by leadership or security.",
     },
-    // Nested questions based on the first answer
     {
       id: "q1_a1",
       question: "Great. Do you prefer working with code or visual design?",
@@ -141,65 +71,9 @@ const decisionTree = {
       ],
       insight: "This helps us understand your priorities regarding career pace and stability, guiding us toward either high-risk, high-reward roles or more established, secure options.",
     },
-    // More question layers to be added here.
   ],
 };
 
-const DecisionTreePage = ({ setCurrentPage }) => {
-  console.log('DEBUG: DecisionTreePage is rendering.');
-  const [currentQuestionId, setCurrentQuestionId] = useState(null);
-  const currentStage = 'stage1'; 
-
-  const questions = decisionTree[currentStage];
-  const currentQuestion = currentQuestionId 
-    ? questions.find(q => q.id === currentQuestionId)
-    : questions[0];
-
-  const handleAnswer = (nextQuestionId) => {
-    console.log('DEBUG: User answered. Next question ID:', nextQuestionId);
-    if (nextQuestionId) {
-      setCurrentQuestionId(nextQuestionId);
-    } else {
-      console.log('DEBUG: End of decision tree. Navigating to results page.');
-      setCurrentPage('results');
-    }
-  };
-
-  if (!currentQuestion) {
-    console.log('DEBUG: No current question found. Displaying result loading message.');
-    return (
-      <div className="min-h-screen dark-theme-bg flex items-center justify-center">
-        <p className="text-white text-2xl font-bold">Thank you for your responses! Generating your results...</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen dark-theme-bg font-sans antialiased dark-theme-text flex flex-col items-center justify-center p-4">
-      <div className="bg-black/70 backdrop-blur-md p-8 rounded-xl shadow-lg w-full max-w-lg text-center">
-        <h2 className="text-xl md:text-2xl font-bold text-white mb-6">
-          {currentQuestion.question}
-        </h2>
-        <div className="space-y-4">
-          {currentQuestion.options.map((option, index) => (
-            <button
-              key={index}
-              onClick={() => handleAnswer(option.nextQuestionId)}
-              className="w-full px-6 py-4 dark-theme-card-bg text-white rounded-lg dark-theme-border border-2 transition-all duration-300 ease-in-out hover:dark-theme-card-hover hover:scale-105"
-            >
-              {option.text}
-            </button>
-          ))}
-        </div>
-        <p className="mt-6 text-gray-500 text-sm italic">
-          {currentQuestion.insight}
-        </p>
-      </div>
-    </div>
-  );
-};
-
-// Mock testimonials
 const testimonials = [
   {
     quote: "Before onestopcareers, I was lost. The decision tree gave me the clarity I needed to pivot my career and find a path I'm truly passionate about. It's a game-changer!",
@@ -249,10 +123,74 @@ const stages = [
   }
 ];
 
+// ===================================================================================================
+// 2. STABLE COMPONENTS
+// (These are defined once and memoized for performance)
+// ===================================================================================================
+
+const MobileNav = ({ currentPage, setCurrentPage }) => {
+  const navItems = [
+    { name: "Home", icon: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg> },
+    { name: "Jobs", icon: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M16 11V7a4 4 0 0 0-8 0v4"/><rect x="5" y="9" width="14" height="14" rx="2" ry="2"/></svg> },
+    { name: "Resources", icon: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> },
+    { name: "Mentors", icon: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6M23 11h-6"/></svg> },
+  ];
+
+  return (
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-black/80 backdrop-blur-sm border-t border-gray-800 z-50">
+      <div className="flex justify-around items-center h-16">
+        {navItems.map((item) => (
+          <button
+            key={item.name}
+            onClick={() => setCurrentPage(item.name.toLowerCase())}
+            className={`flex flex-col items-center justify-center p-2 text-xs font-bold transition-colors duration-300 ${currentPage === item.name.toLowerCase() ? 'text-orange-500' : 'text-gray-400 hover:text-white'}`}
+          >
+            <item.icon size="1.2rem" />
+            <span className="mt-1">{item.name}</span>
+          </button>
+        ))}
+      </div>
+    </nav>
+  );
+};
+
+const Header = ({ userId }) => {
+  return (
+    <header className="bg-black/80 backdrop-blur-sm sticky top-0 z-50 border-b border-gray-800 hidden md:block">
+      <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+        <a href="#" className="flex items-center gap-3">
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="40" height="40" rx="8" fill="#27272A"/>
+            <defs>
+              <linearGradient id="brandGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style={{stopColor:'#F97316',stopOpacity:1}} />
+                <stop offset="100%" style={{stopColor:'#FB923C',stopOpacity:1}} />
+              </linearGradient>
+            </defs>
+            <path d="M9 20C9 17.5 10 15.5 12.5 14C15 12.5 16 15 16 16.5C16 18 14 19 13 21C12 23 14 25 16.5 25.5" stroke="#666" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M16.5 25.5C19 26 22 24 24 22L31 15" stroke="url(#brandGradient)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M26 15L31 15L31 20" stroke="url(#brandGradient)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          <span className="text-2xl font-extrabold text-white">
+            <span className="font-bold">OneStop</span><span className="font-medium text-gray-300">Careers</span>
+          </span>
+        </a>
+
+        <div className="hidden md:flex items-center space-x-8">
+          <nav className="flex items-center space-x-8">
+            <a href="#" className="nav-link text-gray-300 hover:text-white font-bold transition-colors">Home</a>
+            <a href="#" className="nav-link text-gray-300 hover:text-white font-bold transition-colors">Find Jobs</a>
+            <a href="#" className="nav-link text-gray-300 hover:text-white font-bold transition-colors">Resources</a>
+            <a href="#" className="nav-link text-gray-300 hover:text-white font-bold transition-colors">Mentors</a>
+          </nav>
+        </div>
+      </div>
+    </header>
+  );
+};
+
 const HomePage = ({ setCurrentPage }) => {
-  console.log('DEBUG: HomePage is rendering.');
   const handleStartJourney = () => {
-    console.log('DEBUG: Start Your Journey button clicked. Setting currentPage to "decisionTree".');
     setCurrentPage('decisionTree');
   };
 
@@ -351,40 +289,84 @@ const HomePage = ({ setCurrentPage }) => {
   );
 };
 
+const DecisionTreePage = ({ setCurrentPage }) => {
+  const [currentQuestionId, setCurrentQuestionId] = useState(null);
+  const currentStage = 'stage1'; 
 
-// The main App component for our website
+  const questions = decisionTree[currentStage];
+  const currentQuestion = currentQuestionId 
+    ? questions.find(q => q.id === currentQuestionId)
+    : questions[0];
+
+  const handleAnswer = (nextQuestionId) => {
+    if (nextQuestionId) {
+      setCurrentQuestionId(nextQuestionId);
+    } else {
+      setCurrentPage('results');
+    }
+  };
+
+  if (!currentQuestion) {
+    return (
+      <div className="min-h-screen dark-theme-bg flex items-center justify-center">
+        <p className="text-white text-2xl font-bold">Thank you for your responses! Generating your results...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen dark-theme-bg font-sans antialiased dark-theme-text flex flex-col items-center justify-center p-4">
+      <div className="bg-black/70 backdrop-blur-md p-8 rounded-xl shadow-lg w-full max-w-lg text-center">
+        <h2 className="text-xl md:text-2xl font-bold text-white mb-6">
+          {currentQuestion.question}
+        </h2>
+        <div className="space-y-4">
+          {currentQuestion.options.map((option, index) => (
+            <button
+              key={index}
+              onClick={() => handleAnswer(option.nextQuestionId)}
+              className="w-full px-6 py-4 dark-theme-card-bg text-white rounded-lg dark-theme-border border-2 transition-all duration-300 ease-in-out hover:dark-theme-card-hover hover:scale-105"
+            >
+              {option.text}
+            </button>
+          ))}
+        </div>
+        <p className="mt-6 text-gray-500 text-sm italic">
+          {currentQuestion.insight}
+        </p>
+      </div>
+    </div>
+  );
+};
+
+// ===================================================================================================
+// 3. MAIN APP COMPONENT
+// ===================================================================================================
+
 const App = () => {
-  console.log('DEBUG: App component is rendering.');
   const [authReady, setAuthReady] = useState(false);
   const [userId, setUserId] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
   const [currentPage, setCurrentPage] = useState('home');
 
   useEffect(() => {
-    console.log('DEBUG: Running authentication effect.');
     if (!firebaseServices.auth) {
-      console.warn("DEBUG: Firebase Auth is not available. Running in local mode.");
       setAuthReady(true);
       return;
     }
-
     const authenticate = async () => {
       try {
         const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
         if (token) {
           await signInWithCustomToken(firebaseServices.auth, token);
-          console.log("DEBUG: Signed in with custom token.");
         } else {
           await signInAnonymously(firebaseServices.auth);
-          console.log("DEBUG: Signed in anonymously.");
         }
       } catch (error) {
-        console.error("DEBUG: Firebase authentication failed:", error);
+        console.error("Firebase authentication failed:", error);
       }
     };
-
     const unsubscribe = onAuthStateChanged(firebaseServices.auth, (user) => {
-      console.log('DEBUG: Auth state changed. User:', user ? user.uid : 'none');
       if (user) {
         setUserId(user.uid);
       } else {
@@ -392,41 +374,28 @@ const App = () => {
       }
       setAuthReady(true);
     });
-
     authenticate();
-    return () => {
-      console.log('DEBUG: Unsubscribing from auth state changes.');
-      unsubscribe();
-    };
+    return () => unsubscribe();
   }, []);
 
   useEffect(() => {
-    console.log('DEBUG: Running Firestore effect. userId:', userId);
     if (!userId || !firebaseServices.db) return;
-
     const userProfileRef = doc(firebaseServices.db, 'artifacts', typeof __app_id !== 'undefined' ? __app_id : 'default-app-id', 'users', userId, 'user_data', 'profile');
-
     try {
       const unsubscribe = onSnapshot(userProfileRef, (docSnap) => {
-        console.log('DEBUG: Firestore snapshot received.');
         if (docSnap.exists()) {
-          console.log('DEBUG: User profile exists.', docSnap.data());
           setUserProfile(docSnap.data());
         } else {
-          console.log('DEBUG: User profile does not exist. Creating new profile.');
           setDoc(userProfileRef, { createdAt: new Date() }).catch(error => {
-            console.error("DEBUG: Error creating user profile:", error);
+            console.error("Error creating user profile:", error);
           });
         }
       }, (error) => {
-        console.error("DEBUG: Error listening to user profile:", error);
+        console.error("Error listening to user profile:", error);
       });
-      return () => {
-        console.log('DEBUG: Unsubscribing from Firestore listener.');
-        unsubscribe();
-      };
+      return () => unsubscribe();
     } catch (error) {
-      console.error("DEBUG: Error setting up Firestore listener:", error);
+      console.error("Error setting up Firestore listener:", error);
     }
   }, [userId]);
 
@@ -475,12 +444,6 @@ const App = () => {
   return (
     <div className="min-h-screen dark-theme-bg font-sans antialiased dark-theme-text flex flex-col relative pb-16 md:pb-0">
       <style>{darkThemeStyles}</style>
-
-      {/* Debug Panel at the top */}
-      <div className="fixed top-0 left-0 right-0 bg-red-800 text-white p-2 text-xs z-[100] flex justify-between">
-        <span>DEBUG: authReady={String(authReady)} | userId={userId || 'null'} | currentPage={currentPage}</span>
-      </div>
-
       <div className="particle-container">
         {[...Array(50)].map((_, i) => (
           <div
@@ -497,13 +460,10 @@ const App = () => {
           ></div>
         ))}
       </div>
-
       <Header userId={userId} />
       <MobileNav currentPage={currentPage} setCurrentPage={setCurrentPage} />
-
       {currentPage === 'home' && <HomePage setCurrentPage={setCurrentPage} />}
       {currentPage === 'decisionTree' && <DecisionTreePage setCurrentPage={setCurrentPage} />}
-
       <footer className="w-full max-w-7xl mx-auto p-4 text-center text-sm text-gray-500 border-t mt-12 md:mt-24 dark-theme-border z-10">
         <p>&copy; 2025 onestopcareers. All rights reserved.</p>
       </footer>
@@ -512,3 +472,4 @@ const App = () => {
 };
 
 export default App;
+
