@@ -8,8 +8,7 @@ import DecisionTreePage from './components/pages/DecisionTreePage.jsx';
 import Header from './components/layout/Header.jsx';
 import MobileNav from './components/layout/MobileNav.jsx';
 
-// Corrected import path for appData.js
-import { stages } from './data/appData.js';
+import { stages } from './data/appData.jsx';
 
 const firebaseServices = (() => {
   try {
@@ -25,7 +24,6 @@ const firebaseServices = (() => {
   return { db: null, auth: null };
 })();
 
-// Error boundary to catch rendering errors
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
