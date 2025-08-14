@@ -1,3 +1,7 @@
+// =================================================================
+// FILE (UPDATE): src/components/modals/JobDetailModal.jsx
+// PURPOSE: A modal to display detailed job info and handle deep linking.
+// =================================================================
 import React, { useEffect } from 'react';
 
 const JobDetailModal = ({ job, onClose }) => {
@@ -23,9 +27,20 @@ const JobDetailModal = ({ job, onClose }) => {
   }, [job, onClose]);
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(window.location.href)
-      .then(() => alert('Link copied to clipboard!'))
-      .catch(() => alert('Failed to copy link.'));
+    // Use the 'copy' command as a fallback for iframe environments
+    const url = window.location.href;
+    const textArea = document.createElement("textarea");
+    textArea.value = url;
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      alert('Link copied to clipboard!');
+    } catch (err) {
+      alert('Failed to copy link.');
+    }
+    document.body.removeChild(textArea);
   };
 
   if (!job) return null;
@@ -49,7 +64,7 @@ const JobDetailModal = ({ job, onClose }) => {
               <p className="text-gray-400">{job.Company} - {job.Location}</p>
             </div>
           </div>
-          <button onClick={onClose} className="text-gray-500 hover:text-white">&times;</button>
+          <button onClick={onClose} className="text-gray-500 hover:text-white text-3xl leading-none">&times;</button>
         </header>
         
         <div className="p-6 overflow-y-auto flex-grow">
