@@ -5,26 +5,30 @@ import { getFirestore, collection, doc, setDoc, onSnapshot } from 'firebase/fire
 
 // Initialize Firebase with global variables provided by the environment
 const initializeFirebase = () => {
+  console.log('DEBUG: Attempting to initialize Firebase...');
   try {
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
     const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
 
     if (Object.keys(firebaseConfig).length > 0) {
       const app = initializeApp(firebaseConfig, appId);
+      console.log('DEBUG: Firebase app initialized successfully.');
       return {
         db: getFirestore(app),
         auth: getAuth(app),
       };
     }
   } catch (e) {
-    console.error("Firebase initialization failed:", e);
+    console.error("DEBUG: Firebase initialization failed with an error.", e);
   }
+  console.log('DEBUG: Firebase services are null or config is empty.');
   return { db: null, auth: null };
 };
 
 const firebaseServices = initializeFirebase();
 
 const MobileNav = ({ currentPage, setCurrentPage }) => {
+  console.log('DEBUG: MobileNav is rendering.');
   const navItems = [
     { name: "Home", icon: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg> },
     { name: "Jobs", icon: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M16 11V7a4 4 0 0 0-8 0v4"/><rect x="5" y="9" width="14" height="14" rx="2" ry="2"/></svg> },
@@ -52,6 +56,7 @@ const MobileNav = ({ currentPage, setCurrentPage }) => {
 
 // Header component for desktop view
 const Header = ({ userId }) => {
+  console.log('DEBUG: Header is rendering.');
   return (
     <header className="bg-black/80 backdrop-blur-sm sticky top-0 z-50 border-b border-gray-800 hidden md:block">
       <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
@@ -141,26 +146,27 @@ const decisionTree = {
 };
 
 const DecisionTreePage = ({ setCurrentPage }) => {
+  console.log('DEBUG: DecisionTreePage is rendering.');
   const [currentQuestionId, setCurrentQuestionId] = useState(null);
   const currentStage = 'stage1'; 
 
-  // Find the first question to display
   const questions = decisionTree[currentStage];
   const currentQuestion = currentQuestionId 
     ? questions.find(q => q.id === currentQuestionId)
     : questions[0];
 
   const handleAnswer = (nextQuestionId) => {
-    // Logic to save the user's answer and move to the next question
+    console.log('DEBUG: User answered. Next question ID:', nextQuestionId);
     if (nextQuestionId) {
       setCurrentQuestionId(nextQuestionId);
     } else {
-      // End of the decision tree for this stage, show results or move to next stage
-      setCurrentPage('results'); // Placeholder for a results page
+      console.log('DEBUG: End of decision tree. Navigating to results page.');
+      setCurrentPage('results');
     }
   };
 
   if (!currentQuestion) {
+    console.log('DEBUG: No current question found. Displaying result loading message.');
     return (
       <div className="min-h-screen dark-theme-bg flex items-center justify-center">
         <p className="text-white text-2xl font-bold">Thank you for your responses! Generating your results...</p>
@@ -185,7 +191,6 @@ const DecisionTreePage = ({ setCurrentPage }) => {
             </button>
           ))}
         </div>
-        {/* Nudge to build trust in the decision tree */}
         <p className="mt-6 text-gray-500 text-sm italic">
           {currentQuestion.insight}
         </p>
@@ -194,33 +199,65 @@ const DecisionTreePage = ({ setCurrentPage }) => {
   );
 };
 
-const HomePage = ({ setCurrentPage, stages }) => {
-  // Mock testimonials
-  const testimonials = [
-    {
-      quote: "Before onestopcareers, I was lost. The decision tree gave me the clarity I needed to pivot my career and find a path I'm truly passionate about. It's a game-changer!",
-      name: "Jane D.",
-      role: "Marketing Manager"
-    },
-    {
-      quote: "The personalized roadmap helped me identify my skill gaps and find the right courses. I felt so much more confident in my job hunt.",
-      name: "Alex P.",
-      role: "Software Engineer"
-    },
-    {
-      quote: "I've tried other platforms, but the integrated approach of onestopcareers is what made the difference. It connected my interests directly to jobs and mentors.",
-      name: "Sam R.",
-      role: "Recent Graduate"
-    }
-  ];
+// Mock testimonials
+const testimonials = [
+  {
+    quote: "Before onestopcareers, I was lost. The decision tree gave me the clarity I needed to pivot my career and find a path I'm truly passionate about. It's a game-changer!",
+    name: "Jane D.",
+    role: "Marketing Manager"
+  },
+  {
+    quote: "The personalized roadmap helped me identify my skill gaps and find the right courses. I felt so much more confident in my job hunt.",
+    name: "Alex P.",
+    role: "Software Engineer"
+  },
+  {
+    quote: "I've tried other platforms, but the integrated approach of onestopcareers is what made the difference. It connected my interests directly to jobs and mentors.",
+    name: "Sam R.",
+    role: "Recent Graduate"
+  }
+];
 
+const stages = [
+  {
+    title: 'Stage 1: Exploration',
+    description: 'Discover your strengths, passions, and potential career paths with our guided decision tree.',
+    icon: (props) => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M18 6a6 6 0 0 0-6-6v6H6a6 6 0 0 0 0 12h12a6 6 0 0 0 0-12h-6"/></svg>
+    ),
+  },
+  {
+    title: 'Stage 2: Upskilling',
+    description: 'Identify skill gaps and find the best courses and resources to advance your knowledge.',
+    icon: (props) => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M12 19V5M5 12h14"/></svg>
+    ),
+  },
+  {
+    title: 'Stage 3: Interview Readiness',
+    description: 'Prepare for interviews with practice questions, tips, and expert advice.',
+    icon: (props) => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h2v2h-2zm0-4h2V7h-2z"/></svg>
+    ),
+  },
+  {
+    title: 'Stage 4: Job Hunt',
+    description: 'Access curated job listings, referral programs, and connect with a mentor for guidance.',
+    icon: (props) => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M16 11V7a4 4 0 0 0-8 0v4"/><rect x="5" y="9" width="14" height="14" rx="2" ry="2"/></svg>
+    ),
+  }
+];
+
+const HomePage = ({ setCurrentPage }) => {
+  console.log('DEBUG: HomePage is rendering.');
   const handleStartJourney = () => {
+    console.log('DEBUG: Start Your Journey button clicked. Setting currentPage to "decisionTree".');
     setCurrentPage('decisionTree');
   };
 
   return (
     <main className="w-full max-w-7xl mx-auto p-4 md:p-8 flex flex-col items-center flex-grow z-10">
-      {/* Hero Section with a focus on trust and clarity */}
       <section className="text-center py-16 md:py-24 max-w-4xl">
         <h2 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold leading-tight text-white drop-shadow-lg">
           <span className="gradient-text">Your Career Struggle</span>
@@ -240,7 +277,6 @@ const HomePage = ({ setCurrentPage, stages }) => {
         </div>
       </section>
 
-      {/* The four career stages with improved dark theme styling */}
       <section className="mt-12 md:mt-16 w-full">
         <h3 className="text-2xl sm:text-3xl font-bold text-center mb-8 md:mb-12 dark-theme-text">
           How It Works
@@ -259,7 +295,7 @@ const HomePage = ({ setCurrentPage, stages }) => {
               </div>
               <p className="text-gray-400">{stage.description}</p>
               <button
-                onClick={() => console.log(`Navigating to ${stage.title}`)}
+                onClick={() => console.log(`DEBUG: Navigating to ${stage.title}`)}
                 className="mt-4 text-gray-200 font-semibold text-sm hover:text-white transition duration-300"
               >
                 Learn More &rarr;
@@ -269,7 +305,6 @@ const HomePage = ({ setCurrentPage, stages }) => {
         </div>
       </section>
 
-      {/* New "Why This Works" Section */}
       <section className="mt-12 md:mt-16 w-full text-center max-w-4xl">
         <h3 className="text-2xl sm:text-3xl font-bold mb-8 dark-theme-text">
           Why This Works
@@ -296,7 +331,6 @@ const HomePage = ({ setCurrentPage, stages }) => {
         </div>
       </section>
       
-      {/* Testimonials Section */}
       <section className="mt-12 md:mt-16 w-full text-center max-w-4xl">
         <h3 className="text-2xl sm:text-3xl font-bold mb-8 dark-theme-text">
           What Our Users Say
@@ -317,16 +351,19 @@ const HomePage = ({ setCurrentPage, stages }) => {
   );
 };
 
+
 // The main App component for our website
 const App = () => {
+  console.log('DEBUG: App component is rendering.');
   const [authReady, setAuthReady] = useState(false);
   const [userId, setUserId] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
   const [currentPage, setCurrentPage] = useState('home');
 
-  // useEffect hook to handle Firebase authentication state changes
   useEffect(() => {
+    console.log('DEBUG: Running authentication effect.');
     if (!firebaseServices.auth) {
+      console.warn("DEBUG: Firebase Auth is not available. Running in local mode.");
       setAuthReady(true);
       return;
     }
@@ -336,15 +373,18 @@ const App = () => {
         const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
         if (token) {
           await signInWithCustomToken(firebaseServices.auth, token);
+          console.log("DEBUG: Signed in with custom token.");
         } else {
           await signInAnonymously(firebaseServices.auth);
+          console.log("DEBUG: Signed in anonymously.");
         }
       } catch (error) {
-        console.error("Firebase authentication failed:", error);
+        console.error("DEBUG: Firebase authentication failed:", error);
       }
     };
 
     const unsubscribe = onAuthStateChanged(firebaseServices.auth, (user) => {
+      console.log('DEBUG: Auth state changed. User:', user ? user.uid : 'none');
       if (user) {
         setUserId(user.uid);
       } else {
@@ -354,28 +394,40 @@ const App = () => {
     });
 
     authenticate();
-    return () => unsubscribe();
+    return () => {
+      console.log('DEBUG: Unsubscribing from auth state changes.');
+      unsubscribe();
+    };
   }, []);
 
-  // useEffect hook to listen for user profile data in Firestore
   useEffect(() => {
+    console.log('DEBUG: Running Firestore effect. userId:', userId);
     if (!userId || !firebaseServices.db) return;
 
     const userProfileRef = doc(firebaseServices.db, 'artifacts', typeof __app_id !== 'undefined' ? __app_id : 'default-app-id', 'users', userId, 'user_data', 'profile');
 
-    const unsubscribe = onSnapshot(userProfileRef, (docSnap) => {
-      if (docSnap.exists()) {
-        setUserProfile(docSnap.data());
-      } else {
-        setDoc(userProfileRef, { createdAt: new Date() }).catch(error => {
-          console.error("Error creating user profile:", error);
-        });
-      }
-    }, (error) => {
-      console.error("Error listening to user profile:", error);
-    });
-
-    return () => unsubscribe();
+    try {
+      const unsubscribe = onSnapshot(userProfileRef, (docSnap) => {
+        console.log('DEBUG: Firestore snapshot received.');
+        if (docSnap.exists()) {
+          console.log('DEBUG: User profile exists.', docSnap.data());
+          setUserProfile(docSnap.data());
+        } else {
+          console.log('DEBUG: User profile does not exist. Creating new profile.');
+          setDoc(userProfileRef, { createdAt: new Date() }).catch(error => {
+            console.error("DEBUG: Error creating user profile:", error);
+          });
+        }
+      }, (error) => {
+        console.error("DEBUG: Error listening to user profile:", error);
+      });
+      return () => {
+        console.log('DEBUG: Unsubscribing from Firestore listener.');
+        unsubscribe();
+      };
+    } catch (error) {
+      console.error("DEBUG: Error setting up Firestore listener:", error);
+    }
   }, [userId]);
 
   const darkThemeStyles = `
@@ -420,41 +472,14 @@ const App = () => {
     }
   `;
 
-  // Define the career stages with titles, descriptions, and inline SVG icons
-  const stages = [
-    {
-      title: 'Stage 1: Exploration',
-      description: 'Discover your strengths, passions, and potential career paths with our guided decision tree.',
-      icon: (props) => (
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M18 6a6 6 0 0 0-6-6v6H6a6 6 0 0 0 0 12h12a6 6 0 0 0 0-12h-6"/></svg>
-      ),
-    },
-    {
-      title: 'Stage 2: Upskilling',
-      description: 'Identify skill gaps and find the best courses and resources to advance your knowledge.',
-      icon: (props) => (
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M12 19V5M5 12h14"/></svg>
-      ),
-    },
-    {
-      title: 'Stage 3: Interview Readiness',
-      description: 'Prepare for interviews with practice questions, tips, and expert advice.',
-      icon: (props) => (
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h2v2h-2zm0-4h2V7h-2z"/></svg>
-      ),
-    },
-    {
-      title: 'Stage 4: Job Hunt',
-      description: 'Access curated job listings, referral programs, and connect with a mentor for guidance.',
-      icon: (props) => (
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M16 11V7a4 4 0 0 0-8 0v4"/><rect x="5" y="9" width="14" height="14" rx="2" ry="2"/></svg>
-      ),
-    }
-  ];
-
   return (
     <div className="min-h-screen dark-theme-bg font-sans antialiased dark-theme-text flex flex-col relative pb-16 md:pb-0">
       <style>{darkThemeStyles}</style>
+
+      {/* Debug Panel at the top */}
+      <div className="fixed top-0 left-0 right-0 bg-red-800 text-white p-2 text-xs z-[100] flex justify-between">
+        <span>DEBUG: authReady={String(authReady)} | userId={userId || 'null'} | currentPage={currentPage}</span>
+      </div>
 
       <div className="particle-container">
         {[...Array(50)].map((_, i) => (
@@ -476,8 +501,7 @@ const App = () => {
       <Header userId={userId} />
       <MobileNav currentPage={currentPage} setCurrentPage={setCurrentPage} />
 
-      {/* Conditional rendering of pages based on currentPage state */}
-      {currentPage === 'home' && <HomePage setCurrentPage={setCurrentPage} stages={stages} />}
+      {currentPage === 'home' && <HomePage setCurrentPage={setCurrentPage} />}
       {currentPage === 'decisionTree' && <DecisionTreePage setCurrentPage={setCurrentPage} />}
 
       <footer className="w-full max-w-7xl mx-auto p-4 text-center text-sm text-gray-500 border-t mt-12 md:mt-24 dark-theme-border z-10">
