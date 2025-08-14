@@ -1,5 +1,19 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import JobCard from '../cards/Jobcard.jsx'; // ✅ import instead of defining inline
+// =================================================================
+// FILE (UPDATE): src/components/pages/JobsPage.jsx
+// PURPOSE: Implement grid layout, new search/filter UI, and modal logic.
+// =================================================================
+import React, { useState, useEffect, useCallback } from 'react';
+import JobCard from '../cards/Jobcard.jsx'; // FIX: Corrected filename case
+import JobDetailModal from '../modals/JobDetailModal.jsx';
+
+const useDebounce = (value, delay) => {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+  useEffect(() => {
+    const handler = setTimeout(() => setDebouncedValue(value), delay);
+    return () => clearTimeout(handler);
+  }, [value, delay]);
+  return debouncedValue;
+};
 
 const JobsPage = () => {
   const [allJobs, setAllJobs] = useState([]);
@@ -10,127 +24,115 @@ const JobsPage = () => {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [jobsPerPage, setJobsPerPage] = useState(10);
+  const [selectedJob, setSelectedJob] = useState(null);
 
-  const observer = useRef();
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
+  const JOBS_PER_PAGE = window.innerWidth < 768 ? 6 : 10;
 
-  // Set initial job count based on screen size
-  useEffect(() => {
-    const getJobsPerPage = () => (window.innerWidth < 768 ? 6 : 10);
-    setJobsPerPage(getJobsPerPage());
-    const handleResize = () => setJobsPerPage(getJobsPerPage());
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+  const fetchJobs = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch('https://ketangoel16-creator.github.io/onestopcareers-data/jobs.json');
+      if (!response.ok) throw new Error('Network response was not ok');
+      const data = await response.json();
+      // Add a unique ID to each job for deep linking
+      const jobsWithIds = data.map((job, index) => ({ ...job, id: index }));
+      setAllJobs(jobsWithIds);
+    } catch (e) {
+      setError('Failed to load job listings. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  // Fetch jobs
   useEffect(() => {
-    const fetchJobs = async () => {
-      try {
-        const res = await fetch('https://ketangoel16-creator.github.io/onestopcareers-data/jobs.json');
-        if (!res.ok) throw new Error('Network response was not ok');
-        const data = await res.json();
-        setAllJobs(data);
-      } catch (e) {
-        setError('Failed to load job listings. Please try again later.');
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchJobs();
-  }, []);
+  }, [fetchJobs]);
 
-  // Filter jobs
   useEffect(() => {
-    const lowerQuery = searchQuery.toLowerCase();
+    const lowercasedQuery = debouncedSearchQuery.toLowerCase();
     const results = allJobs.filter(job =>
-      (job['Job Title'] || '').toLowerCase().includes(lowerQuery) ||
-      (job.Company || '').toLowerCase().includes(lowerQuery) ||
-      (job.Location || '').toLowerCase().includes(lowerQuery)
+      (job['Job Title'] || '').toLowerCase().includes(lowercasedQuery) ||
+      (job.Company || '').toLowerCase().includes(lowercasedQuery) ||
+      (job.Location || '').toLowerCase().includes(lowercasedQuery)
     );
     setFilteredJobs(results);
     setPage(1);
-    setDisplayedJobs(results.slice(0, jobsPerPage));
-    setHasMore(results.length > jobsPerPage);
-  }, [searchQuery, allJobs, jobsPerPage]);
+    setDisplayedJobs(results.slice(0, JOBS_PER_PAGE));
+    setHasMore(results.length > JOBS_PER_PAGE);
+  }, [debouncedSearchQuery, allJobs, JOBS_PER_PAGE]);
 
-  // Infinite scroll
-  const lastJobRef = useCallback(node => {
-    if (loading) return;
-    if (observer.current) observer.current.disconnect();
-    observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && hasMore) setPage(prev => prev + 1);
-    });
-    if (node) observer.current.observe(node);
-  }, [loading, hasMore]);
-
-  // Load more
   useEffect(() => {
     if (page > 1) {
-      const nextJobs = filteredJobs.slice((page - 1) * jobsPerPage, page * jobsPerPage);
-      setDisplayedJobs(prev => [...prev, ...nextJobs]);
-      setHasMore(filteredJobs.length > page * jobsPerPage);
+      const nextPageJobs = filteredJobs.slice((page - 1) * JOBS_PER_PAGE, page * JOBS_PER_PAGE);
+      setDisplayedJobs(prevJobs => [...prevJobs, ...nextPageJobs]);
+      setHasMore(filteredJobs.length > page * JOBS_PER_PAGE);
     }
-  }, [page, filteredJobs, jobsPerPage]);
+  }, [page, filteredJobs, JOBS_PER_PAGE]);
 
-  // Deep link scrolling
+  // Handle opening modal from deep link
   useEffect(() => {
-    if (displayedJobs.length > 0 && window.location.hash) {
-      const id = window.location.hash.substring(1);
-      const element = document.getElementById(id);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        element.style.backgroundColor = '#3a3a3a';
-        setTimeout(() => { element.style.backgroundColor = ''; }, 2000);
+    if (allJobs.length > 0 && window.location.hash) {
+      const jobId = parseInt(window.location.hash.replace('#job-', ''), 10);
+      const job = allJobs.find(j => j.id === jobId);
+      if (job) {
+        setSelectedJob(job);
       }
     }
-  }, [displayedJobs]);
+  }, [allJobs]);
+
+  const handleLoadMore = () => setPage(prevPage => prevPage + 1);
+  const handleOpenModal = (job) => setSelectedJob(job);
+  const handleCloseModal = () => setSelectedJob(null);
 
   return (
-    <div className="w-full max-w-7xl mx-auto p-4 md:p-8 flex-grow z-10">
-      <header className="text-center mb-12">
-        <h1 className="text-4xl sm:text-6xl font-extrabold text-white">
-          Find Your <span className="gradient-text">Next Opportunity</span>
-        </h1>
-        <p className="mt-4 text-lg text-gray-400">
-          Search thousands of jobs from top companies.
-        </p>
-      </header>
+    <>
+      <div className="w-full max-w-7xl mx-auto p-4 md:p-8 flex-grow z-10">
+        <header className="text-center mb-12">
+          <h1 className="text-4xl sm:text-6xl font-extrabold text-white">
+            Find Your <span className="gradient-text">Next Opportunity</span>
+          </h1>
+          <p className="mt-4 text-lg text-gray-400">Search thousands of jobs from top companies.</p>
+        </header>
 
-      <div className="sticky top-20 bg-black/50 backdrop-blur-md p-4 rounded-xl z-20 mb-8">
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={e => setSearchQuery(e.target.value)}
-          placeholder="Search by title, company, or location..."
-          className="w-full p-4 bg-gray-800 text-white rounded-lg border-2 border-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-500"
-        />
-      </div>
+        <div className="sticky top-20 bg-black/50 backdrop-blur-md p-4 rounded-xl z-20 mb-8 flex flex-col sm:flex-row gap-4">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search by title, company..."
+            className="flex-grow p-3 bg-gray-800 text-white rounded-lg border-2 border-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-500"
+          />
+          <button className="bg-gray-700 text-white px-4 py-3 rounded-lg font-semibold hover:bg-gray-600">
+            Filters
+          </button>
+        </div>
 
-      <div className="space-y-6">
         {loading && <p className="text-center text-gray-400">Loading jobs...</p>}
-        {error && <p className="text-center text-red-500">{error}</p>}
-        {!loading && !error && displayedJobs.map((job, index) => {
-          const card = <JobCard job={job} index={index} key={index} />;
-          return (displayedJobs.length === index + 1)
-            ? <div ref={lastJobRef} key={index}>{card}</div>
-            : card;
-        })}
-        {!loading && hasMore && <p className="text-center text-gray-500 py-4">Loading more...</p>}
-        {!loading && !hasMore && displayedJobs.length > 0 && <p className="text-center text-gray-600 py-4">You've reached the end of the list.</p>}
+        {error && <div className="text-center text-red-500"><p>{error}</p><button onClick={fetchJobs} className="mt-4 px-6 py-2 brand-button rounded-lg">Retry</button></div>}
+        
+        {!loading && !error && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+            {displayedJobs.map((job) => (
+              <JobCard job={job} key={job.id} onOpenModal={handleOpenModal} />
+            ))}
+          </div>
+        )}
+
+        {!loading && hasMore && (
+          <div className="text-center mt-12">
+            <button onClick={handleLoadMore} className="px-8 py-3 brand-button font-bold rounded-lg">
+              Load More Jobs
+            </button>
+          </div>
+        )}
+        
         {!loading && displayedJobs.length === 0 && <p className="text-center text-gray-400 py-4">No jobs found. Try a different search.</p>}
       </div>
-
-      <section className="mt-24 text-center p-8 dark-theme-card-bg rounded-xl">
-        <h2 className="text-3xl font-bold text-white">Get a Referral</h2>
-        <p className="mt-4 text-gray-400">
-          Increase your chances of getting hired by getting a referral from an insider.
-        </p>
-        <button className="mt-6 px-8 py-3 brand-button font-bold rounded-lg">
-          Explore Referrals
-        </button>
-      </section>
-    </div>
+      
+      {selectedJob && <JobDetailModal job={selectedJob} onClose={handleCloseModal} />}
+    </>
   );
 };
 
