@@ -1,31 +1,35 @@
 // =================================================================
-// FILE (NEW): src/components/cards/JobCard.jsx
-// PURPOSE: A modular, reusable component for displaying a single job listing.
+// FILE (NEW): src/components/cards/Jobcard.jsx
+// PURPOSE: A redesigned, compact job card for the grid layout.
 // =================================================================
 import React from 'react';
 
-const JobCard = ({ job, index }) => (
-  <div id={`job-${index}`} className="dark-theme-card-bg p-6 rounded-xl dark-theme-border border-2 flex flex-col sm:flex-row items-start gap-6 transition-all duration-300 ease-in-out hover:dark-theme-card-hover">
-    <img 
-      src={job['Company Logo URL']} 
-      alt={`${job.Company || 'Company'} logo`} 
-      className="w-16 h-16 rounded-lg object-contain bg-white flex-shrink-0"
-      onError={(e) => { e.target.onerror = null; e.target.src='https://placehold.co/64x64/ffffff/1a1a1a?text=Logo'; }}
-    />
-    <div className="flex-grow">
-      <h3 className="text-xl font-bold text-white">{job['Job Title'] || 'Job Title Not Available'}</h3>
-      <p className="text-gray-400 mt-1">{job.Company || 'Company Name'} - {job.Location || 'Remote'}</p>
-      <p className="text-gray-500 mt-3 text-sm line-clamp-2">{job.Description || 'No description provided.'}</p>
-    </div>
-    <a 
-      href={job['Link']} 
-      target="_blank" 
-      rel="noopener noreferrer" 
-      className="mt-4 sm:mt-0 px-6 py-2 brand-button font-bold text-sm rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 self-start sm:self-center whitespace-nowrap"
+const JobCard = ({ job, onOpenModal }) => {
+  return (
+    <div 
+      onClick={() => onOpenModal(job)}
+      className="dark-theme-card-bg rounded-xl dark-theme-border border-2 flex flex-col p-4 transition-all duration-300 ease-in-out hover:dark-theme-card-hover cursor-pointer h-full"
     >
-      Apply Now
-    </a>
-  </div>
-);
+      <div className="flex items-start gap-4">
+        <img 
+          src={job['Company Logo URL']} 
+          alt={`${job.Company || 'Company'} logo`} 
+          className="w-12 h-12 rounded-lg object-contain bg-white flex-shrink-0"
+          onError={(e) => { e.target.onerror = null; e.target.src='https://placehold.co/48x48/ffffff/1a1a1a?text=Logo'; }}
+        />
+        <div className="flex-grow">
+          <h3 className="text-md font-bold text-white line-clamp-2">{job['Job Title'] || 'Job Title Not Available'}</h3>
+          <p className="text-sm text-gray-400 mt-1">{job.Company || 'Company Name'}</p>
+        </div>
+      </div>
+      <div className="mt-4 flex-grow">
+        <p className="text-xs text-gray-500 line-clamp-3">{job.Description || 'No description provided.'}</p>
+      </div>
+      <div className="mt-4 pt-4 border-t border-gray-700 w-full">
+        <p className="text-xs text-gray-400 font-semibold">{job.Location || 'Remote'}</p>
+      </div>
+    </div>
+  );
+};
 
 export default JobCard;
