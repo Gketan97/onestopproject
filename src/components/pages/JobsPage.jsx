@@ -6,6 +6,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import JobCard from '../cards/Jobcard.jsx';
 import JobDetailModal from '../modals/JobDetailModal.jsx';
 import ReferralCard from '../cards/ReferralCard.jsx';
+import FilterModal from '../modals/FilterModal.jsx';
 
 const useDebounce = (value, delay) => {
   const [debouncedValue, setDebouncedValue] = useState(value);
@@ -17,7 +18,6 @@ const useDebounce = (value, delay) => {
 };
 
 const JobsPage = () => {
-  // State for Jobs
   const [allJobs, setAllJobs] = useState([]);
   const [filteredJobs, setFilteredJobs] = useState([]);
   const [displayedJobs, setDisplayedJobs] = useState([]);
@@ -25,14 +25,12 @@ const JobsPage = () => {
   const [hasMoreJobs, setHasMoreJobs] = useState(true);
   const [jobSearchQuery, setJobSearchQuery] = useState('');
   const [selectedJob, setSelectedJob] = useState(null);
-
-  // State for Referrals
   const [allReferrals, setAllReferrals] = useState([]);
-  const [filteredReferrals, setFilteredReferrals] = useState([]);
-  
-  // General State
+  const [displayedReferralCount, setDisplayedReferralCount] = useState(10);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [activeFilters, setActiveFilters] = useState({ titles: [] });
 
   const debouncedJobSearchQuery = useDebounce(jobSearchQuery, 300);
   const JOBS_PER_PAGE = window.innerWidth < 768 ? 6 : 10;
@@ -52,8 +50,6 @@ const JobsPage = () => {
       const jobsWithIds = jobsData.map((job, index) => ({ ...job, id: index }));
       setAllJobs(jobsWithIds);
       setAllReferrals(referralsData);
-      setFilteredReferrals(referralsData);
-
     } catch (e) {
       setError('Failed to load data. Please try again.');
     } finally {
@@ -65,21 +61,28 @@ const JobsPage = () => {
     fetchAllData();
   }, [fetchAllData]);
 
-  // Filtering for Jobs
   useEffect(() => {
     const lowercasedQuery = debouncedJobSearchQuery.toLowerCase();
-    const results = allJobs.filter(job =>
-      (job['Job Title'] || '').toLowerCase().includes(lowercasedQuery) ||
-      (job.Company || '').toLowerCase().includes(lowercasedQuery) ||
-      (job.Location || '').toLowerCase().includes(lowercasedQuery)
-    );
+    let results = allJobs;
+
+    if (activeFilters.titles.length > 0) {
+      results = results.filter(job => activeFilters.titles.includes(job['Job Title']));
+    }
+
+    if (lowercasedQuery) {
+      results = results.filter(job =>
+        (job['Job Title'] || '').toLowerCase().includes(lowercasedQuery) ||
+        (job.Company || '').toLowerCase().includes(lowercasedQuery) ||
+        (job.Location || '').toLowerCase().includes(lowercasedQuery)
+      );
+    }
+    
     setFilteredJobs(results);
     setJobPage(1);
     setDisplayedJobs(results.slice(0, JOBS_PER_PAGE));
     setHasMoreJobs(results.length > JOBS_PER_PAGE);
-  }, [debouncedJobSearchQuery, allJobs, JOBS_PER_PAGE]);
+  }, [debouncedJobSearchQuery, allJobs, JOBS_PER_PAGE, activeFilters]);
 
-  // Load more jobs
   useEffect(() => {
     if (jobPage > 1) {
       const nextPageJobs = filteredJobs.slice(0, jobPage * JOBS_PER_PAGE);
@@ -88,7 +91,6 @@ const JobsPage = () => {
     }
   }, [jobPage, filteredJobs, JOBS_PER_PAGE]);
 
-  // Deep linking for Jobs
   useEffect(() => {
     if (allJobs.length > 0 && window.location.hash.startsWith('#job-')) {
       const jobId = parseInt(window.location.hash.replace('#job-', ''), 10);
@@ -100,6 +102,8 @@ const JobsPage = () => {
   const handleLoadMoreJobs = () => setJobPage(prev => prev + 1);
   const handleOpenModal = (job) => setSelectedJob(job);
   const handleCloseModal = () => setSelectedJob(null);
+  const handleApplyFilters = (filters) => setActiveFilters(filters);
+  const handleSeeMoreReferrals = () => setDisplayedReferralCount(prev => prev + 10);
 
   return (
     <>
@@ -117,7 +121,7 @@ const JobsPage = () => {
               placeholder="Search by title, company..."
               className="w-full p-3 pl-4 bg-gray-800 text-white rounded-lg border-2 border-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-500"
             />
-            <button className="p-3 bg-gray-700 text-white rounded-lg hover:bg-gray-600">
+            <button onClick={() => setIsFilterModalOpen(true)} className="p-3 bg-gray-700 text-white rounded-lg hover:bg-gray-600">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><title>Filter Icon</title><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
             </button>
           </div>
@@ -140,20 +144,22 @@ const JobsPage = () => {
         
         {!loading && displayedJobs.length === 0 && <p className="text-center text-gray-400 py-4">No jobs found.</p>}
 
-        {/* Referrals Section */}
         <section className="mt-24">
             <header className="text-center mb-8">
                 <h2 className="text-3xl font-bold text-white">Get a <span className="gradient-text">Referral</span></h2>
                 <p className="mt-2 text-gray-400">Connect with insiders at top companies.</p>
             </header>
-            {/* Desktop View: Grid */}
             <div className="hidden md:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                {filteredReferrals.slice(0, 10).map((ref, i) => <ReferralCard referral={ref} key={i} />)}
+                {allReferrals.slice(0, displayedReferralCount).map((ref, i) => <ReferralCard referral={ref} key={i} />)}
             </div>
-            {/* Mobile View: Carousel */}
+            {allReferrals.length > displayedReferralCount && (
+                <div className="hidden md:flex justify-center mt-12">
+                    <button onClick={handleSeeMoreReferrals} className="px-8 py-3 brand-button font-bold rounded-lg">See More Referrals</button>
+                </div>
+            )}
             <div className="md:hidden relative">
                 <div className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide py-4 -mx-4 px-4">
-                    {filteredReferrals.map((ref, i) => (
+                    {allReferrals.map((ref, i) => (
                         <div key={i} className="snap-start flex-shrink-0 w-3/4 sm:w-1/2 pr-4">
                             <ReferralCard referral={ref} />
                         </div>
@@ -161,10 +167,15 @@ const JobsPage = () => {
                 </div>
             </div>
         </section>
-
       </div>
       
       {selectedJob && <JobDetailModal job={selectedJob} onClose={handleCloseModal} />}
+      <FilterModal 
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
+        allJobs={allJobs}
+        onApplyFilters={handleApplyFilters}
+      />
     </>
   );
 };
