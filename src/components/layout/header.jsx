@@ -35,4 +35,3 @@ const Header = ({ userId }) => {
 };
 
 export default Header;
-
