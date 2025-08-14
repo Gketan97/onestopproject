@@ -27,4 +27,3 @@ const MobileNav = ({ currentPage, setCurrentPage }) => {
 };
 
 export default MobileNav;
-
