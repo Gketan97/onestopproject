@@ -1,5 +1,6 @@
 // =================================================================
-// FILE: src/components/pages/JobsPage.jsx
+// FILE (UPDATE): src/components/pages/JobsPage.jsx
+// PURPOSE: Implement a new, sleek, sticky search bar for a better mobile UX.
 // =================================================================
 import React, { useState, useEffect, useCallback } from 'react';
 import JobCard from '../cards/Jobcard.jsx';
@@ -121,26 +122,27 @@ const JobsPage = () => {
   return (
     <>
       <div className="w-full max-w-7xl mx-auto p-4 md:p-8 flex-grow z-10">
-        <header className="text-center mb-8">
+        <header className="text-center mb-8 pt-16 md:pt-0">
           <h1 className="text-4xl font-extrabold text-white">Job <span className="gradient-text">Opportunities</span></h1>
         </header>
 
-        <div className="sticky top-4 md:top-20 bg-black/50 backdrop-blur-md p-2 rounded-xl z-20 mb-4">
-          <div className="relative flex items-center gap-2">
+        <div className="sticky top-16 md:top-20 bg-[#1a1a1a] py-4 z-20 mb-4 -mx-4 px-4 border-b border-gray-800">
+          <div className="relative max-w-7xl mx-auto">
             <input
               type="text"
               value={jobSearchQuery}
               onChange={(e) => setJobSearchQuery(e.target.value)}
               placeholder="Search by title, company..."
-              className="w-full p-3 pl-4 bg-gray-800 text-white rounded-lg border-2 border-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="w-full p-3 pl-4 pr-12 bg-gray-800 text-white rounded-lg border-2 border-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-500"
             />
-            <button onClick={() => setIsFilterModalOpen(true)} className="p-3 bg-gray-700 text-white rounded-lg hover:bg-gray-600">
+            <button onClick={() => setIsFilterModalOpen(true)} className="absolute inset-y-0 right-0 flex items-center justify-center px-4 text-gray-400 hover:text-white">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><title>Filter Icon</title><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
             </button>
           </div>
         </div>
         
-        <div className="text-center p-4 mb-8 bg-green-900/50 border border-green-700 rounded-lg">
+        <div className="text-center p-4 mb-8 bg-green-900/50 border border-green-700 rounded-lg flex items-center justify-center gap-3">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 48 48" fill="#25D366" className="w-6 h-6"><path d="M38.6 24.4q0-2.9-1.2-5.5t-3.2-4.3-4.3-3.2-5.5-1.2q-2.1 0-4 .6t-3.6 1.7l-7 2.1-2.2 6.9 2.2-1.4q-1.4 2-2.1 4.2t-.7 4.5q0 2.9 1.2 5.5t3.2 4.3 4.3 3.2 5.5 1.2 5.5-1.2 4.3-3.2 3.2-4.3 1.2-5.5zm-14.7 11.4q-1.4 0-2.8-.5t-2.5-1.4-2-2-1.4-2.5-.5-2.8.5-2.8 1.4-2.5 2-2 2.5-1.4 2.8-.5 2.8.5 2.5 1.4 2 2 1.4 2.5.5 2.8q0 1.4-.5 2.8t-1.4 2.5-2 2-2.5 1.4-2.8.5zm6.6-3.3l-2.4-4.1q-.3-.5-.8-.5h-4.9q-.5 0-.8.5l-2.4 4.1q-.3.5.1.9.3.4.8.4h9.8q.5 0 .8-.4.4-.4.1-.9z"/></svg>
             <a href="https://chat.whatsapp.com/your-channel-link" target="_blank" rel="noopener noreferrer" className="font-semibold text-green-300 hover:text-green-200">
                 Join our 40k+ member WhatsApp channel for instant job updates! &rarr;
             </a>
