@@ -1,3 +1,7 @@
+// =================================================================
+// FILE (UPDATE): src/components/pages/JobsPage.jsx
+// PURPOSE: Implement a new, sleek, sticky search bar and prevent background scroll.
+// =================================================================
 import React, { useState, useEffect, useCallback } from 'react';
 import JobCard from '../cards/Jobcard.jsx';
 import JobDetailModal from '../modals/JobDetailModal.jsx';
