@@ -1,7 +1,3 @@
-// =================================================================
-// FILE (UPDATE): src/components/layout/Header.jsx
-// PURPOSE: To integrate the new "Focus Point" logo.
-// =================================================================
 import React from 'react';
 import { Link } from 'react-router-dom';
 
@@ -31,5 +27,3 @@ const Header = () => {
     </header>
   );
 };
-
-export default Header;
