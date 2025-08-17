@@ -1,6 +1,5 @@
 // =================================================================
-// FILE (NEW): src/components/modals/FilterModal.jsx
-// PURPOSE: A modal for applying job filters.
+// FILE: src/components/modals/FilterModal.jsx
 // =================================================================
 import React, { useState, useMemo } from 'react';
 
