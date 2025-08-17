@@ -1,6 +1,5 @@
 // =================================================================
-// FILE (UPDATE): src/components/pages/JobsPage.jsx
-// PURPOSE: Implement referrals section, smart filters, and improved UX.
+// FILE: src/components/pages/JobsPage.jsx
 // =================================================================
 import React, { useState, useEffect, useCallback } from 'react';
 import JobCard from '../cards/Jobcard.jsx';
@@ -85,23 +84,37 @@ const JobsPage = () => {
 
   useEffect(() => {
     if (jobPage > 1) {
-      const nextPageJobs = filteredJobs.slice(0, jobPage * JOBS_PER_PAGE);
-      setDisplayedJobs(nextPageJobs);
-      setHasMoreJobs(filteredJobs.length > jobPage * JOBS_PER_PAGE);
+      const newJobs = filteredJobs.slice(0, jobPage * JOBS_PER_PAGE);
+      setDisplayedJobs(newJobs);
+      setHasMoreJobs(filteredJobs.length > newJobs.length);
     }
   }, [jobPage, filteredJobs, JOBS_PER_PAGE]);
+  
+  const handleOpenModal = (job) => {
+    setSelectedJob(job);
+    window.location.hash = `job-${job.id}`;
+  };
+
+  const handleCloseModal = () => {
+    setSelectedJob(null);
+    if (window.history.pushState) {
+      window.history.pushState("", document.title, window.location.pathname + window.location.search);
+    } else {
+      window.location.hash = '';
+    }
+  };
 
   useEffect(() => {
     if (allJobs.length > 0 && window.location.hash.startsWith('#job-')) {
       const jobId = parseInt(window.location.hash.replace('#job-', ''), 10);
       const job = allJobs.find(j => j.id === jobId);
-      if (job) setSelectedJob(job);
+      if (job) {
+        handleOpenModal(job);
+      }
     }
   }, [allJobs]);
 
   const handleLoadMoreJobs = () => setJobPage(prev => prev + 1);
-  const handleOpenModal = (job) => setSelectedJob(job);
-  const handleCloseModal = () => setSelectedJob(null);
   const handleApplyFilters = (filters) => setActiveFilters(filters);
   const handleSeeMoreReferrals = () => setDisplayedReferralCount(prev => prev + 10);
 
@@ -112,7 +125,7 @@ const JobsPage = () => {
           <h1 className="text-4xl font-extrabold text-white">Job <span className="gradient-text">Opportunities</span></h1>
         </header>
 
-        <div className="sticky top-4 md:top-20 bg-black/50 backdrop-blur-md p-2 rounded-xl z-20 mb-8">
+        <div className="sticky top-4 md:top-20 bg-black/50 backdrop-blur-md p-2 rounded-xl z-20 mb-4">
           <div className="relative flex items-center gap-2">
             <input
               type="text"
@@ -125,6 +138,12 @@ const JobsPage = () => {
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><title>Filter Icon</title><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
             </button>
           </div>
+        </div>
+        
+        <div className="text-center p-4 mb-8 bg-green-900/50 border border-green-700 rounded-lg">
+            <a href="https://chat.whatsapp.com/your-channel-link" target="_blank" rel="noopener noreferrer" className="font-semibold text-green-300 hover:text-green-200">
+                Join our 40k+ member WhatsApp channel for instant job updates! &rarr;
+            </a>
         </div>
 
         {loading && <p className="text-center text-gray-400">Loading...</p>}
@@ -165,6 +184,11 @@ const JobsPage = () => {
                         </div>
                     ))}
                 </div>
+            </div>
+             <div className="mt-12 text-center p-6 bg-gray-800/50 rounded-lg border border-gray-700">
+                <h3 className="font-bold text-white text-lg">Want to refer candidates?</h3>
+                <p className="text-gray-400 text-sm mt-2">Join our platform to help others in the community and build your network.</p>
+                <button className="mt-4 px-6 py-2 brand-button text-sm font-bold rounded-lg">Become a Referrer</button>
             </div>
         </section>
       </div>
