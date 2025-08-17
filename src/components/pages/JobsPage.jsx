@@ -1,5 +1,5 @@
 // src/pages/JobsPage.jsx
-// Final audited version by Gemini, with fixes for referral search and modal opacity.
+// Final audited version by Gemini, with a definitive fix for the referral search/filter logic.
 
 import React, { useState, useEffect, useMemo } from 'react';
 
@@ -37,6 +37,7 @@ const JobsPage = () => {
   const [activeJobFilters, setActiveJobFilters] = useState({ titles: [] });
   const [activeReferralFilters, setActiveReferralFilters] = useState({ companies: [], roles: [] });
   const [currentPage, setCurrentPage] = useState(1);
+  const [highlightedJobId, setHighlightedJobId] = useState(null);
 
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
@@ -58,7 +59,8 @@ const JobsPage = () => {
       return results;
     } else { // Referrals
       let results = allReferrals;
-      // REFERRAL SEARCH FIX: Apply filters first
+      
+      // REFERRAL SEARCH & FILTER FIX: Apply filters first
       if (activeReferralFilters.companies.length > 0) {
         results = results.filter(ref => activeReferralFilters.companies.includes(ref.Company));
       }
@@ -66,7 +68,7 @@ const JobsPage = () => {
         results = results.filter(ref => activeReferralFilters.roles.includes(ref.Role));
       }
       
-      // REFERRAL SEARCH FIX: Then apply search to the already-filtered list
+      // REFERRAL SEARCH & FILTER FIX: Then apply search to the already-filtered list
       if (lowercasedQuery) {
         results = results.filter(ref => 
           (ref.Company || '').toLowerCase().includes(lowercasedQuery) ||
@@ -106,8 +108,17 @@ const JobsPage = () => {
   useEffect(() => {
     if (allJobs.length > 0 && window.location.hash.startsWith('#job-')) {
       const jobId = parseInt(window.location.hash.replace('#job-', ''), 10);
-      const job = allJobs.find(j => j.id === jobId);
-      if (job) handleOpenModal(job);
+      const jobToHighlight = allJobs.find(j => j.id === jobId);
+      if (jobToHighlight) {
+        const cardElement = document.getElementById(`job-card-${jobId}`);
+        if (cardElement) {
+          setTimeout(() => {
+            cardElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            setHighlightedJobId(jobId);
+            setTimeout(() => setHighlightedJobId(null), 3000);
+          }, 100);
+        }
+      }
     }
   }, [allJobs]);
 
@@ -140,7 +151,11 @@ const JobsPage = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
           {currentData.map((job, index) => (
             <React.Fragment key={job.id}>
-              <JobCard job={job} onOpenModal={handleOpenModal} />
+              <JobCard 
+                job={job} 
+                onOpenModal={handleOpenModal} 
+                isHighlighted={job.id === highlightedJobId}
+              />
               {(index + 1) % 5 === 0 && <WhatsAppCalloutCard />}
             </React.Fragment>
           ))}
@@ -159,7 +174,7 @@ const JobsPage = () => {
 
   return (
     <>
-      <div className="w-full max-w-7xl mx-auto p-4 md-p-8 flex-grow z-10">
+      <div className="w-full max-w-7xl mx-auto p-4 md:p-8 flex-grow z-10">
         <SearchAndTabs
           activeTab={activeTab}
           onTabClick={setActiveTab}
