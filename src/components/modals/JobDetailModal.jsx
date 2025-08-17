@@ -50,7 +50,11 @@ const JobDetailModal = ({ job, onClose }) => {
 
   return (
     <>
-      <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4" onClick={onClose}>
+      {/* Solid black backdrop (no cluttered background) */}
+      <div 
+        className="fixed inset-0 bg-black flex items-center justify-center z-50 p-4"
+        onClick={onClose}
+      >
         <div 
           className="dark-theme-card-bg rounded-xl dark-theme-border border-2 w-full max-w-2xl max-h-[90vh] flex flex-col animate-slide-up"
           onClick={(e) => e.stopPropagation()}
@@ -61,28 +65,44 @@ const JobDetailModal = ({ job, onClose }) => {
                 src={job['Company Logo URL']} 
                 alt={`${job.Company} logo`} 
                 className="w-16 h-16 rounded-lg object-contain bg-white p-1"
-                onError={(e) => { e.target.onerror = null; e.target.src='https://placehold.co/64x64/ffffff/1a1a1a?text=Logo'; }}
+                onError={(e) => { 
+                  e.target.onerror = null; 
+                  e.target.src='https://placehold.co/64x64/ffffff/1a1a1a?text=Logo'; 
+                }}
               />
               <div>
                 <h2 className="text-2xl font-bold text-white">{job['Job Title']}</h2>
                 <p className="text-gray-400">{job.Company} - {job.Location}</p>
               </div>
             </div>
-            <button onClick={onClose} className="text-gray-500 hover:text-white text-3xl leading-none">&times;</button>
+            <button 
+              onClick={onClose} 
+              className="text-gray-500 hover:text-white text-3xl leading-none"
+            >
+              &times;
+            </button>
           </header>
           
           <div className="p-6 overflow-y-auto flex-grow">
             <h3 className="font-bold text-white mb-2">Job Description</h3>
-            <p className="text-gray-400 whitespace-pre-wrap">{job.Description}</p>
+            <p className="text-gray-400 whitespace-pre-wrap">{job['Job Description'] || job.Description}</p>
           </div>
 
           <footer className="p-6 border-t border-gray-700 flex flex-col sm:flex-row justify-between items-center gap-4">
             <div className="flex flex-col sm:flex-row items-center gap-4">
-               <a href="https://chat.whatsapp.com/your-channel-link" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-green-400 hover:text-green-300">
-                  <MessageSquare size={16} />
-                  Get Job Updates
-               </a>
-              <button onClick={handleCopyLink} className="flex items-center gap-2 text-sm text-gray-400 hover:text-white">
+              <a 
+                href="https://chat.whatsapp.com/your-channel-link" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="flex items-center gap-2 text-sm text-green-400 hover:text-green-300"
+              >
+                <MessageSquare size={16} />
+                Get Job Updates
+              </a>
+              <button 
+                onClick={handleCopyLink} 
+                className="flex items-center gap-2 text-sm text-gray-400 hover:text-white"
+              >
                 <Copy size={16} />
                 Copy Share Link
               </button>
