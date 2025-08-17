@@ -1,3 +1,7 @@
+// =================================================================
+// FILE (UPDATE): src/components/layout/Header.jsx
+// PURPOSE: To integrate the new "Focus Point" logo.
+// =================================================================
 import React from 'react';
 import { Link } from 'react-router-dom';
 
@@ -6,17 +10,10 @@ const Header = () => {
     <header className="bg-black/80 backdrop-blur-sm sticky top-0 z-50 border-b border-gray-800 hidden md:block">
       <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-3">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect width="24" height="24" rx="8" fill="#27272A"/>
-            <defs>
-              <linearGradient id="brandGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style={{stopColor:"#F97316",stopOpacity:1}}/>
-                <stop offset="100%" style={{stopColor:"#FB923C",stopOpacity:1}}/>
-              </linearGradient>
-            </defs>
-            <path d="M9 20C9 17.5 10 15.5 12.5 14C15 12.5 16 15 16 16.5C16 18 14 19 13 21C12 23 14 25 16.5 25.5" stroke="#666" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M16.5 25.5C19 26 22 24 24 22L31 15" stroke="url(#brandGradient)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M26 15L31 15L31 20" stroke="url(#brandGradient)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="40" height="40" rx="12" fill="#18181B"/>
+            <circle cx="20" cy="20" r="12" stroke="#F97316" strokeOpacity="0.3" strokeWidth="3"/>
+            <circle cx="20" cy="20" r="5" fill="#F97316"/>
           </svg>
           <span className="text-2xl font-extrabold text-white">
             <span className="font-bold">OneStop</span><span className="font-medium text-gray-300">Careers</span>
