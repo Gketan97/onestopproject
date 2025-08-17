@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 const MobileHeader = () => {
   return (
-    <header className="md:hidden bg-gray-900/80 backdrop-blur-sm sticky top-0 z-40 p-4">
+    <header className="md:hidden bg-gray-900/80 backdrop-blur-sm sticky top-0 z-40 p-4 border-b border-gray-800">
       <div className="flex items-center gap-3">
         <Link to="/" className="flex items-center gap-3">
           <svg width="32" height="32" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
