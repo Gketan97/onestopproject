@@ -1,12 +1,14 @@
 // =================================================================
-// FILE (UPDATE): src/components/pages/JobsPage.jsx
-// PURPOSE: Implement a new, sleek, sticky search bar and prevent background scroll.
+// FILE (UPDATE): src/pages/JobsPage.jsx
+// PURPOSE: Remove community tab and add WhatsApp callout card.
 // =================================================================
 import React, { useState, useEffect, useCallback } from 'react';
 import JobCard from '../cards/Jobcard.jsx';
 import JobDetailModal from '../modals/JobDetailModal.jsx';
 import ReferralCard from '../cards/ReferralCard.jsx';
 import FilterModal from '../modals/FilterModal.jsx';
+// Import the new callout card
+import WhatsAppCalloutCard from '../cards/WhatsAppCalloutCard.jsx'; 
 
 const useDebounce = (value, delay) => {
   const [debouncedValue, setDebouncedValue] = useState(value);
@@ -135,7 +137,7 @@ const JobsPage = () => {
 
   const TabButton = ({ tabName, label }) => (
     <button
-      onClick={() => tabName.startsWith('http') ? window.open(tabName, '_blank') : setActiveTab(tabName)}
+      onClick={() => setActiveTab(tabName)}
       className={`px-4 py-2 text-sm font-semibold rounded-md transition-colors ${activeTab === tabName ? 'bg-orange-500 text-white' : 'text-gray-400 hover:bg-gray-700'}`}
     >
       {label}
@@ -161,7 +163,7 @@ const JobsPage = () => {
           <div className="max-w-7xl mx-auto flex items-center justify-center gap-4 mt-4">
             <TabButton tabName="jobs" label="Jobs" />
             <TabButton tabName="referrals" label="Referrals" />
-            <TabButton tabName="https://chat.whatsapp.com/your-channel-link" label="Community" />
+            {/* REMOVED: Community TabButton */}
           </div>
         </div>
         
@@ -171,7 +173,13 @@ const JobsPage = () => {
         {!loading && !error && activeTab === 'jobs' && (
           <div className="mt-8">
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-              {displayedJobs.map((job) => <JobCard job={job} key={job.id} onOpenModal={handleOpenModal} />)}
+              {/* UPDATED: Logic to display callout card */}
+              {displayedJobs.map((job, index) => (
+                <React.Fragment key={job.id}>
+                  <JobCard job={job} onOpenModal={handleOpenModal} />
+                  {(index + 1) % 5 === 0 && <WhatsAppCalloutCard />}
+                </React.Fragment>
+              ))}
             </div>
             {hasMoreJobs && (
               <div className="text-center mt-12">
