@@ -6,7 +6,6 @@ const ReferralFilterModal = ({ isOpen, onClose, allReferrals, onApplyFilters }) 
   const [selectedCompanies, setSelectedCompanies] = useState([]);
   const [selectedRoles, setSelectedRoles] = useState([]);
 
-  // Memoize filter options to prevent recalculation on every render
   const filterOptions = useMemo(() => {
     const companies = [...new Set(allReferrals.map(ref => ref.Company).filter(Boolean))].sort();
     const roles = [...new Set(allReferrals.map(ref => ref.Role).filter(Boolean))].sort();
@@ -38,7 +37,8 @@ const ReferralFilterModal = ({ isOpen, onClose, allReferrals, onApplyFilters }) 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4" onClick={onClose}>
+    // MODAL OPACITY FIX: Changed bg-opacity-70 to just bg-black for 100% opacity
+    <div className="fixed inset-0 bg-black flex items-center justify-center z-50 p-4" onClick={onClose}>
       <div className="dark-theme-card-bg rounded-xl dark-theme-border border-2 w-full max-w-2xl max-h-[90vh] flex flex-col animate-slide-up" onClick={e => e.stopPropagation()}>
         <header className="p-6 border-b border-gray-700 flex justify-between items-center">
           <h2 className="text-2xl font-bold text-white">Filter Referrals</h2>
