@@ -1,5 +1,5 @@
 // src/pages/JobsPage.jsx
-// Final audited version by Gemini, your AI engineering assistant.
+// Final audited version by Gemini, now with referral filtering.
 
 import React, { useState, useEffect, useMemo } from 'react';
 
@@ -12,9 +12,9 @@ import JobCard from '../cards/Jobcard.jsx';
 import ReferralCard from '../cards/ReferralCard.jsx';
 import JobDetailModal from '../modals/JobDetailModal.jsx';
 import FilterModal from '../modals/FilterModal.jsx';
+import ReferralFilterModal from '../modals/ReferralFilterModal.jsx'; // Import new modal
 import WhatsAppCalloutCard from '../cards/WhatsAppCalloutCard.jsx';
 
-// A simple debounce hook to prevent excessive re-renders on search input
 const useDebounce = (value, delay) => {
   const [debouncedValue, setDebouncedValue] = useState(value);
   useEffect(() => {
@@ -24,31 +24,32 @@ const useDebounce = (value, delay) => {
   return debouncedValue;
 };
 
-// Constant for items per page, responsive to screen size
 const ITEMS_PER_PAGE = window.innerWidth < 768 ? 6 : 10;
 
 const JobsPage = () => {
-  // Centralized data fetching logic
   const { allJobs, allReferrals, loading, error, fetchAllData } = useDataFetching();
   
-  // State management for UI and user interactions
   const [activeTab, setActiveTab] = useState('jobs');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedJob, setSelectedJob] = useState(null);
-  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-  const [activeFilters, setActiveFilters] = useState({ titles: [] });
+  const [isJobFilterModalOpen, setIsJobFilterModalOpen] = useState(false);
+  const [isReferralFilterModalOpen, setIsReferralFilterModalOpen] = useState(false); // New state for referral modal
+  const [activeJobFilters, setActiveJobFilters] = useState({ titles: [] });
+  const [activeReferralFilters, setActiveReferralFilters] = useState({ companies: [], roles: [] }); // New state for referral filters
   const [currentPage, setCurrentPage] = useState(1);
 
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
-  // Memoized filtering for performance. This only recalculates when dependencies change.
   const filteredData = useMemo(() => {
     const lowercasedQuery = debouncedSearchQuery.toLowerCase();
+    
     if (activeTab === 'jobs') {
       let results = allJobs;
-      if (activeFilters.titles.length > 0) {
-        results = results.filter(job => activeFilters.titles.includes(job['Job Title']));
+      // Apply job filters
+      if (activeJobFilters.titles.length > 0) {
+        results = results.filter(job => activeJobFilters.titles.includes(job['Job Title']));
       }
+      // Apply search query
       if (lowercasedQuery) {
         results = results.filter(job =>
           (job['Job Title'] || '').toLowerCase().includes(lowercasedQuery) ||
@@ -58,29 +59,37 @@ const JobsPage = () => {
       }
       return results;
     } else { // Referrals
-      if (!lowercasedQuery) return allReferrals;
-      return allReferrals.filter(ref => 
-        (ref.Company || '').toLowerCase().includes(lowercasedQuery) ||
-        (ref.Role || '').toLowerCase().includes(lowercasedQuery) ||
-        (ref.Location || '').toLowerCase().includes(lowercasedQuery) ||
-        (ref['Referrer Name'] || '').toLowerCase().includes(lowercasedQuery)
-      );
+      let results = allReferrals;
+      // Apply referral filters
+      if (activeReferralFilters.companies.length > 0) {
+        results = results.filter(ref => activeReferralFilters.companies.includes(ref.Company));
+      }
+      if (activeReferralFilters.roles.length > 0) {
+        results = results.filter(ref => activeReferralFilters.roles.includes(ref.Role));
+      }
+      // Apply search query
+      if (lowercasedQuery) {
+        results = results.filter(ref => 
+          (ref.Company || '').toLowerCase().includes(lowercasedQuery) ||
+          (ref.Role || '').toLowerCase().includes(lowercasedQuery) ||
+          (ref.Location || '').toLowerCase().includes(lowercasedQuery) ||
+          (ref['Referrer Name'] || '').toLowerCase().includes(lowercasedQuery)
+        );
+      }
+      return results;
     }
-  }, [debouncedSearchQuery, activeTab, allJobs, allReferrals, activeFilters]);
+  }, [debouncedSearchQuery, activeTab, allJobs, allReferrals, activeJobFilters, activeReferralFilters]);
   
-  // Reset pagination when filters or tabs change to ensure fresh results
   useEffect(() => {
     setCurrentPage(1);
-  }, [activeTab, debouncedSearchQuery, activeFilters]);
+  }, [activeTab, debouncedSearchQuery, activeJobFilters, activeReferralFilters]);
 
-  // Derive the currently visible data from the filtered results and pagination
   const currentData = useMemo(() => {
     return filteredData.slice(0, currentPage * ITEMS_PER_PAGE);
   }, [currentPage, filteredData]);
 
   const hasMoreData = currentData.length < filteredData.length;
 
-  // Handlers for opening and closing the job detail modal, including URL hash management
   const handleOpenModal = (job) => {
     setSelectedJob(job);
     window.location.hash = `job-${job.id}`;
@@ -95,7 +104,6 @@ const JobsPage = () => {
     }
   };
 
-  // Effect to open modal if a job ID is present in the URL on page load
   useEffect(() => {
     if (allJobs.length > 0 && window.location.hash.startsWith('#job-')) {
       const jobId = parseInt(window.location.hash.replace('#job-', ''), 10);
@@ -104,24 +112,30 @@ const JobsPage = () => {
     }
   }, [allJobs]);
 
-  // Definitive fix for preventing background scroll when any modal is open
   useEffect(() => {
     const body = document.body;
     const originalStyle = window.getComputedStyle(body).overflow;
-    if (selectedJob || isFilterModalOpen) {
+    // Lock scroll if ANY modal is open
+    if (selectedJob || isJobFilterModalOpen || isReferralFilterModalOpen) {
       body.style.overflow = 'hidden';
     } else {
       body.style.overflow = originalStyle;
     }
-    // Cleanup function to restore scroll on component unmount or modal close
     return () => { body.style.overflow = originalStyle; };
-  }, [selectedJob, isFilterModalOpen]);
+  }, [selectedJob, isJobFilterModalOpen, isReferralFilterModalOpen]);
 
-  // Centralized rendering logic for the main content area
+  const handleFilterClick = () => {
+    if (activeTab === 'jobs') {
+      setIsJobFilterModalOpen(true);
+    } else {
+      setIsReferralFilterModalOpen(true);
+    }
+  };
+
   const renderContent = () => {
     if (loading) return <p className="text-center text-gray-400 mt-8">Loading...</p>;
     if (error) return <div className="text-center text-red-500 mt-8"><p>{error}</p><button onClick={fetchAllData} className="mt-4 px-6 py-2 brand-button rounded-lg">Retry</button></div>;
-    if (currentData.length === 0) return <p className="text-center text-gray-400 py-4 mt-8">No results found for your search.</p>;
+    if (currentData.length === 0) return <p className="text-center text-gray-400 py-4 mt-8">No results found.</p>;
 
     if (activeTab === 'jobs') {
       return (
@@ -153,7 +167,7 @@ const JobsPage = () => {
           onTabClick={setActiveTab}
           searchQuery={searchQuery}
           onSearchChange={(e) => setSearchQuery(e.target.value)}
-          onFilterClick={() => setIsFilterModalOpen(true)}
+          onFilterClick={handleFilterClick}
         />
         
         <div className="mt-8">
@@ -178,10 +192,16 @@ const JobsPage = () => {
       
       {selectedJob && <JobDetailModal job={selectedJob} onClose={handleCloseModal} />}
       <FilterModal 
-        isOpen={isFilterModalOpen}
-        onClose={() => setIsFilterModalOpen(false)}
+        isOpen={isJobFilterModalOpen}
+        onClose={() => setIsJobFilterModalOpen(false)}
         allJobs={allJobs}
-        onApplyFilters={setActiveFilters}
+        onApplyFilters={setActiveJobFilters}
+      />
+      <ReferralFilterModal
+        isOpen={isReferralFilterModalOpen}
+        onClose={() => setIsReferralFilterModalOpen(false)}
+        allReferrals={allReferrals}
+        onApplyFilters={setActiveReferralFilters}
       />
     </>
   );
