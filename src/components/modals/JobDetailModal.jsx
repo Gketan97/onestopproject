@@ -1,33 +1,15 @@
-// =================================================================
-// FILE (UPDATE): src/components/modals/JobDetailModal.jsx
-// PURPOSE: A modal to display detailed job info and handle deep linking.
-// =================================================================
 import React, { useEffect } from 'react';
 
 const JobDetailModal = ({ job, onClose }) => {
-  // Handle deep linking and escape key press
   useEffect(() => {
     const handleEsc = (event) => {
       if (event.keyCode === 27) onClose();
     };
     window.addEventListener('keydown', handleEsc);
-    
-    // Update URL hash for deep linking
-    window.location.hash = `job-${job.id}`;
-
-    return () => {
-      window.removeEventListener('keydown', handleEsc);
-      // Clear hash on close
-      if (window.history.pushState) {
-        window.history.pushState("", document.title, window.location.pathname + window.location.search);
-      } else {
-        window.location.hash = '';
-      }
-    };
-  }, [job, onClose]);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [onClose]);
 
   const handleCopyLink = () => {
-    // Use the 'copy' command as a fallback for iframe environments
     const url = window.location.href;
     const textArea = document.createElement("textarea");
     textArea.value = url;
@@ -49,7 +31,7 @@ const JobDetailModal = ({ job, onClose }) => {
     <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4" onClick={onClose}>
       <div 
         className="dark-theme-card-bg rounded-xl dark-theme-border border-2 w-full max-w-2xl max-h-[90vh] flex flex-col"
-        onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside
+        onClick={(e) => e.stopPropagation()}
       >
         <header className="p-6 border-b border-gray-700 flex justify-between items-start">
           <div className="flex items-start gap-4">
@@ -73,9 +55,13 @@ const JobDetailModal = ({ job, onClose }) => {
         </div>
 
         <footer className="p-6 border-t border-gray-700 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <button onClick={handleCopyLink} className="text-sm text-gray-400 hover:text-white">
-            Copy Share Link
-          </button>
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+             <a href="https://chat.whatsapp.com/your-channel-link" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-green-400 hover:text-green-300">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                Get Job Updates
+            </a>
+            <button onClick={handleCopyLink} className="text-sm text-gray-400 hover:text-white">Copy Share Link</button>
+          </div>
           <a 
             href={job['Link']} 
             target="_blank" 
