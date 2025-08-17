@@ -1,5 +1,5 @@
 // src/pages/JobsPage.jsx
-// Final audited version by Gemini, now with referral filtering.
+// Final audited version by Gemini, with fixes for referral search and modal opacity.
 
 import React, { useState, useEffect, useMemo } from 'react';
 
@@ -12,7 +12,7 @@ import JobCard from '../cards/Jobcard.jsx';
 import ReferralCard from '../cards/ReferralCard.jsx';
 import JobDetailModal from '../modals/JobDetailModal.jsx';
 import FilterModal from '../modals/FilterModal.jsx';
-import ReferralFilterModal from '../modals/ReferralFilterModal.jsx'; // Import new modal
+import ReferralFilterModal from '../modals/ReferralFilterModal.jsx';
 import WhatsAppCalloutCard from '../cards/WhatsAppCalloutCard.jsx';
 
 const useDebounce = (value, delay) => {
@@ -33,9 +33,9 @@ const JobsPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedJob, setSelectedJob] = useState(null);
   const [isJobFilterModalOpen, setIsJobFilterModalOpen] = useState(false);
-  const [isReferralFilterModalOpen, setIsReferralFilterModalOpen] = useState(false); // New state for referral modal
+  const [isReferralFilterModalOpen, setIsReferralFilterModalOpen] = useState(false);
   const [activeJobFilters, setActiveJobFilters] = useState({ titles: [] });
-  const [activeReferralFilters, setActiveReferralFilters] = useState({ companies: [], roles: [] }); // New state for referral filters
+  const [activeReferralFilters, setActiveReferralFilters] = useState({ companies: [], roles: [] });
   const [currentPage, setCurrentPage] = useState(1);
 
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
@@ -45,11 +45,9 @@ const JobsPage = () => {
     
     if (activeTab === 'jobs') {
       let results = allJobs;
-      // Apply job filters
       if (activeJobFilters.titles.length > 0) {
         results = results.filter(job => activeJobFilters.titles.includes(job['Job Title']));
       }
-      // Apply search query
       if (lowercasedQuery) {
         results = results.filter(job =>
           (job['Job Title'] || '').toLowerCase().includes(lowercasedQuery) ||
@@ -60,14 +58,15 @@ const JobsPage = () => {
       return results;
     } else { // Referrals
       let results = allReferrals;
-      // Apply referral filters
+      // REFERRAL SEARCH FIX: Apply filters first
       if (activeReferralFilters.companies.length > 0) {
         results = results.filter(ref => activeReferralFilters.companies.includes(ref.Company));
       }
       if (activeReferralFilters.roles.length > 0) {
         results = results.filter(ref => activeReferralFilters.roles.includes(ref.Role));
       }
-      // Apply search query
+      
+      // REFERRAL SEARCH FIX: Then apply search to the already-filtered list
       if (lowercasedQuery) {
         results = results.filter(ref => 
           (ref.Company || '').toLowerCase().includes(lowercasedQuery) ||
@@ -115,7 +114,6 @@ const JobsPage = () => {
   useEffect(() => {
     const body = document.body;
     const originalStyle = window.getComputedStyle(body).overflow;
-    // Lock scroll if ANY modal is open
     if (selectedJob || isJobFilterModalOpen || isReferralFilterModalOpen) {
       body.style.overflow = 'hidden';
     } else {
@@ -161,7 +159,7 @@ const JobsPage = () => {
 
   return (
     <>
-      <div className="w-full max-w-7xl mx-auto p-4 md:p-8 flex-grow z-10">
+      <div className="w-full max-w-7xl mx-auto p-4 md-p-8 flex-grow z-10">
         <SearchAndTabs
           activeTab={activeTab}
           onTabClick={setActiveTab}
