@@ -1,5 +1,5 @@
 // src/pages/JobsPage.jsx
-// Final audited version by Gemini, with a definitive fix for the referral search/filter logic.
+// Final audited version by Gemini, implementing the "Scroll & Highlight" deep-link experience.
 
 import React, { useState, useEffect, useMemo } from 'react';
 
@@ -59,16 +59,12 @@ const JobsPage = () => {
       return results;
     } else { // Referrals
       let results = allReferrals;
-      
-      // REFERRAL SEARCH & FILTER FIX: Apply filters first
       if (activeReferralFilters.companies.length > 0) {
         results = results.filter(ref => activeReferralFilters.companies.includes(ref.Company));
       }
       if (activeReferralFilters.roles.length > 0) {
         results = results.filter(ref => activeReferralFilters.roles.includes(ref.Role));
       }
-      
-      // REFERRAL SEARCH & FILTER FIX: Then apply search to the already-filtered list
       if (lowercasedQuery) {
         results = results.filter(ref => 
           (ref.Company || '').toLowerCase().includes(lowercasedQuery) ||
@@ -105,22 +101,32 @@ const JobsPage = () => {
     }
   };
 
+  // DEEP-LINKING UX FIX: This now correctly handles pagination, scrolling, and highlighting.
   useEffect(() => {
+    // Ensure data is loaded and there's a hash in the URL
     if (allJobs.length > 0 && window.location.hash.startsWith('#job-')) {
       const jobId = parseInt(window.location.hash.replace('#job-', ''), 10);
-      const jobToHighlight = allJobs.find(j => j.id === jobId);
-      if (jobToHighlight) {
-        const cardElement = document.getElementById(`job-card-${jobId}`);
-        if (cardElement) {
-          setTimeout(() => {
+      // Find the job's index in the currently filtered list
+      const jobIndex = filteredData.findIndex(j => j.id === jobId);
+
+      if (jobIndex !== -1) {
+        // Calculate the page the job is on
+        const pageOfJob = Math.floor(jobIndex / ITEMS_PER_PAGE) + 1;
+        setCurrentPage(pageOfJob);
+        
+        // Use a timeout to ensure the DOM has updated with the new page's items
+        setTimeout(() => {
+          const cardElement = document.getElementById(`job-card-${jobId}`);
+          if (cardElement) {
             cardElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
             setHighlightedJobId(jobId);
+            // Remove the highlight after a few seconds for better UX
             setTimeout(() => setHighlightedJobId(null), 3000);
-          }, 100);
-        }
+          }
+        }, 100);
       }
     }
-  }, [allJobs]);
+  }, [allJobs, filteredData]); // Rerun if filteredData changes to handle deep-linking within filtered views
 
   useEffect(() => {
     const body = document.body;
