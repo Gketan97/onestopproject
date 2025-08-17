@@ -115,15 +115,17 @@ const JobsPage = () => {
     }
   }, [allJobs]);
   
-  // Prevent background scroll when modal is open
+  // Prevent background scroll when modal is open using a more robust class-based approach
   useEffect(() => {
+    const body = document.body;
     if (selectedJob || isFilterModalOpen) {
-      document.body.style.overflow = 'hidden';
+      body.classList.add('overflow-hidden');
     } else {
-      document.body.style.overflow = 'auto';
+      body.classList.remove('overflow-hidden');
     }
+    // Cleanup function to remove the class when the component unmounts
     return () => {
-      document.body.style.overflow = 'auto'; // Cleanup on unmount
+      body.classList.remove('overflow-hidden');
     };
   }, [selectedJob, isFilterModalOpen]);
 
