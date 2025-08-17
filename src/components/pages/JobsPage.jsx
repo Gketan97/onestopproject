@@ -1,4 +1,5 @@
 // src/pages/JobsPage.jsx
+// Final audited version by Gemini, your AI engineering assistant.
 
 import React, { useState, useEffect, useMemo } from 'react';
 
@@ -13,6 +14,7 @@ import JobDetailModal from '../modals/JobDetailModal.jsx';
 import FilterModal from '../modals/FilterModal.jsx';
 import WhatsAppCalloutCard from '../cards/WhatsAppCalloutCard.jsx';
 
+// A simple debounce hook to prevent excessive re-renders on search input
 const useDebounce = (value, delay) => {
   const [debouncedValue, setDebouncedValue] = useState(value);
   useEffect(() => {
@@ -22,11 +24,14 @@ const useDebounce = (value, delay) => {
   return debouncedValue;
 };
 
+// Constant for items per page, responsive to screen size
 const ITEMS_PER_PAGE = window.innerWidth < 768 ? 6 : 10;
 
 const JobsPage = () => {
+  // Centralized data fetching logic
   const { allJobs, allReferrals, loading, error, fetchAllData } = useDataFetching();
   
+  // State management for UI and user interactions
   const [activeTab, setActiveTab] = useState('jobs');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedJob, setSelectedJob] = useState(null);
@@ -36,6 +41,7 @@ const JobsPage = () => {
 
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
+  // Memoized filtering for performance. This only recalculates when dependencies change.
   const filteredData = useMemo(() => {
     const lowercasedQuery = debouncedSearchQuery.toLowerCase();
     if (activeTab === 'jobs') {
@@ -62,16 +68,19 @@ const JobsPage = () => {
     }
   }, [debouncedSearchQuery, activeTab, allJobs, allReferrals, activeFilters]);
   
+  // Reset pagination when filters or tabs change to ensure fresh results
   useEffect(() => {
     setCurrentPage(1);
   }, [activeTab, debouncedSearchQuery, activeFilters]);
 
+  // Derive the currently visible data from the filtered results and pagination
   const currentData = useMemo(() => {
     return filteredData.slice(0, currentPage * ITEMS_PER_PAGE);
-  }, [currentPage, filteredData, ITEMS_PER_PAGE]);
+  }, [currentPage, filteredData]);
 
   const hasMoreData = currentData.length < filteredData.length;
 
+  // Handlers for opening and closing the job detail modal, including URL hash management
   const handleOpenModal = (job) => {
     setSelectedJob(job);
     window.location.hash = `job-${job.id}`;
@@ -86,6 +95,7 @@ const JobsPage = () => {
     }
   };
 
+  // Effect to open modal if a job ID is present in the URL on page load
   useEffect(() => {
     if (allJobs.length > 0 && window.location.hash.startsWith('#job-')) {
       const jobId = parseInt(window.location.hash.replace('#job-', ''), 10);
@@ -94,6 +104,7 @@ const JobsPage = () => {
     }
   }, [allJobs]);
 
+  // Definitive fix for preventing background scroll when any modal is open
   useEffect(() => {
     const body = document.body;
     const originalStyle = window.getComputedStyle(body).overflow;
@@ -102,9 +113,11 @@ const JobsPage = () => {
     } else {
       body.style.overflow = originalStyle;
     }
+    // Cleanup function to restore scroll on component unmount or modal close
     return () => { body.style.overflow = originalStyle; };
   }, [selectedJob, isFilterModalOpen]);
 
+  // Centralized rendering logic for the main content area
   const renderContent = () => {
     if (loading) return <p className="text-center text-gray-400 mt-8">Loading...</p>;
     if (error) return <div className="text-center text-red-500 mt-8"><p>{error}</p><button onClick={fetchAllData} className="mt-4 px-6 py-2 brand-button rounded-lg">Retry</button></div>;
