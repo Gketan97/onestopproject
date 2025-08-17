@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 
 // Hooks
-import { useDataFetching } from '../hooks/useDataFetching';
+import { useDataFetching } from '../../hooks/useDataFetching';
 
 // Components
 import SearchAndTabs from '../layout/SearchAndTabs';
