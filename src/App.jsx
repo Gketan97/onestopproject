@@ -1,7 +1,3 @@
-// =================================================================
-// FILE (UPDATE): src/App.jsx
-// PURPOSE: To add the new MobileHeader component.
-// =================================================================
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { initializeApp } from 'firebase/app';
