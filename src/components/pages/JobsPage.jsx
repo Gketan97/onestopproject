@@ -1,14 +1,17 @@
-// =================================================================
-// FILE (UPDATE): src/pages/JobsPage.jsx
-// PURPOSE: Remove community tab and add WhatsApp callout card.
-// =================================================================
-import React, { useState, useEffect, useCallback } from 'react';
+// src/pages/JobsPage.jsx
+
+import React, { useState, useEffect, useMemo } from 'react';
+
+// Hooks
+import { useDataFetching } from '../hooks/useDataFetching';
+
+// Components
+import SearchAndTabs from '../layout/SearchAndTabs';
 import JobCard from '../cards/Jobcard.jsx';
-import JobDetailModal from '../modals/JobDetailModal.jsx';
 import ReferralCard from '../cards/ReferralCard.jsx';
+import JobDetailModal from '../modals/JobDetailModal.jsx';
 import FilterModal from '../modals/FilterModal.jsx';
-// Import the new callout card
-import WhatsAppCalloutCard from '../cards/WhatsAppCalloutCard.jsx'; 
+import WhatsAppCalloutCard from '../cards/WhatsAppCalloutCard.jsx';
 
 const useDebounce = (value, delay) => {
   const [debouncedValue, setDebouncedValue] = useState(value);
@@ -19,81 +22,56 @@ const useDebounce = (value, delay) => {
   return debouncedValue;
 };
 
+const ITEMS_PER_PAGE = window.innerWidth < 768 ? 6 : 10;
+
 const JobsPage = () => {
-  const [allJobs, setAllJobs] = useState([]);
-  const [filteredJobs, setFilteredJobs] = useState([]);
-  const [displayedJobs, setDisplayedJobs] = useState([]);
-  const [jobPage, setJobPage] = useState(1);
-  const [hasMoreJobs, setHasMoreJobs] = useState(true);
-  const [jobSearchQuery, setJobSearchQuery] = useState('');
+  const { allJobs, allReferrals, loading, error, fetchAllData } = useDataFetching();
+  
+  const [activeTab, setActiveTab] = useState('jobs');
+  const [searchQuery, setSearchQuery] = useState('');
   const [selectedJob, setSelectedJob] = useState(null);
-  const [allReferrals, setAllReferrals] = useState([]);
-  const [displayedReferralCount, setDisplayedReferralCount] = useState(10);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [activeFilters, setActiveFilters] = useState({ titles: [] });
-  const [activeTab, setActiveTab] = useState('jobs');
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const debouncedJobSearchQuery = useDebounce(jobSearchQuery, 300);
-  const JOBS_PER_PAGE = window.innerWidth < 768 ? 6 : 10;
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
-  const fetchAllData = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const [jobsRes, referralsRes] = await Promise.all([
-        fetch('https://ketangoel16-creator.github.io/onestopcareers-data/jobs.json'),
-        fetch('https://ketangoel16-creator.github.io/onestopcareers-data/referrals.json')
-      ]);
-      if (!jobsRes.ok || !referralsRes.ok) throw new Error('Network response was not ok');
-      const jobsData = await jobsRes.json();
-      const referralsData = await referralsRes.json();
-      
-      const jobsWithIds = jobsData.map((job, index) => ({ ...job, id: index }));
-      setAllJobs(jobsWithIds);
-      setAllReferrals(referralsData);
-    } catch (e) {
-      setError('Failed to load data. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchAllData();
-  }, [fetchAllData]);
-
-  useEffect(() => {
-    const lowercasedQuery = debouncedJobSearchQuery.toLowerCase();
-    let results = allJobs;
-
-    if (activeFilters.titles.length > 0) {
-      results = results.filter(job => activeFilters.titles.includes(job['Job Title']));
-    }
-
-    if (lowercasedQuery) {
-      results = results.filter(job =>
-        (job['Job Title'] || '').toLowerCase().includes(lowercasedQuery) ||
-        (job.Company || '').toLowerCase().includes(lowercasedQuery) ||
-        (job.Location || '').toLowerCase().includes(lowercasedQuery)
+  const filteredData = useMemo(() => {
+    const lowercasedQuery = debouncedSearchQuery.toLowerCase();
+    if (activeTab === 'jobs') {
+      let results = allJobs;
+      if (activeFilters.titles.length > 0) {
+        results = results.filter(job => activeFilters.titles.includes(job['Job Title']));
+      }
+      if (lowercasedQuery) {
+        results = results.filter(job =>
+          (job['Job Title'] || '').toLowerCase().includes(lowercasedQuery) ||
+          (job.Company || '').toLowerCase().includes(lowercasedQuery) ||
+          (job.Location || '').toLowerCase().includes(lowercasedQuery)
+        );
+      }
+      return results;
+    } else { // Referrals
+      if (!lowercasedQuery) return allReferrals;
+      return allReferrals.filter(ref => 
+        (ref.Company || '').toLowerCase().includes(lowercasedQuery) ||
+        (ref.Role || '').toLowerCase().includes(lowercasedQuery) ||
+        (ref.Location || '').toLowerCase().includes(lowercasedQuery) ||
+        (ref['Referrer Name'] || '').toLowerCase().includes(lowercasedQuery)
       );
     }
-    
-    setFilteredJobs(results);
-    setJobPage(1);
-    setDisplayedJobs(results.slice(0, JOBS_PER_PAGE));
-    setHasMoreJobs(results.length > JOBS_PER_PAGE);
-  }, [debouncedJobSearchQuery, allJobs, JOBS_PER_PAGE, activeFilters]);
-
-  useEffect(() => {
-    if (jobPage > 1) {
-      const newJobs = filteredJobs.slice(0, jobPage * JOBS_PER_PAGE);
-      setDisplayedJobs(newJobs);
-      setHasMoreJobs(filteredJobs.length > newJobs.length);
-    }
-  }, [jobPage, filteredJobs, JOBS_PER_PAGE]);
+  }, [debouncedSearchQuery, activeTab, allJobs, allReferrals, activeFilters]);
   
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab, debouncedSearchQuery, activeFilters]);
+
+  const currentData = useMemo(() => {
+    return filteredData.slice(0, currentPage * ITEMS_PER_PAGE);
+  }, [currentPage, filteredData, ITEMS_PER_PAGE]);
+
+  const hasMoreData = currentData.length < filteredData.length;
+
   const handleOpenModal = (job) => {
     setSelectedJob(job);
     window.location.hash = `job-${job.id}`;
@@ -112,100 +90,76 @@ const JobsPage = () => {
     if (allJobs.length > 0 && window.location.hash.startsWith('#job-')) {
       const jobId = parseInt(window.location.hash.replace('#job-', ''), 10);
       const job = allJobs.find(j => j.id === jobId);
-      if (job) {
-        handleOpenModal(job);
-      }
+      if (job) handleOpenModal(job);
     }
   }, [allJobs]);
-  
-  // Prevent background scroll when modal is open
+
   useEffect(() => {
     const body = document.body;
+    const originalStyle = window.getComputedStyle(body).overflow;
     if (selectedJob || isFilterModalOpen) {
-      body.classList.add('modal-open');
+      body.style.overflow = 'hidden';
     } else {
-      body.classList.remove('modal-open');
+      body.style.overflow = originalStyle;
     }
-    return () => {
-      body.classList.remove('modal-open');
-    };
+    return () => { body.style.overflow = originalStyle; };
   }, [selectedJob, isFilterModalOpen]);
 
-  const handleLoadMoreJobs = () => setJobPage(prev => prev + 1);
-  const handleApplyFilters = (filters) => setActiveFilters(filters);
-  const handleSeeMoreReferrals = () => setDisplayedReferralCount(prev => prev + 10);
+  const renderContent = () => {
+    if (loading) return <p className="text-center text-gray-400 mt-8">Loading...</p>;
+    if (error) return <div className="text-center text-red-500 mt-8"><p>{error}</p><button onClick={fetchAllData} className="mt-4 px-6 py-2 brand-button rounded-lg">Retry</button></div>;
+    if (currentData.length === 0) return <p className="text-center text-gray-400 py-4 mt-8">No results found for your search.</p>;
 
-  const TabButton = ({ tabName, label }) => (
-    <button
-      onClick={() => setActiveTab(tabName)}
-      className={`px-4 py-2 text-sm font-semibold rounded-md transition-colors ${activeTab === tabName ? 'bg-orange-500 text-white' : 'text-gray-400 hover:bg-gray-700'}`}
-    >
-      {label}
-    </button>
-  );
+    if (activeTab === 'jobs') {
+      return (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+          {currentData.map((job, index) => (
+            <React.Fragment key={job.id}>
+              <JobCard job={job} onOpenModal={handleOpenModal} />
+              {(index + 1) % 5 === 0 && <WhatsAppCalloutCard />}
+            </React.Fragment>
+          ))}
+        </div>
+      );
+    }
+
+    if (activeTab === 'referrals') {
+      return (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+          {currentData.map((ref, i) => <ReferralCard referral={ref} key={i} />)}
+        </div>
+      );
+    }
+  };
 
   return (
     <>
       <div className="w-full max-w-7xl mx-auto p-4 md:p-8 flex-grow z-10">
-        <div className="sticky top-0 md:top-20 bg-[#1a1a1a] py-4 z-20 -mx-4 px-4 border-b border-gray-800">
-          <div className="relative max-w-7xl mx-auto">
-            <input
-              type="text"
-              value={jobSearchQuery}
-              onChange={(e) => setJobSearchQuery(e.target.value)}
-              placeholder="Search by title, company..."
-              className="w-full p-3 pl-4 pr-12 bg-gray-800 text-white rounded-lg border-2 border-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-500"
-            />
-            <button onClick={() => setIsFilterModalOpen(true)} className="absolute inset-y-0 right-0 flex items-center justify-center px-4 text-gray-400 hover:text-white">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><title>Filter Icon</title><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-            </button>
-          </div>
-          <div className="max-w-7xl mx-auto flex items-center justify-center gap-4 mt-4">
-            <TabButton tabName="jobs" label="Jobs" />
-            <TabButton tabName="referrals" label="Referrals" />
-            {/* REMOVED: Community TabButton */}
-          </div>
+        <SearchAndTabs
+          activeTab={activeTab}
+          onTabClick={setActiveTab}
+          searchQuery={searchQuery}
+          onSearchChange={(e) => setSearchQuery(e.target.value)}
+          onFilterClick={() => setIsFilterModalOpen(true)}
+        />
+        
+        <div className="mt-8">
+          {renderContent()}
+          {hasMoreData && (
+            <div className="text-center mt-12">
+              <button onClick={() => setCurrentPage(p => p + 1)} className="px-8 py-3 brand-button font-bold rounded-lg">
+                Load More {activeTab === 'jobs' ? 'Jobs' : 'Referrals'}
+              </button>
+            </div>
+          )}
         </div>
-        
-        {loading && <p className="text-center text-gray-400 mt-8">Loading...</p>}
-        {error && <div className="text-center text-red-500 mt-8"><p>{error}</p><button onClick={fetchAllData} className="mt-4 px-6 py-2 brand-button rounded-lg">Retry</button></div>}
-        
-        {!loading && !error && activeTab === 'jobs' && (
-          <div className="mt-8">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-              {/* UPDATED: Logic to display callout card */}
-              {displayedJobs.map((job, index) => (
-                <React.Fragment key={job.id}>
-                  <JobCard job={job} onOpenModal={handleOpenModal} />
-                  {(index + 1) % 5 === 0 && <WhatsAppCalloutCard />}
-                </React.Fragment>
-              ))}
-            </div>
-            {hasMoreJobs && (
-              <div className="text-center mt-12">
-                <button onClick={handleLoadMoreJobs} className="px-8 py-3 brand-button font-bold rounded-lg">Load More Jobs</button>
-              </div>
-            )}
-            {displayedJobs.length === 0 && <p className="text-center text-gray-400 py-4">No jobs found.</p>}
-          </div>
-        )}
 
-        {!loading && !error && activeTab === 'referrals' && (
-          <div className="mt-8">
-             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                {allReferrals.slice(0, displayedReferralCount).map((ref, i) => <ReferralCard referral={ref} key={i} />)}
-            </div>
-            {allReferrals.length > displayedReferralCount && (
-                <div className="text-center mt-12">
-                    <button onClick={handleSeeMoreReferrals} className="px-8 py-3 brand-button font-bold rounded-lg">See More Referrals</button>
-                </div>
-            )}
-             <div className="mt-12 text-center p-6 bg-gray-800/50 rounded-lg border border-gray-700">
+        {activeTab === 'referrals' && !loading && !error && (
+            <div className="mt-12 text-center p-6 bg-gray-800/50 rounded-lg border border-gray-700">
                 <h3 className="font-bold text-white text-lg">Want to refer candidates?</h3>
                 <p className="text-gray-400 text-sm mt-2">Join our platform to help others in the community and build your network.</p>
                 <button className="mt-4 px-6 py-2 brand-button text-sm font-bold rounded-lg">Become a Referrer</button>
             </div>
-          </div>
         )}
       </div>
       
@@ -214,7 +168,7 @@ const JobsPage = () => {
         isOpen={isFilterModalOpen}
         onClose={() => setIsFilterModalOpen(false)}
         allJobs={allJobs}
-        onApplyFilters={handleApplyFilters}
+        onApplyFilters={setActiveFilters}
       />
     </>
   );
