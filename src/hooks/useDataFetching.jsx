@@ -1,4 +1,4 @@
-// src/hooks/useDataFetching.js
+// src/hooks/useDataFetching.jsx
 
 import { useState, useEffect, useCallback } from 'react';
 
@@ -47,3 +47,4 @@ export const useDataFetching = () => {
   }, [fetchAllData]);
 
   return { allJobs, allReferrals, loading, error, fetchAllData };
+};
