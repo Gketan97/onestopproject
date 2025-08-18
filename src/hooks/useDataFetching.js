@@ -24,8 +24,17 @@ export const useDataFetching = () => {
       // Assign stable IDs during the initial fetch for reliable keys
       const jobsWithIds = jobsData.map((job, index) => ({ ...job, id: index }));
       
+      // Normalize referrals into consistent shape
+      const referralsWithIds = referralsData.map((ref, index) => ({
+        id: index,
+        name: ref.Name || '',
+        designation: ref.Designation || '',
+        company: ref['Company name'] || '',
+        link: ref.Link || ''
+      }));
+      
       setAllJobs(jobsWithIds);
-      setAllReferrals(referralsData);
+      setAllReferrals(referralsWithIds);
     } catch (e) {
       setError('Failed to load data. Please try again.');
     } finally {
