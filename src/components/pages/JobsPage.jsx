@@ -1,5 +1,5 @@
 // src/pages/JobsPage.jsx
-// Final audited version by Gemini, implementing the "Scroll & Highlight" deep-link experience.
+// Final audited version with normalized referrals (Option 2)
 
 import React, { useState, useEffect, useMemo } from 'react';
 
@@ -60,17 +60,16 @@ const JobsPage = () => {
     } else { // Referrals
       let results = allReferrals;
       if (activeReferralFilters.companies.length > 0) {
-        results = results.filter(ref => activeReferralFilters.companies.includes(ref.Company));
+        results = results.filter(ref => activeReferralFilters.companies.includes(ref.company));
       }
       if (activeReferralFilters.roles.length > 0) {
-        results = results.filter(ref => activeReferralFilters.roles.includes(ref.Role));
+        results = results.filter(ref => activeReferralFilters.roles.includes(ref.designation));
       }
       if (lowercasedQuery) {
         results = results.filter(ref => 
-          (ref.Company || '').toLowerCase().includes(lowercasedQuery) ||
-          (ref.Role || '').toLowerCase().includes(lowercasedQuery) ||
-          (ref.Location || '').toLowerCase().includes(lowercasedQuery) ||
-          (ref['Referrer Name'] || '').toLowerCase().includes(lowercasedQuery)
+          ref.name.toLowerCase().includes(lowercasedQuery) ||
+          ref.designation.toLowerCase().includes(lowercasedQuery) ||
+          ref.company.toLowerCase().includes(lowercasedQuery)
         );
       }
       return results;
@@ -101,33 +100,29 @@ const JobsPage = () => {
     }
   };
 
-  // DEEP-LINKING UX FIX: This now correctly handles pagination, scrolling, and highlighting.
+  // Deep-linking UX: scroll & highlight
   useEffect(() => {
-    // Ensure data is loaded and there's a hash in the URL
     if (allJobs.length > 0 && window.location.hash.startsWith('#job-')) {
       const jobId = parseInt(window.location.hash.replace('#job-', ''), 10);
-      // Find the job's index in the currently filtered list
       const jobIndex = filteredData.findIndex(j => j.id === jobId);
 
       if (jobIndex !== -1) {
-        // Calculate the page the job is on
         const pageOfJob = Math.floor(jobIndex / ITEMS_PER_PAGE) + 1;
         setCurrentPage(pageOfJob);
         
-        // Use a timeout to ensure the DOM has updated with the new page's items
         setTimeout(() => {
           const cardElement = document.getElementById(`job-card-${jobId}`);
           if (cardElement) {
             cardElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
             setHighlightedJobId(jobId);
-            // Remove the highlight after a few seconds for better UX
             setTimeout(() => setHighlightedJobId(null), 3000);
           }
         }, 100);
       }
     }
-  }, [allJobs, filteredData]); // Rerun if filteredData changes to handle deep-linking within filtered views
+  }, [allJobs, filteredData]);
 
+  // Prevent background scroll when modals are open
   useEffect(() => {
     const body = document.body;
     const originalStyle = window.getComputedStyle(body).overflow;
@@ -149,7 +144,14 @@ const JobsPage = () => {
 
   const renderContent = () => {
     if (loading) return <p className="text-center text-gray-400 mt-8">Loading...</p>;
-    if (error) return <div className="text-center text-red-500 mt-8"><p>{error}</p><button onClick={fetchAllData} className="mt-4 px-6 py-2 brand-button rounded-lg">Retry</button></div>;
+    if (error) return (
+      <div className="text-center text-red-500 mt-8">
+        <p>{error}</p>
+        <button onClick={fetchAllData} className="mt-4 px-6 py-2 brand-button rounded-lg">
+          Retry
+        </button>
+      </div>
+    );
     if (currentData.length === 0) return <p className="text-center text-gray-400 py-4 mt-8">No results found.</p>;
 
     if (activeTab === 'jobs') {
@@ -172,7 +174,9 @@ const JobsPage = () => {
     if (activeTab === 'referrals') {
       return (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-          {currentData.map((ref, i) => <ReferralCard referral={ref} key={i} />)}
+          {currentData.map(ref => (
+            <ReferralCard referral={ref} key={ref.id} />
+          ))}
         </div>
       );
     }
@@ -193,7 +197,10 @@ const JobsPage = () => {
           {renderContent()}
           {hasMoreData && (
             <div className="text-center mt-12">
-              <button onClick={() => setCurrentPage(p => p + 1)} className="px-8 py-3 brand-button font-bold rounded-lg">
+              <button 
+                onClick={() => setCurrentPage(p => p + 1)} 
+                className="px-8 py-3 brand-button font-bold rounded-lg"
+              >
                 Load More {activeTab === 'jobs' ? 'Jobs' : 'Referrals'}
               </button>
             </div>
@@ -201,11 +208,15 @@ const JobsPage = () => {
         </div>
 
         {activeTab === 'referrals' && !loading && !error && (
-            <div className="mt-12 text-center p-6 bg-gray-800/50 rounded-lg border border-gray-700">
-                <h3 className="font-bold text-white text-lg">Want to refer candidates?</h3>
-                <p className="text-gray-400 text-sm mt-2">Join our platform to help others in the community and build your network.</p>
-                <button className="mt-4 px-6 py-2 brand-button text-sm font-bold rounded-lg">Become a Referrer</button>
-            </div>
+          <div className="mt-12 text-center p-6 bg-gray-800/50 rounded-lg border border-gray-700">
+            <h3 className="font-bold text-white text-lg">Want to refer candidates?</h3>
+            <p className="text-gray-400 text-sm mt-2">
+              Join our platform to help others in the community and build your network.
+            </p>
+            <button className="mt-4 px-6 py-2 brand-button text-sm font-bold rounded-lg">
+              Become a Referrer
+            </button>
+          </div>
         )}
       </div>
       
