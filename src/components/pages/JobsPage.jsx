@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { useDataFetching } from "@/hooks/useDataFetching.js";
+import { useDataFetching } from "@/hooks/useDataFetching.jsx";
 
 import SearchAndTabs from "@/components/layout/SearchAndTabs";
 import JobCard from "@/components/cards/Jobcard.jsx";
