@@ -1,18 +1,18 @@
 // src/pages/JobsPage.jsx
 
 import React, { useState, useEffect, useMemo } from 'react';
-// CORRECTED: Using absolute path alias for robustness
+// Using absolute path alias for robustness
 import { useDataFetching } from '@/hooks/useDataFetching.jsx';
 
 // Components
-// CORRECTED: All paths now use the '@/' alias
+// All paths now use the '@/' alias, which is the correct, final version
 import SearchAndTabs from '@/components/layout/SearchAndTabs';
 import JobCard from '@/components/cards/Jobcard.jsx';
 import ReferralCard from '@/components/cards/ReferralCard.jsx';
 import JobDetailModal from '@/components/modals/JobDetailModal.jsx';
 import FilterModal from '@/components/modals/FilterModal.jsx';
 import ReferralFilterModal from '@/components/modals/ReferralFilterModal.jsx';
-import WhatsAppCalloutBar from '@/components/layout/WhatsAppCalloutBar.jsx';
+// import WhatsAppCalloutBar from '@/components/layout/WhatsAppCalloutBar.jsx'; // Temporarily removed for debugging
 
 const useDebounce = (value, delay) => {
   const [debouncedValue, setDebouncedValue] = useState(value);
@@ -179,7 +179,7 @@ const JobsPage = () => {
           onFilterClick={handleFilterClick}
         />
         
-        <WhatsAppCalloutBar />
+        {/* <WhatsAppCalloutBar /> */} {/* Temporarily removed for debugging */}
 
         <div className="mt-8">
           {renderContent()}
