@@ -1,7 +1,8 @@
 // src/pages/JobsPage.jsx
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { useDataFetching } from '../../hooks/useDataFetching';
+// CORRECTED: Import path now uses the .jsx extension
+import { useDataFetching } from '../../hooks/useDataFetching.jsx';
 
 // Components
 import SearchAndTabs from '../layout/SearchAndTabs';
@@ -10,7 +11,7 @@ import ReferralCard from '../cards/ReferralCard.jsx';
 import JobDetailModal from '../modals/JobDetailModal.jsx';
 import FilterModal from '../modals/FilterModal.jsx';
 import ReferralFilterModal from '../modals/ReferralFilterModal.jsx';
-import WhatsAppCalloutBar from '../layout/WhatsAppCalloutBar.jsx'; // New component
+import WhatsAppCalloutBar from '../layout/WhatsAppCalloutBar.jsx';
 
 const useDebounce = (value, delay) => {
   const [debouncedValue, setDebouncedValue] = useState(value);
@@ -177,7 +178,6 @@ const JobsPage = () => {
           onFilterClick={handleFilterClick}
         />
         
-        {/* NEW: Permanent WhatsApp callout bar */}
         <WhatsAppCalloutBar />
 
         <div className="mt-8">
