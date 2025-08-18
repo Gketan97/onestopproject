@@ -21,16 +21,16 @@ export const useDataFetching = () => {
       const jobsData = await jobsRes.json();
       const referralsData = await referralsRes.json();
       
-      // Assign stable IDs during the initial fetch for reliable keys
+      // Assign stable IDs to jobs
       const jobsWithIds = jobsData.map((job, index) => ({ ...job, id: index }));
       
-      // Normalize referrals into consistent shape
+      // Normalize referrals into a consistent shape for all components
       const referralsWithIds = referralsData.map((ref, index) => ({
         id: index,
-        name: ref.Name || '',
-        designation: ref.Designation || '',
-        company: ref['Company name'] || '',
-        link: ref.Link || ''
+        'Referrer Name': ref.Name || '',
+        Role: ref.Designation || '',
+        Company: ref['Company name'] || '',
+        Link: ref.Link || ''
       }));
       
       setAllJobs(jobsWithIds);
@@ -47,4 +47,3 @@ export const useDataFetching = () => {
   }, [fetchAllData]);
 
   return { allJobs, allReferrals, loading, error, fetchAllData };
-};
