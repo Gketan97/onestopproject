@@ -1,6 +1,6 @@
-// src/hooks/useDataFetching.jsx
+// src/hooks/useDataFetching.js
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from "react";
 
 export const useDataFetching = () => {
   const [allJobs, setAllJobs] = useState([]);
@@ -13,75 +13,52 @@ export const useDataFetching = () => {
     setError(null);
 
     try {
-      const jobsUrl = 'https://ketangoel16-creator.github.io/onestopcareers-data/jobs.json';
-      const referralsUrl = 'https://ketangoel16-creator.github.io/onestopcareers-data/referrals.json';
-
-      console.log('📡 Fetching data from:', jobsUrl, referralsUrl);
+      console.log("📡 Fetching data from JSON endpoints...");
 
       const [jobsRes, referralsRes] = await Promise.all([
-        fetch(jobsUrl),
-        fetch(referralsUrl),
+        fetch("https://ketangoel16-creator.github.io/onestopcareers-data/jobs.json"),
+        fetch("https://ketangoel16-creator.github.io/onestopcareers-data/referrals.json"),
       ]);
 
       if (!jobsRes.ok || !referralsRes.ok) {
-        throw new Error(
-          `Network error: Jobs(${jobsRes.status}) Referrals(${referralsRes.status})`
-        );
+        throw new Error("❌ Network response was not ok");
       }
 
       const jobsData = await jobsRes.json();
       const referralsData = await referralsRes.json();
 
-      // 🔍 Debugging logs
-      console.log('✅ Raw jobsData:', jobsData);
-      console.log('✅ Raw referralsData:', referralsData);
+      console.log("✅ Raw jobsData:", jobsData);
+      console.log("✅ Raw referralsData:", referralsData);
 
-      // Normalize Jobs
+      // --- Normalize Jobs ---
       const jobsWithIds = Array.isArray(jobsData)
         ? jobsData
-            .filter((job) => job && job['Job Title'])
-            .map((job, index) => ({
-              id: index,
-              title: job?.['Job Title'] || '',
-              company: job?.Company || '',
-              location: job?.Location || '',
-              experience: job?.Experience || '',
-              link: job?.Link || '',
-            }))
+            .filter((job) => job && job["Job Title"])
+            .map((job, index) => ({ ...job, id: index }))
         : [];
 
-      console.log('🛠 Normalized jobsWithIds:', jobsWithIds);
-
-      // Normalize Referrals
+      // --- Normalize Referrals ---
       const referralsWithIds = Array.isArray(referralsData)
         ? referralsData
-            .filter(
-              (ref) =>
-                ref &&
-                (ref.Name ||
-                  ref['Referrer Name'] ||
-                  ref.Designation ||
-                  ref.Company ||
-                  ref['Company name'])
-            )
+            .filter((ref) => ref && (ref.Name || ref["Referrer Name"]))
             .map((ref, index) => ({
               id: index,
-              referrerName: ref?.Name || ref?.['Referrer Name'] || '',
-              role: ref?.Designation || '',
-              company: ref?.['Company name'] || ref?.Company || '',
-              link: ref?.Link || '',
+              // Normalize field names for UI compatibility
+              "Referrer Name": ref["Referrer Name"] || ref.Name || "",
+              Role: ref.Role || ref.Designation || "",
+              Company: ref.Company || ref["Company name"] || "",
+              Link: ref.Link || "",
             }))
         : [];
 
-      console.log('🛠 Normalized referralsWithIds:', referralsWithIds);
+      console.log("🛠 Normalized jobsWithIds:", jobsWithIds);
+      console.log("🛠 Normalized referralsWithIds:", referralsWithIds);
 
       setAllJobs(jobsWithIds);
       setAllReferrals(referralsWithIds);
     } catch (e) {
-      console.error('❌ Data fetching or processing error:', e);
-      setError('Failed to load data. Please refresh or try again later.');
-      setAllJobs([]);
-      setAllReferrals([]);
+      console.error("⚠️ Data fetching/processing error:", e);
+      setError("Failed to load data. Please try again.");
     } finally {
       setLoading(false);
     }
