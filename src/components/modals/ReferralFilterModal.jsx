@@ -7,12 +7,14 @@ const ReferralFilterModal = ({ isOpen, onClose, allReferrals, onApplyFilters }) 
   const [selectedRoles, setSelectedRoles] = useState([]);
 
   const filterOptions = useMemo(() => {
+    // CORRECTED: Using 'Company' to match JobsPage filtering logic
     const companies = [
-      ...new Set(allReferrals.map(ref => ref['Company name']).filter(Boolean))
+      ...new Set(allReferrals.map(ref => ref.Company).filter(Boolean))
     ].sort();
 
+    // CORRECTED: Using 'Role' to match JobsPage filtering logic
     const roles = [
-      ...new Set(allReferrals.map(ref => ref.Designation).filter(Boolean))
+      ...new Set(allReferrals.map(ref => ref.Role).filter(Boolean))
     ].sort();
 
     return { companies, roles };
@@ -43,8 +45,9 @@ const ReferralFilterModal = ({ isOpen, onClose, allReferrals, onApplyFilters }) 
   if (!isOpen) return null;
 
   return (
+    // UPDATED: Increased opacity and added backdrop-blur for a cleaner look
     <div
-      className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-black bg-opacity-95 backdrop-blur-sm flex items-center justify-center z-50 p-4"
       onClick={onClose}
     >
       <div
