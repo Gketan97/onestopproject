@@ -7,7 +7,7 @@ import { useDataFetching } from "../../hooks/useDataFetching";
 
 // Components
 import SearchAndTabs from "../layout/SearchAndTabs";
-import JobCard from "../components/cards/Jobcard";
+import JobCard from "../cards/Jobcard"
 import ReferralCard from "../components/cards/ReferralCard";
 import JobModal from "../components/modals/JobModal";
 import ReferralFilterModal from "../components/modals/ReferralFilterModal";
