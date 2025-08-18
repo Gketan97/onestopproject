@@ -7,10 +7,10 @@ import { useDataFetching } from "../../hooks/useDataFetching";
 
 // Components
 import SearchAndTabs from "../layout/SearchAndTabs";
-import JobCard from "../cards/Jobcard"
-import ReferralCard from "../components/cards/ReferralCard";
-import JobModal from "../components/modals/JobModal";
-import ReferralFilterModal from "../components/modals/ReferralFilterModal";
+import JobCard from "../cards/Jobcard.jsx"; // Added extension for consistency
+import ReferralCard from "../cards/ReferralCard.jsx"; // CORRECTED PATH
+import JobModal from "../modals/JobModal.jsx"; // CORRECTED PATH
+import ReferralFilterModal from "../modals/ReferralFilterModal.jsx"; // CORRECTED PATH
 
 const JobsPage = () => {
   // Data fetching
