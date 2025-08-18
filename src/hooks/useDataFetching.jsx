@@ -21,18 +21,20 @@ export const useDataFetching = () => {
       const jobsData = await jobsRes.json();
       const referralsData = await referralsRes.json();
       
-      // THE FINAL FIX: Add a robust check to ensure data is a valid array before processing.
-      // This prevents crashes if the JSON file is malformed or contains null entries.
+      // THE FIX: Add a robust check to ensure data is a valid array before processing.
+      // This prevents crashes if the JSON file is malformed or contains null/empty entries.
       
       const jobsWithIds = Array.isArray(jobsData)
         ? jobsData
-            .filter(job => job && job['Job Title']) // Ensures 'job' is an object with a title
+            // This guard prevents crashes by filtering out any invalid job objects
+            .filter(job => job && job['Job Title']) 
             .map((job, index) => ({ ...job, id: index }))
-        : []; // If not an array, default to an empty array
+        : []; // If data is not an array, default to an empty one
       
       const referralsWithIds = Array.isArray(referralsData)
         ? referralsData
-            .filter(ref => ref && ref.Name) // Ensures 'ref' is an object with a Name
+            // This guard prevents the "Cannot read 'Referrer Name'" crash
+            .filter(ref => ref && ref.Name) 
             .map((ref, index) => ({
               id: index,
               'Referrer Name': ref.Name || '',
@@ -40,7 +42,7 @@ export const useDataFetching = () => {
               Company: ref['Company name'] || '',
               Link: ref.Link || ''
             }))
-        : []; // If not an array, default to an empty array
+        : []; // If data is not an array, default to an empty one
       
       setAllJobs(jobsWithIds);
       setAllReferrals(referralsWithIds);
