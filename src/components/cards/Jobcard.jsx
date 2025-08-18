@@ -1,35 +1,47 @@
-// src/components/cards/Jobcard.jsx
+// src/components/cards/ReferralCard.jsx
 
 import React from 'react';
+import { Briefcase, Building2, ArrowRight } from 'lucide-react';
 
-const JobCard = ({ job, onOpenModal, isHighlighted }) => {
+const ReferralCard = ({ referral }) => {
+  // Use data keys that match the normalized data from the updated hook
+  const name = referral['Referrer Name'] || 'Anonymous Referrer';
+  const role = referral.Role || 'Role not specified';
+  const company = referral.Company || 'Company not specified';
+  const link = referral.Link || '#';
+
   return (
-    // The id allows us to scroll to this card.
-    // The className conditionally applies a glowing ring effect for the highlight.
-    <div
-      id={`job-card-${job.id}`}
-      onClick={() => onOpenModal(job)}
-      className={`dark-theme-card-bg rounded-lg dark-theme-border p-4 flex flex-col gap-3 h-full cursor-pointer transition-all duration-300 ${isHighlighted ? 'ring-4 ring-orange-500 shadow-lg' : 'hover:border-gray-600'}`}
-    >
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-3">
-          <img 
-            src={job['Company Logo URL']} 
-            alt={`${job.Company} logo`} 
-            className="w-12 h-12 rounded-md object-contain bg-white p-1"
-            onError={(e) => { e.target.onerror = null; e.target.src='https://placehold.co/48x48/ffffff/1a1a1a?text=Logo'; }}
-          />
-          <div>
-            <h3 className="font-bold text-white leading-tight">{job['Job Title']}</h3>
-            <p className="text-sm text-gray-400">{job.Company}</p>
+    <div className="dark-theme-card-bg dark-theme-border border rounded-xl p-5 flex flex-col justify-between h-full transition-transform duration-200 hover:scale-105">
+      {/* Top section with name and title */}
+      <div>
+        <h3 className="font-bold text-white text-xl leading-tight">{name}</h3>
+        <p className="text-sm text-gray-400 mb-4">Referrer</p>
+        
+        {/* Middle section with role and company details */}
+        <div className="space-y-3 text-sm">
+          <div className="flex items-center gap-2 text-gray-300">
+            <Briefcase size={16} className="text-gray-500" />
+            <span className="truncate">{role}</span>
+          </div>
+          <div className="flex items-center gap-2 text-gray-300">
+            <Building2 size={16} className="text-gray-500" />
+            <span className="truncate">{company}</span>
           </div>
         </div>
       </div>
-      <div className="text-xs text-gray-500">
-        <span>{job.Location}</span>
-      </div>
+
+      {/* Prominent call-to-action button */}
+      <a
+        href={link}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="brand-button w-full mt-5 py-2.5 rounded-lg font-bold flex items-center justify-center gap-2"
+      >
+        Request Referral
+        <ArrowRight size={16} />
+      </a>
     </div>
   );
 };
 
-export default JobCard;
+export default ReferralCard;
