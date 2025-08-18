@@ -24,18 +24,21 @@ export const useDataFetching = () => {
       // Assign stable IDs to jobs
       const jobsWithIds = jobsData.map((job, index) => ({ ...job, id: index }));
       
-      // Normalize referrals into a consistent shape for all components
-      const referralsWithIds = referralsData.map((ref, index) => ({
-        id: index,
-        'Referrer Name': ref.Name || '',
-        Role: ref.Designation || '',
-        Company: ref['Company name'] || '',
-        Link: ref.Link || ''
-      }));
+      // THE FIX: Filter out any invalid/empty entries before mapping
+      const referralsWithIds = referralsData
+        .filter(ref => ref && ref.Name) // Ensures 'ref' exists and has a 'Name' property
+        .map((ref, index) => ({
+          id: index,
+          'Referrer Name': ref.Name || '',
+          Role: ref.Designation || '',
+          Company: ref['Company name'] || '',
+          Link: ref.Link || ''
+        }));
       
       setAllJobs(jobsWithIds);
       setAllReferrals(referralsWithIds);
     } catch (e) {
+      console.error("Data fetching or processing error:", e); // Added for better debugging
       setError('Failed to load data. Please try again.');
     } finally {
       setLoading(false);
