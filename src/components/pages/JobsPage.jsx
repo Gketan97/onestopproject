@@ -1,16 +1,18 @@
 // src/pages/JobsPage.jsx
 
 import React, { useState, useEffect, useMemo } from 'react';
-// CORRECTED: Import path now uses the .jsx extension
+// CORRECT: Path now points to the .jsx file
 import { useDataFetching } from '../../hooks/useDataFetching.jsx';
 
 // Components
 import SearchAndTabs from '../layout/SearchAndTabs';
-import Jobcard from '../cards/Jobcard.jsx';
+// CORRECT: Filename 'Jobcard' is now lowercase 'c'
+import JobCard from '../cards/Jobcard.jsx';
 import ReferralCard from '../cards/ReferralCard.jsx';
 import JobDetailModal from '../modals/JobDetailModal.jsx';
 import FilterModal from '../modals/FilterModal.jsx';
 import ReferralFilterModal from '../modals/ReferralFilterModal.jsx';
+// CORRECT: Path correctly points to the 'layout' directory
 import WhatsAppCalloutBar from '../layout/WhatsAppCalloutBar.jsx';
 
 const useDebounce = (value, delay) => {
