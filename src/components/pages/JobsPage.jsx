@@ -1,19 +1,18 @@
 // src/pages/JobsPage.jsx
 
 import React, { useState, useEffect, useMemo } from 'react';
-// CORRECT: Path now points to the .jsx file
-import { useDataFetching } from '../../hooks/useDataFetching.jsx';
+// CORRECTED: Using absolute path alias for robustness
+import { useDataFetching } from '@/hooks/useDataFetching.jsx';
 
 // Components
-import SearchAndTabs from '../layout/SearchAndTabs';
-// CORRECT: Filename 'Jobcard' is now lowercase 'c'
-import JobCard from '../cards/Jobcard.jsx';
-import ReferralCard from '../cards/ReferralCard.jsx';
-import JobDetailModal from '../modals/JobDetailModal.jsx';
-import FilterModal from '../modals/FilterModal.jsx';
-import ReferralFilterModal from '../modals/ReferralFilterModal.jsx';
-// CORRECT: Path correctly points to the 'layout' directory
-import WhatsAppCalloutBar from '../layout/WhatsAppCalloutBar.jsx';
+// CORRECTED: All paths now use the '@/' alias
+import SearchAndTabs from '@/components/layout/SearchAndTabs';
+import JobCard from '@/components/cards/Jobcard.jsx';
+import ReferralCard from '@/components/cards/ReferralCard.jsx';
+import JobDetailModal from '@/components/modals/JobDetailModal.jsx';
+import FilterModal from '@/components/modals/FilterModal.jsx';
+import ReferralFilterModal from '@/components/modals/ReferralFilterModal.jsx';
+import WhatsAppCalloutBar from '@/components/layout/WhatsAppCalloutBar.jsx';
 
 const useDebounce = (value, delay) => {
   const [debouncedValue, setDebouncedValue] = useState(value);
