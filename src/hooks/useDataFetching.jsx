@@ -21,26 +21,31 @@ export const useDataFetching = () => {
       const jobsData = await jobsRes.json();
       const referralsData = await referralsRes.json();
       
-      // THE SECOND FIX: Filter out any invalid/empty job entries before mapping
-      const jobsWithIds = jobsData
-        .filter(job => job && job['Job Title']) // Ensures 'job' exists and has a title
-        .map((job, index) => ({ ...job, id: index }));
+      // THE FINAL FIX: Add a robust check to ensure data is a valid array before processing.
+      // This prevents crashes if the JSON file is malformed or contains null entries.
       
-      // THE FIRST FIX: Filter out any invalid/empty referral entries before mapping
-      const referralsWithIds = referralsData
-        .filter(ref => ref && ref.Name) // Ensures 'ref' exists and has a 'Name' property
-        .map((ref, index) => ({
-          id: index,
-          'Referrer Name': ref.Name || '',
-          Role: ref.Designation || '',
-          Company: ref['Company name'] || '',
-          Link: ref.Link || ''
-        }));
+      const jobsWithIds = Array.isArray(jobsData)
+        ? jobsData
+            .filter(job => job && job['Job Title']) // Ensures 'job' is an object with a title
+            .map((job, index) => ({ ...job, id: index }))
+        : []; // If not an array, default to an empty array
+      
+      const referralsWithIds = Array.isArray(referralsData)
+        ? referralsData
+            .filter(ref => ref && ref.Name) // Ensures 'ref' is an object with a Name
+            .map((ref, index) => ({
+              id: index,
+              'Referrer Name': ref.Name || '',
+              Role: ref.Designation || '',
+              Company: ref['Company name'] || '',
+              Link: ref.Link || ''
+            }))
+        : []; // If not an array, default to an empty array
       
       setAllJobs(jobsWithIds);
       setAllReferrals(referralsWithIds);
     } catch (e) {
-      console.error("Data fetching or processing error:", e); // Added for better debugging
+      console.error("Data fetching or processing error:", e);
       setError('Failed to load data. Please try again.');
     } finally {
       setLoading(false);
