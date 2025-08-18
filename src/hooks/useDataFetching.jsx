@@ -21,10 +21,12 @@ export const useDataFetching = () => {
       const jobsData = await jobsRes.json();
       const referralsData = await referralsRes.json();
       
-      // Assign stable IDs to jobs
-      const jobsWithIds = jobsData.map((job, index) => ({ ...job, id: index }));
+      // THE SECOND FIX: Filter out any invalid/empty job entries before mapping
+      const jobsWithIds = jobsData
+        .filter(job => job && job['Job Title']) // Ensures 'job' exists and has a title
+        .map((job, index) => ({ ...job, id: index }));
       
-      // THE FIX: Filter out any invalid/empty entries before mapping
+      // THE FIRST FIX: Filter out any invalid/empty referral entries before mapping
       const referralsWithIds = referralsData
         .filter(ref => ref && ref.Name) // Ensures 'ref' exists and has a 'Name' property
         .map((ref, index) => ({
