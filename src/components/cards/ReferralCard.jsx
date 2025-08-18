@@ -15,11 +15,11 @@ const ReferralCard = ({ referral }) => {
     return name.substring(0, 2).toUpperCase();
   };
 
-  // Use data keys that match the data source from useDataFetching
-  const name = referral['Referrer Name'] || 'Anonymous Referrer';
-  const role = referral.Role || 'Role not specified';
-  const company = referral.Company || 'Company not specified';
-  const link = referral.Link || '#'; // Assuming a 'Link' property exists for the button
+  // CORRECTED: Use data keys that match the normalized data from useDataFetching.js
+  const name = referral.name || 'Anonymous Referrer';
+  const role = referral.designation || 'Role not specified';
+  const company = referral.company || 'Company not specified';
+  const link = referral.link || '#';
 
   return (
     <div className="dark-theme-card-bg dark-theme-border border rounded-xl p-5 flex flex-col justify-between h-full transition-transform duration-200 hover:scale-105">
