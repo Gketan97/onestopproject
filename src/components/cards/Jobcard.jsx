@@ -1,15 +1,22 @@
 // src/components/cards/Jobcard.jsx
 
 import React from 'react';
+import { MoreHorizontal } from 'lucide-react';
 
 const JobCard = ({ job, onOpenModal, isHighlighted }) => {
+  // This function now handles the click on the "Details" button
+  const handleDetailsClick = (e) => {
+    // This stops the click from "bubbling up" if needed, though now it does the same action
+    e.stopPropagation(); 
+    onOpenModal(job);
+  };
+
   return (
-    // The id allows us to scroll to this card.
-    // The className conditionally applies a glowing ring effect for the highlight.
+    // The 'group' class allows the button inside to appear on hover
     <div
       id={`job-card-${job.id}`}
       onClick={() => onOpenModal(job)}
-      className={`dark-theme-card-bg rounded-lg dark-theme-border p-4 flex flex-col gap-3 h-full cursor-pointer transition-all duration-300 ${isHighlighted ? 'ring-4 ring-orange-500 shadow-lg' : 'hover:border-gray-600'}`}
+      className={`dark-theme-card-bg rounded-lg dark-theme-border p-4 flex flex-col justify-between gap-3 h-full cursor-pointer transition-all duration-300 group relative ${isHighlighted ? 'ring-4 ring-orange-500 shadow-lg' : 'hover:border-gray-600'}`}
     >
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
@@ -25,8 +32,16 @@ const JobCard = ({ job, onOpenModal, isHighlighted }) => {
           </div>
         </div>
       </div>
-      <div className="text-xs text-gray-500">
-        <span>{job.Location}</span>
+      <div className="flex justify-between items-end">
+        <span className="text-xs text-gray-500">{job.Location}</span>
+        
+        {/* UPDATED: Changed to a "Details" button that opens the modal */}
+        <button
+          onClick={handleDetailsClick}
+          className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gray-800/80 backdrop-blur-sm text-white text-xs font-bold py-1 px-2 rounded-md flex items-center gap-1"
+        >
+          Details <MoreHorizontal size={12} />
+        </button>
       </div>
     </div>
   );
