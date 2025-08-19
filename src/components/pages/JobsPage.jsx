@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 // CORRECTED: Reverted to relative paths from the confirmed file structure
-import { useDataFetching } from '../../hooks/useDataFetching.jsx';
+import { useDataFetching } from '../../hooks/useDataFetching.js';
 
 // Components
 import SearchAndTabs from '../layout/SearchAndTabs';
