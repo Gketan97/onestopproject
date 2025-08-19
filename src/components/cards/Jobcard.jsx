@@ -1,23 +1,19 @@
 // src/components/cards/Jobcard.jsx
 
 import React from 'react';
-import { MoreHorizontal } from 'lucide-react';
+import { MapPin, Building, ArrowRight } from 'lucide-react';
 
 const JobCard = ({ job, onOpenModal, isHighlighted }) => {
-  const handleDetailsClick = (e) => {
-    e.stopPropagation(); 
-    onOpenModal(job);
-  };
-
   return (
-    // ENHANCEMENT: Added a scale transform on hover for a "lift" effect
+    // The main div is still clickable to open the modal
+    // Added 'group' to enable the hover effect on the child arrow icon
     <div
       id={`job-card-${job.id}`}
       onClick={() => onOpenModal(job)}
-      className={`dark-theme-card-bg rounded-lg dark-theme-border p-4 flex flex-col justify-between gap-3 h-full cursor-pointer transition-all duration-300 group ${isHighlighted ? 'ring-4 ring-orange-500 shadow-lg' : 'hover:border-gray-600 hover:scale-105'}`}
+      className={`dark-theme-card-bg rounded-xl dark-theme-border border p-5 flex flex-col justify-between h-full cursor-pointer transition-all duration-300 group ${isHighlighted ? 'ring-2 ring-orange-500 shadow-lg' : 'hover:border-gray-600 hover:scale-105'}`}
     >
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-3">
+      <div>
+        <div className="flex items-start gap-4 mb-4">
           <img 
             src={job['Company Logo URL']} 
             alt={`${job.Company} logo`} 
@@ -25,23 +21,30 @@ const JobCard = ({ job, onOpenModal, isHighlighted }) => {
             onError={(e) => { e.target.onerror = null; e.target.src='https://placehold.co/48x48/ffffff/1a1a1a?text=Logo'; }}
           />
           <div>
-            {/* ENHANCEMENT: Improved visual hierarchy with a larger job title */}
-            <h3 className="font-bold text-white text-md leading-tight">{job['Job Title']}</h3>
+            {/* ENHANCEMENT: Improved visual hierarchy */}
+            <h3 className="font-bold text-white text-lg leading-tight">{job['Job Title']}</h3>
             <p className="text-sm text-gray-400">{job.Company}</p>
           </div>
         </div>
+        <div className="space-y-2 text-sm">
+            <div className="flex items-center gap-2 text-gray-400">
+                <MapPin size={14} className="flex-shrink-0" />
+                <span>{job.Location}</span>
+            </div>
+        </div>
       </div>
-      <div className="flex justify-between items-end">
-        <span className="text-xs text-gray-500">{job.Location}</span>
-        
-        {/* ENHANCEMENT: Refined button for better visibility */}
-        <button
-          onClick={handleDetailsClick}
-          className="bg-gray-800/80 backdrop-blur-sm text-gray-300 hover:text-white text-xs font-bold py-1.5 px-3 rounded-md flex items-center gap-1 transition-colors"
-        >
-          Details <MoreHorizontal size={14} />
-        </button>
-      </div>
+
+      {/* ENHANCEMENT: Full-width, prominent "View Details" button */}
+      <button
+        onClick={(e) => {
+            e.stopPropagation();
+            onOpenModal(job);
+        }}
+        className="brand-button w-full mt-5 py-2.5 rounded-lg font-bold flex items-center justify-center gap-2 text-center"
+      >
+        View Details
+        <ArrowRight size={16} className="transition-transform duration-200 group-hover:translate-x-1" />
+      </button>
     </div>
   );
 };
