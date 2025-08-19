@@ -11,7 +11,7 @@ const WhatsAppCalloutBar = () => {
           <span className="font-bold text-white">Never miss an opportunity.</span> Join our WhatsApp community for instant job updates!
         </p>
         <a
-          href="https://chat.whatsapp.com/your-community-invite-link" // <-- IMPORTANT: Update this link
+          href="https://www.whatsapp.com/channel/0029Va5RkYRBqbrCyLdiaL3M" // <-- IMPORTANT: Update this link
           target="_blank"
           rel="noopener noreferrer"
           className="brand-button text-sm font-bold px-4 py-1.5 rounded-lg flex items-center gap-2 whitespace-nowrap"
