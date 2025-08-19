@@ -1,16 +1,17 @@
 // src/pages/JobsPage.jsx
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { useDataFetching } from '@/hooks/useDataFetching.jsx';
+// CORRECTED: Reverted to relative paths from the confirmed file structure
+import { useDataFetching } from '../../hooks/useDataFetching.jsx';
 
 // Components
-import SearchAndTabs from '@/components/layout/SearchAndTabs';
-import JobCard from '@/components/cards/Jobcard.jsx';
-import ReferralCard from '@/components/cards/ReferralCard.jsx';
-import JobDetailModal from '@/components/modals/JobDetailModal.jsx';
-import FilterModal from '@/components/modals/FilterModal.jsx';
-import ReferralFilterModal from '@/components/modals/ReferralFilterModal.jsx';
-import WhatsAppCalloutBar from '@/components/layout/WhatsAppCalloutBar.jsx'; // Import the new banner
+import SearchAndTabs from '../layout/SearchAndTabs';
+import JobCard from '../cards/Jobcard.jsx';
+import ReferralCard from '../cards/ReferralCard.jsx';
+import JobDetailModal from '../modals/JobDetailModal.jsx';
+import FilterModal from '../modals/FilterModal.jsx';
+import ReferralFilterModal from '../modals/ReferralFilterModal.jsx';
+import WhatsAppCalloutBar from '../layout/WhatsAppCalloutBar.jsx';
 
 const useDebounce = (value, delay) => {
   const [debouncedValue, setDebouncedValue] = useState(value);
