@@ -34,7 +34,7 @@ const JobCard = ({ job, onOpenModal, isHighlighted }) => {
         </div>
       </div>
 
-      {/* ENHANCEMENT: Full-width, prominent "View Details" button */}
+      {/* ENHANCEMENT: Full-width, prominent "View Details" button with brand color */}
       <button
         onClick={(e) => {
             e.stopPropagation();
