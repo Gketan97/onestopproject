@@ -21,21 +21,30 @@ export const useDataFetching = () => {
       const jobsData = await jobsRes.json();
       const referralsData = await referralsRes.json();
       
-      // Assign stable IDs during the initial fetch for reliable keys
-      const jobsWithIds = jobsData.map((job, index) => ({ ...job, id: index }));
+      // THE FIX: Add robust checks to ensure data is a valid array and filter out invalid entries.
       
-      // Normalize referrals into consistent shape
-      const referralsWithIds = referralsData.map((ref, index) => ({
-        id: index,
-        name: ref.Name || '',
-        designation: ref.Designation || '',
-        company: ref['Company name'] || '',
-        link: ref.Link || ''
-      }));
+      const jobsWithIds = Array.isArray(jobsData)
+        ? jobsData
+            .filter(job => job && job['Job Title']) // This guard prevents crashes
+            .map((job, index) => ({ ...job, id: index }))
+        : []; // Default to an empty array if data is not an array
+      
+      const referralsWithIds = Array.isArray(referralsData)
+        ? referralsData
+            .filter(ref => ref && ref.Name) // This guard also prevents crashes
+            .map((ref, index) => ({
+              id: index,
+              'Referrer Name': ref.Name || '',
+              Role: ref.Designation || '',
+              Company: ref['Company name'] || '',
+              Link: ref.Link || ''
+            }))
+        : []; // Default to an empty array if data is not an array
       
       setAllJobs(jobsWithIds);
       setAllReferrals(referralsWithIds);
     } catch (e) {
+      console.error("Data fetching or processing error:", e); // Added for better debugging
       setError('Failed to load data. Please try again.');
     } finally {
       setLoading(false);
