@@ -1,19 +1,16 @@
 // src/pages/JobsPage.jsx
-// This version contains all features with corrected import paths.
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { useDataFetching } from '@/hooks/useDataFetching.jsx';
 
-// Hooks
-import { useDataFetching } from '../../hooks/useDataFetching';
-
-// Components - All paths and names have been corrected
-import SearchAndTabs from '../layout/SearchAndTabs';
-import JobCard from '../cards/Jobcard.jsx';
-import ReferralCard from '../cards/ReferralCard.jsx';
-import JobDetailModal from '../modals/JobDetailModal.jsx';
-import FilterModal from '../modals/FilterModal.jsx';
-import ReferralFilterModal from '../modals/ReferralFilterModal.jsx';
-import WhatsAppCalloutCard from '../cards/WhatsAppCalloutCard.jsx';
+// Components
+import SearchAndTabs from '@/components/layout/SearchAndTabs';
+import JobCard from '@/components/cards/Jobcard.jsx';
+import ReferralCard from '@/components/cards/ReferralCard.jsx';
+import JobDetailModal from '@/components/modals/JobDetailModal.jsx';
+import FilterModal from '@/components/modals/FilterModal.jsx';
+import ReferralFilterModal from '@/components/modals/ReferralFilterModal.jsx';
+import WhatsAppCalloutBar from '@/components/layout/WhatsAppCalloutBar.jsx'; // Import the new banner
 
 const useDebounce = (value, delay) => {
   const [debouncedValue, setDebouncedValue] = useState(value);
@@ -69,7 +66,6 @@ const JobsPage = () => {
         results = results.filter(ref => 
           (ref.Company || '').toLowerCase().includes(lowercasedQuery) ||
           (ref.Role || '').toLowerCase().includes(lowercasedQuery) ||
-          (ref.Location || '').toLowerCase().includes(lowercasedQuery) ||
           (ref['Referrer Name'] || '').toLowerCase().includes(lowercasedQuery)
         );
       }
@@ -149,15 +145,14 @@ const JobsPage = () => {
     if (activeTab === 'jobs') {
       return (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-          {currentData.map((job, index) => (
-            <React.Fragment key={job.id}>
-              <JobCard 
-                job={job} 
-                onOpenModal={handleOpenModal} 
-                isHighlighted={job.id === highlightedJobId}
-              />
-              {(index + 1) % 5 === 0 && <WhatsAppCalloutCard />}
-            </React.Fragment>
+          {/* REMOVED: The logic for the repeating callout card is gone */}
+          {currentData.map((job) => (
+            <JobCard 
+              key={job.id}
+              job={job} 
+              onOpenModal={handleOpenModal} 
+              isHighlighted={job.id === highlightedJobId}
+            />
           ))}
         </div>
       );
@@ -166,7 +161,7 @@ const JobsPage = () => {
     if (activeTab === 'referrals') {
       return (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-          {currentData.map((ref, i) => <ReferralCard referral={ref} key={i} />)}
+          {currentData.map((ref) => <ReferralCard referral={ref} key={ref.id} />)}
         </div>
       );
     }
@@ -183,6 +178,9 @@ const JobsPage = () => {
           onFilterClick={handleFilterClick}
         />
         
+        {/* ADDED: The new permanent banner */}
+        <WhatsAppCalloutBar />
+
         <div className="mt-8">
           {renderContent()}
           {hasMoreData && (
