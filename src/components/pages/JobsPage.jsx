@@ -70,7 +70,8 @@ const JobsPage = () => {
           (ref['Referrer Name'] || '').toLowerCase().includes(lowercasedQuery)
         );
       }
-      return results;
+      // Shuffle the results for even distribution
+      return [...results].sort(() => Math.random() - 0.5);
     }
   }, [debouncedSearchQuery, activeTab, allJobs, allReferrals, activeJobFilters, activeReferralFilters]);
   
