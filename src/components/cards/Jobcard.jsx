@@ -40,7 +40,7 @@ const JobCard = ({ job, onOpenModal, isHighlighted }) => {
             e.stopPropagation();
             onOpenModal(job);
         }}
-        className="brand-button w-full mt-5 py-2.5 rounded-lg font-bold flex items-center justify-center gap-2 text-center"
+        className="bg-orange-600 text-white w-full mt-5 py-2.5 rounded-lg font-bold flex items-center justify-center gap-2 text-center transition-colors hover:bg-orange-700"
       >
         View Details
         <ArrowRight size={16} className="transition-transform duration-200 group-hover:translate-x-1" />
