@@ -39,6 +39,17 @@ const JobsPage = () => {
 
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
+  // FIX: Normalize referral data once to ensure consistent property names
+  const normalizedReferrals = useMemo(() => {
+    return allReferrals.map(ref => ({
+      ...ref,
+      name: ref.Name || ref['Referrer Name'] || 'Anonymous',
+      designation: ref.Designation || ref.Role || 'N/A',
+      company: ref['Company name'] || ref.Company || 'N/A',
+      link: ref['LinkedIn ID url'] || ref.link || '#'
+    }));
+  }, [allReferrals]);
+
   const filteredData = useMemo(() => {
     const lowercasedQuery = debouncedSearchQuery.toLowerCase();
     
@@ -56,24 +67,24 @@ const JobsPage = () => {
       }
       return results;
     } else { // Referrals
-      let results = allReferrals;
+      let results = normalizedReferrals;
       if (activeReferralFilters.companies.length > 0) {
-        results = results.filter(ref => activeReferralFilters.companies.includes(ref.Company));
+        results = results.filter(ref => activeReferralFilters.companies.includes(ref.company));
       }
       if (activeReferralFilters.roles.length > 0) {
-        results = results.filter(ref => activeReferralFilters.roles.includes(ref.Role));
+        results = results.filter(ref => activeReferralFilters.roles.includes(ref.designation));
       }
       if (lowercasedQuery) {
         results = results.filter(ref => 
-          (ref.Company || '').toLowerCase().includes(lowercasedQuery) ||
-          (ref.Role || '').toLowerCase().includes(lowercasedQuery) ||
-          (ref['Referrer Name'] || '').toLowerCase().includes(lowercasedQuery)
+          (ref.company || '').toLowerCase().includes(lowercasedQuery) ||
+          (ref.designation || '').toLowerCase().includes(lowercasedQuery) ||
+          (ref.name || '').toLowerCase().includes(lowercasedQuery)
         );
       }
       // Shuffle the results for even distribution
       return [...results].sort(() => Math.random() - 0.5);
     }
-  }, [debouncedSearchQuery, activeTab, allJobs, allReferrals, activeJobFilters, activeReferralFilters]);
+  }, [debouncedSearchQuery, activeTab, allJobs, normalizedReferrals, activeJobFilters, activeReferralFilters]);
   
   useEffect(() => {
     setCurrentPage(1);
@@ -147,7 +158,6 @@ const JobsPage = () => {
     if (activeTab === 'jobs') {
       return (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-          {/* REMOVED: The logic for the repeating callout card is gone */}
           {currentData.map((job) => (
             <JobCard 
               key={job.id}
@@ -180,7 +190,6 @@ const JobsPage = () => {
           onFilterClick={handleFilterClick}
         />
         
-        {/* ADDED: The new permanent banner */}
         <WhatsAppCalloutBar />
 
         <div className="mt-8">
@@ -213,7 +222,7 @@ const JobsPage = () => {
       <ReferralFilterModal
         isOpen={isReferralFilterModalOpen}
         onClose={() => setIsReferralFilterModalOpen(false)}
-        allReferrals={allReferrals}
+        allReferrals={normalizedReferrals} // Use normalized data for filters
         onApplyFilters={setActiveReferralFilters}
       />
     </>
