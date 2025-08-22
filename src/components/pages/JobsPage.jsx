@@ -1,6 +1,7 @@
 // src/pages/JobsPage.jsx
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { Link } from 'react-router-dom'; // Import the Link component
 import { useDataFetching } from '../../hooks/useDataFetching.js';
 
 // Components
@@ -24,7 +25,6 @@ const useDebounce = (value, delay) => {
 const ITEMS_PER_PAGE = window.innerWidth < 768 ? 6 : 10;
 
 const JobsPage = () => {
-  // allReferrals is now already normalized by the hook
   const { allJobs, allReferrals, loading, error, fetchAllData } = useDataFetching();
   
   const [activeTab, setActiveTab] = useState('jobs');
@@ -56,7 +56,7 @@ const JobsPage = () => {
       }
       return results;
     } else { // Referrals
-      let results = allReferrals; // Use the already normalized data directly
+      let results = allReferrals;
       if (activeReferralFilters.companies.length > 0) {
         results = results.filter(ref => activeReferralFilters.companies.includes(ref.company));
       }
@@ -70,7 +70,6 @@ const JobsPage = () => {
           (ref.name || '').toLowerCase().includes(lowercasedQuery)
         );
       }
-      // Shuffle the results for even distribution
       return [...results].sort(() => Math.random() - 0.5);
     }
   }, [debouncedSearchQuery, activeTab, allJobs, allReferrals, activeJobFilters, activeReferralFilters]);
@@ -196,7 +195,12 @@ const JobsPage = () => {
             <div className="mt-12 text-center p-6 bg-gray-800/50 rounded-lg border border-gray-700">
                 <h3 className="font-bold text-white text-lg">Want to refer candidates?</h3>
                 <p className="text-gray-400 text-sm mt-2">Join our platform to help others in the community and build your network.</p>
-                <button className="mt-4 px-6 py-2 brand-button text-sm font-bold rounded-lg">Become a Referrer</button>
+                {/* Wrap the button with the Link component */}
+                <Link to="/become-referrer">
+                    <button className="mt-4 px-6 py-2 brand-button text-sm font-bold rounded-lg">
+                        Become a Referrer
+                    </button>
+                </Link>
             </div>
         )}
       </div>
@@ -211,7 +215,7 @@ const JobsPage = () => {
       <ReferralFilterModal
         isOpen={isReferralFilterModalOpen}
         onClose={() => setIsReferralFilterModalOpen(false)}
-        allReferrals={allReferrals} // Use the original allReferrals from the hook
+        allReferrals={allReferrals}
         onApplyFilters={setActiveReferralFilters}
       />
     </>
