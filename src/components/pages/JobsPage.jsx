@@ -1,224 +1,125 @@
 // src/pages/JobsPage.jsx
-
-import React, { useState, useEffect, useMemo } from 'react';
-import { Link } from 'react-router-dom'; // Import the Link component
-import { useDataFetching } from '../../hooks/useDataFetching.js';
-
-// Components
-import SearchAndTabs from '../layout/SearchAndTabs';
-import JobCard from '../cards/Jobcard.jsx';
-import ReferralCard from '../cards/ReferralCard.jsx';
-import JobDetailModal from '../modals/JobDetailModal.jsx';
-import FilterModal from '../modals/FilterModal.jsx';
-import ReferralFilterModal from '../modals/ReferralFilterModal.jsx';
-import WhatsAppCalloutBar from '../layout/WhatsAppCalloutBar.jsx';
-
-const useDebounce = (value, delay) => {
-  const [debouncedValue, setDebouncedValue] = useState(value);
-  useEffect(() => {
-    const handler = setTimeout(() => setDebouncedValue(value), delay);
-    return () => clearTimeout(handler);
-  }, [value, delay]);
-  return debouncedValue;
-};
-
-const ITEMS_PER_PAGE = window.innerWidth < 768 ? 6 : 10;
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import ReferralFilterModal from '../components/modals/ReferralFilterModal';
 
 const JobsPage = () => {
-  const { allJobs, allReferrals, loading, error, fetchAllData } = useDataFetching();
-  
-  const [activeTab, setActiveTab] = useState('jobs');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedJob, setSelectedJob] = useState(null);
-  const [isJobFilterModalOpen, setIsJobFilterModalOpen] = useState(false);
-  const [isReferralFilterModalOpen, setIsReferralFilterModalOpen] = useState(false);
-  const [activeJobFilters, setActiveJobFilters] = useState({ titles: [] });
-  const [activeReferralFilters, setActiveReferralFilters] = useState({ companies: [], roles: [] });
-  const [currentPage, setCurrentPage] = useState(1);
-  const [highlightedJobId, setHighlightedJobId] = useState(null);
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filters, setFilters] = useState({ companies: [], roles: [] });
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
-  const debouncedSearchQuery = useDebounce(searchQuery, 300);
-
-  const filteredData = useMemo(() => {
-    const lowercasedQuery = debouncedSearchQuery.toLowerCase();
-    
-    if (activeTab === 'jobs') {
-      let results = allJobs;
-      if (activeJobFilters.titles.length > 0) {
-        results = results.filter(job => activeJobFilters.titles.includes(job['Job Title']));
-      }
-      if (lowercasedQuery) {
-        results = results.filter(job =>
-          (job['Job Title'] || '').toLowerCase().includes(lowercasedQuery) ||
-          (job.Company || '').toLowerCase().includes(lowercasedQuery) ||
-          (job.Location || '').toLowerCase().includes(lowercasedQuery)
+  // ✅ Fetch jobs from API
+  useEffect(() => {
+    const fetchJobs = async () => {
+      try {
+        const response = await fetch(
+          'https://script.google.com/macros/s/AKfycbz8OZ4wrUb6kwukysA5ucb9nXu_TE5yp1SIuU8PqUmbJiGWBdwUliU8pGsNpdkliCqN/exec'
         );
+        const data = await response.json();
+        setJobs(data || []);
+      } catch (error) {
+        console.error('Error fetching jobs:', error);
+      } finally {
+        setLoading(false);
       }
-      return results;
-    } else { // Referrals
-      let results = allReferrals;
-      if (activeReferralFilters.companies.length > 0) {
-        results = results.filter(ref => activeReferralFilters.companies.includes(ref.company));
-      }
-      if (activeReferralFilters.roles.length > 0) {
-        results = results.filter(ref => activeReferralFilters.roles.includes(ref.designation));
-      }
-      if (lowercasedQuery) {
-        results = results.filter(ref => 
-          (ref.company || '').toLowerCase().includes(lowercasedQuery) ||
-          (ref.designation || '').toLowerCase().includes(lowercasedQuery) ||
-          (ref.name || '').toLowerCase().includes(lowercasedQuery)
-        );
-      }
-      return [...results].sort(() => Math.random() - 0.5);
-    }
-  }, [debouncedSearchQuery, activeTab, allJobs, allReferrals, activeJobFilters, activeReferralFilters]);
-  
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [activeTab, debouncedSearchQuery, activeJobFilters, activeReferralFilters]);
+    };
 
-  const currentData = useMemo(() => {
-    return filteredData.slice(0, currentPage * ITEMS_PER_PAGE);
-  }, [currentPage, filteredData]);
+    fetchJobs();
+  }, []);
 
-  const hasMoreData = currentData.length < filteredData.length;
+  // ✅ Handle search input
+  const handleSearch = useCallback((e) => {
+    setSearchTerm(e.target.value.toLowerCase());
+  }, []);
 
-  const handleOpenModal = (job) => {
-    setSelectedJob(job);
-    window.location.hash = `job-${job.id}`;
-  };
+  // ✅ Apply filtering + search
+  const filteredJobs = useMemo(() => {
+    return jobs.filter((job) => {
+      const matchesSearch =
+        job.Company?.toLowerCase().includes(searchTerm) ||
+        job.Role?.toLowerCase().includes(searchTerm);
 
-  const handleCloseModal = () => {
-    setSelectedJob(null);
-    if (window.history.pushState) {
-      window.history.pushState("", document.title, window.location.pathname + window.location.search);
-    } else {
-      window.location.hash = '';
-    }
-  };
+      const matchesCompanyFilter =
+        filters.companies.length === 0 || filters.companies.includes(job.Company);
 
-  useEffect(() => {
-    if (allJobs.length > 0 && window.location.hash.startsWith('#job-')) {
-      const jobId = parseInt(window.location.hash.replace('#job-', ''), 10);
-      const jobIndex = filteredData.findIndex(j => j.id === jobId);
+      const matchesRoleFilter =
+        filters.roles.length === 0 || filters.roles.includes(job.Role);
 
-      if (jobIndex !== -1) {
-        const pageOfJob = Math.floor(jobIndex / ITEMS_PER_PAGE) + 1;
-        setCurrentPage(pageOfJob);
-        
-        setTimeout(() => {
-          const cardElement = document.getElementById(`job-card-${jobId}`);
-          if (cardElement) {
-            cardElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            setHighlightedJobId(jobId);
-            setTimeout(() => setHighlightedJobId(null), 3000);
-          }
-        }, 100);
-      }
-    }
-  }, [allJobs, filteredData]);
+      return matchesSearch && matchesCompanyFilter && matchesRoleFilter;
+    });
+  }, [jobs, searchTerm, filters]);
 
-  useEffect(() => {
-    const body = document.body;
-    const originalStyle = window.getComputedStyle(body).overflow;
-    if (selectedJob || isJobFilterModalOpen || isReferralFilterModalOpen) {
-      body.style.overflow = 'hidden';
-    } else {
-      body.style.overflow = originalStyle;
-    }
-    return () => { body.style.overflow = originalStyle; };
-  }, [selectedJob, isJobFilterModalOpen, isReferralFilterModalOpen]);
-
-  const handleFilterClick = () => {
-    if (activeTab === 'jobs') {
-      setIsJobFilterModalOpen(true);
-    } else {
-      setIsReferralFilterModalOpen(true);
-    }
-  };
-
-  const renderContent = () => {
-    if (loading) return <p className="text-center text-gray-400 mt-8">Loading...</p>;
-    if (error) return <div className="text-center text-red-500 mt-8"><p>{error}</p><button onClick={fetchAllData} className="mt-4 px-6 py-2 brand-button rounded-lg">Retry</button></div>;
-    if (currentData.length === 0) return <p className="text-center text-gray-400 py-4 mt-8">No results found.</p>;
-
-    if (activeTab === 'jobs') {
-      return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-          {currentData.map((job) => (
-            <JobCard 
-              key={job.id}
-              job={job} 
-              onOpenModal={handleOpenModal} 
-              isHighlighted={job.id === highlightedJobId}
-            />
-          ))}
-        </div>
-      );
-    }
-
-    if (activeTab === 'referrals') {
-      return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-          {currentData.map((ref) => <ReferralCard referral={ref} key={ref.id} />)}
-        </div>
-      );
-    }
-  };
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen text-white">
+        Loading jobs...
+      </div>
+    );
+  }
 
   return (
-    <>
-      <div className="w-full max-w-7xl mx-auto p-4 md:p-8 flex-grow z-10">
-        <SearchAndTabs
-          activeTab={activeTab}
-          onTabClick={setActiveTab}
-          searchQuery={searchQuery}
-          onSearchChange={(e) => setSearchQuery(e.target.value)}
-          onFilterClick={handleFilterClick}
+    <div className="p-4 md:p-8 text-white">
+      {/* Header */}
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Available Jobs</h1>
+        <button
+          onClick={() => setIsFilterModalOpen(true)}
+          className="px-4 py-2 bg-orange-500 rounded-lg hover:bg-orange-600"
+        >
+          Filter
+        </button>
+      </div>
+
+      {/* Search */}
+      <div className="mb-6">
+        <input
+          type="text"
+          placeholder="Search by company or role..."
+          value={searchTerm}
+          onChange={handleSearch}
+          className="w-full p-3 rounded-lg bg-gray-800 border border-gray-700 text-white"
         />
-        
-        <WhatsAppCalloutBar />
+      </div>
 
-        <div className="mt-8">
-          {renderContent()}
-          {hasMoreData && (
-            <div className="text-center mt-12">
-              <button onClick={() => setCurrentPage(p => p + 1)} className="px-8 py-3 brand-button font-bold rounded-lg">
-                Load More {activeTab === 'jobs' ? 'Jobs' : 'Referrals'}
-              </button>
-            </div>
-          )}
-        </div>
-
-        {activeTab === 'referrals' && !loading && !error && (
-            <div className="mt-12 text-center p-6 bg-gray-800/50 rounded-lg border border-gray-700">
-                <h3 className="font-bold text-white text-lg">Want to refer candidates?</h3>
-                <p className="text-gray-400 text-sm mt-2">Join our platform to help others in the community and build your network.</p>
-                {/* Wrap the button with the Link component */}
-                <Link to="/become-referrer">
-                    <button className="mt-4 px-6 py-2 brand-button text-sm font-bold rounded-lg">
-                        Become a Referrer
-                    </button>
-                </Link>
-            </div>
+      {/* Jobs List */}
+      <div>
+        {filteredJobs.length === 0 ? (
+          <div className="text-center text-gray-400">No jobs found.</div>
+        ) : (
+          <div className="grid gap-4">
+            {filteredJobs.map((job, index) => (
+              <div
+                key={index}
+                className="p-4 bg-gray-900 rounded-lg border border-gray-700"
+              >
+                <h2 className="text-xl font-semibold">{job.Role}</h2>
+                <p className="text-gray-400">{job.Company}</p>
+                <p className="text-sm text-gray-500">{job.Location || 'Remote'}</p>
+                {job['Apply Link'] && (
+                  <a
+                    href={job['Apply Link']}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-2 inline-block text-orange-500 hover:underline"
+                  >
+                    Apply Now
+                  </a>
+                )}
+              </div>
+            ))}
+          </div>
         )}
       </div>
-      
-      {selectedJob && <JobDetailModal job={selectedJob} onClose={handleCloseModal} />}
-      <FilterModal 
-        isOpen={isJobFilterModalOpen}
-        onClose={() => setIsJobFilterModalOpen(false)}
-        allJobs={allJobs}
-        onApplyFilters={setActiveJobFilters}
-      />
+
+      {/* Filter Modal */}
       <ReferralFilterModal
-        isOpen={isReferralFilterModalOpen}
-        onClose={() => setIsReferralFilterModalOpen(false)}
-        allReferrals={allReferrals}
-        onApplyFilters={setActiveReferralFilters}
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
+        allReferrals={jobs}
+        onApplyFilters={(newFilters) => setFilters(newFilters)}
       />
-    </>
+    </div>
   );
 };
 
