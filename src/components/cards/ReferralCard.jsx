@@ -1,7 +1,7 @@
 // src/components/cards/ReferralCard.jsx
 
 import React from 'react';
-import { Briefcase, Building2, ArrowRight, Linkedin } from 'lucide-react';
+import { Briefcase, Building2, ArrowRight } from 'lucide-react';
 
 const ReferralCard = ({ referral }) => {
   // Use data keys that match the normalized data from useDataFetching.js
@@ -36,11 +36,10 @@ const ReferralCard = ({ referral }) => {
         href={link}
         target="_blank"
         rel="noopener noreferrer"
-        // ENHANCEMENT: Improved button layout for better visual balance
-        className="bg-orange-600 hover:bg-orange-700 text-white w-full mt-5 py-2.5 px-4 rounded-lg font-bold flex items-center justify-between text-center transition-colors"
+        // ENHANCEMENT: Simplified button layout
+        className="bg-orange-600 hover:bg-orange-700 text-white w-full mt-5 py-2.5 px-4 rounded-lg font-bold flex items-center justify-center gap-2 text-center transition-colors"
       >
-        <Linkedin size={18} />
-        <span className="flex-grow">Request on LinkedIn</span>
+        <span>Request on LinkedIn</span>
         {/* ENHANCEMENT: Arrow now slides right on card hover */}
         <ArrowRight size={16} className="transition-transform duration-200 group-hover:translate-x-1" />
       </a>
