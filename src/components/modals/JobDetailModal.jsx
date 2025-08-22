@@ -25,26 +25,20 @@ const JobDetailModal = ({ job, onClose }) => {
 
   const handleCopyLink = () => {
     const url = window.location.href;
-    navigator.clipboard.writeText(url).then(() => {
+    const textArea = document.createElement("textarea");
+    textArea.value = url;
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    try {
+      document.execCommand('copy');
       setShowToast(true);
-      setTimeout(() => setShowToast(false), 2000); // Hide toast after 2 seconds
-    }).catch(err => {
+      setTimeout(() => setShowToast(false), 2000);
+    } catch (err) {
       console.error('Failed to copy: ', err);
-      // Fallback for older browsers
-      const textArea = document.createElement("textarea");
-      textArea.value = url;
-      document.body.appendChild(textArea);
-      textArea.focus();
-      textArea.select();
-      try {
-        document.execCommand('copy');
-        setShowToast(true);
-        setTimeout(() => setShowToast(false), 2000);
-      } catch (err) {
-        alert('Failed to copy link.');
-      }
-      document.body.removeChild(textArea);
-    });
+      alert('Failed to copy link.');
+    }
+    document.body.removeChild(textArea);
   };
 
   if (!job) return null;
@@ -53,7 +47,7 @@ const JobDetailModal = ({ job, onClose }) => {
     <>
       {/* Solid black backdrop */}
       <div
-        className="fixed inset-0 bg-black flex items-center justify-center z-50 p-4"
+        className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
         onClick={onClose}
       >
         <div
@@ -87,51 +81,49 @@ const JobDetailModal = ({ job, onClose }) => {
           <div className="p-6 overflow-y-auto flex-grow">
             <h3 className="font-bold text-white mb-2">Job Description</h3>
             <p className="text-gray-400 whitespace-pre-wrap">{job['Job Description'] || job.Description}</p>
-
-            {/* --- UPDATED REFERRER CALLOUT SECTION --- */}
-            <div className="mt-8 p-4 bg-gray-800/50 rounded-lg border border-gray-700 text-center">
-                <h4 className="font-bold text-white">Want to refer candidates?</h4>
-                <p className="text-gray-400 text-sm mt-2">Join our platform to refer candidates for roles at your company and others.</p>
-                <Link to="/become-referrer">
-                    <button className="mt-4 px-6 py-2 brand-button text-sm font-bold rounded-lg flex items-center gap-2 mx-auto">
-                        <Users size={16} />
-                        Become a Referrer
-                    </button>
-                </Link>
-            </div>
-            {/* --- END OF SECTION --- */}
-
           </div>
 
-          <footer className="p-6 border-t border-gray-700 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <div className="flex flex-col sm:flex-row items-center gap-4">
+          {/* --- REDESIGNED FOOTER SECTION --- */}
+          <footer className="p-6 border-t border-gray-700 space-y-4">
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+              {/* Secondary Action: Find a Referrer */}
+              <Link to="/#referrals" className="w-full sm:w-auto">
+                <button className="w-full px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white font-bold rounded-lg flex items-center justify-center gap-2 transition-colors">
+                  <Users size={16} />
+                  Find a Referrer
+                </button>
+              </Link>
+              {/* Primary Action: Apply Now */}
+              <a
+                href={job['Link']}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full sm:w-auto px-6 py-3 brand-button font-bold rounded-lg flex items-center justify-center gap-2"
+              >
+                Apply Now
+                <ExternalLink size={16} />
+              </a>
+            </div>
+            <div className="flex justify-center items-center gap-6 pt-2">
               <a
                 href="https://www.whatsapp.com/channel/0029Va5RkYRBqbrCyLdiaL3M"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-sm text-green-400 hover:text-green-300"
+                className="flex items-center gap-2 text-xs text-green-400 hover:text-green-300"
               >
-                <MessageSquare size={16} />
-                Get Job Updates
+                <MessageSquare size={14} />
+                Get Whatsapp Job Updates 
               </a>
               <button
                 onClick={handleCopyLink}
-                className="flex items-center gap-2 text-sm text-gray-400 hover:text-white"
+                className="flex items-center gap-2 text-xs text-gray-400 hover:text-white"
               >
-                <Copy size={16} />
+                <Copy size={14} />
                 Copy Share Link
               </button>
             </div>
-            <a
-              href={job['Link']}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-6 py-3 brand-button font-bold rounded-lg flex items-center gap-2"
-            >
-              Apply Now
-              <ExternalLink size={16} />
-            </a>
           </footer>
+          {/* --- END OF SECTION --- */}
         </div>
       </div>
       <Toast message="Link copied to clipboard!" show={showToast} />
