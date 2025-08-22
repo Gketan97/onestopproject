@@ -113,9 +113,26 @@ const ReferrerForm = () => {
     };
 
     const handleSubmit = (e) => {
-        e.preventDefault();
-        console.log("Form Data Submitted:", formData);
-        setIsSubmitted(true);
+       
+  e.preventDefault();
+  setIsVisible(false);
+  await new Promise((resolve) => setTimeout(resolve, 300));
+
+  try {
+    await fetch('https://script.google.com/macros/s/AKfycbzqn78oMYFVEIbq4xDY735xbqv9N2GY0X3jMSHzinNqhNdunPql6JA-eTUyMczwgx9d/exec', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(formData),
+    });
+    console.log('Data sent to Google Sheets:', formData);
+  } catch (error) {
+    console.error('Error sending data to Google Sheets:', error);
+  }
+
+  setShowThankYou(true);
+
     };
 
     const handleCopyLink = () => {
