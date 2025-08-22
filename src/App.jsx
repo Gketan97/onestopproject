@@ -7,6 +7,8 @@ import { getFirestore, doc, setDoc, onSnapshot } from 'firebase/firestore';
 import HomePage from './components/pages/HomePage.jsx';
 import DecisionTreePage from './components/pages/DecisionTreePage.jsx';
 import JobsPage from './components/pages/JobsPage.jsx';
+// 1. Import your new form component
+import ReferrerForm from './components/pages/ReferrerForm.jsx'; // Assuming you save it in src/components/pages/
 import Header from './components/layout/Header.jsx';
 import MobileHeader from './components/layout/MobileHeader.jsx';
 import MobileNav from './components/layout/MobileNav.jsx';
@@ -53,6 +55,8 @@ const App = () => {
           <Route path="/" element={<HomePage />} />
           <Route path="/decision-tree" element={<DecisionTreePage />} />
           <Route path="/jobs" element={<JobsPage />} />
+          {/* 2. Add the new route for your form */}
+          <Route path="/become-referrer" element={<ReferrerForm />} />
         </Routes>
       </main>
       <footer className="w-full max-w-7xl mx-auto p-4 text-center text-sm text-gray-500 border-t border-[#444] mt-12 md:mt-24 z-10">
