@@ -36,11 +36,11 @@ const ReferralCard = ({ referral }) => {
         href={link}
         target="_blank"
         rel="noopener noreferrer"
-        // ENHANCEMENT: Changed button color and added transition
-        className="bg-orange-600 hover:bg-orange-700 text-white w-full mt-5 py-2.5 rounded-lg font-bold flex items-center justify-center gap-2 text-center transition-colors"
+        // ENHANCEMENT: Improved button layout for better visual balance
+        className="bg-orange-600 hover:bg-orange-700 text-white w-full mt-5 py-2.5 px-4 rounded-lg font-bold flex items-center justify-between text-center transition-colors"
       >
-        <Linkedin size={16} />
-        Request on LinkedIn
+        <Linkedin size={18} />
+        <span className="flex-grow">Request on LinkedIn</span>
         {/* ENHANCEMENT: Arrow now slides right on card hover */}
         <ArrowRight size={16} className="transition-transform duration-200 group-hover:translate-x-1" />
       </a>
