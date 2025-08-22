@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom'; // Import Link for navigation
+import { Link } from 'react-router-dom';
 import { Copy, ExternalLink, MessageSquare, Users } from 'lucide-react';
 
-// A simple, reusable toast notification component
+// Toast Notification
 const Toast = ({ message, show }) => {
   if (!show) return null;
   return (
@@ -25,7 +25,7 @@ const JobDetailModal = ({ job, onClose }) => {
 
   const handleCopyLink = () => {
     const url = window.location.href;
-    const textArea = document.createElement("textarea");
+    const textArea = document.createElement('textarea');
     textArea.value = url;
     document.body.appendChild(textArea);
     textArea.focus();
@@ -45,15 +45,16 @@ const JobDetailModal = ({ job, onClose }) => {
 
   return (
     <>
-      {/* Solid black backdrop */}
+      {/* Backdrop with fade-in */}
       <div
-        className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+        className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in"
         onClick={onClose}
       >
         <div
-          className="dark-theme-card-bg rounded-xl dark-theme-border border-2 w-full max-w-2xl max-h-[90vh] flex flex-col animate-slide-up"
+          className="bg-[#1a1a1a] rounded-xl border border-gray-700 w-full max-w-2xl max-h-[90vh] flex flex-col animate-slide-up shadow-xl relative"
           onClick={(e) => e.stopPropagation()}
         >
+          {/* Header */}
           <header className="p-6 border-b border-gray-700 flex justify-between items-start">
             <div className="flex items-start gap-4">
               <img
@@ -62,12 +63,17 @@ const JobDetailModal = ({ job, onClose }) => {
                 className="w-16 h-16 rounded-lg object-contain bg-white p-1"
                 onError={(e) => {
                   e.target.onerror = null;
-                  e.target.src='https://placehold.co/64x64/ffffff/1a1a1a?text=Logo';
+                  e.target.src =
+                    'https://placehold.co/64x64/ffffff/1a1a1a?text=Logo';
                 }}
               />
               <div>
-                <h2 className="text-2xl font-bold text-white">{job['Job Title']}</h2>
-                <p className="text-gray-400">{job.Company} - {job.Location}</p>
+                <h2 className="text-2xl font-bold text-white">
+                  {job['Job Title']}
+                </h2>
+                <p className="text-gray-400">
+                  {job.Company} - {job.Location}
+                </p>
               </div>
             </div>
             <button
@@ -77,34 +83,57 @@ const JobDetailModal = ({ job, onClose }) => {
               &times;
             </button>
           </header>
-          
+
+          {/* Job Description */}
           <div className="p-6 overflow-y-auto flex-grow">
             <h3 className="font-bold text-white mb-2">Job Description</h3>
-            <p className="text-gray-400 whitespace-pre-wrap">{job['Job Description'] || job.Description}</p>
+            <p className="text-gray-400 whitespace-pre-wrap">
+              {job['Job Description'] || job.Description}
+            </p>
           </div>
 
-          {/* --- REDESIGNED FOOTER SECTION --- */}
-          <footer className="p-6 border-t border-gray-700 space-y-4">
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-              {/* Secondary Action: Find a Referrer */}
-              <Link to="/#referrals" className="w-full sm:w-auto">
+          {/* Footer */}
+          <footer className="p-6 border-t border-gray-700 space-y-4 sm:space-y-0">
+            <div className="hidden sm:flex justify-between items-center gap-4">
+              {/* Desktop layout */}
+              <Link to="/become-referrer" className="w-full sm:w-auto">
                 <button className="w-full px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white font-bold rounded-lg flex items-center justify-center gap-2 transition-colors">
                   <Users size={16} />
-                  Find a Referrer
+                  Refer candidates in your companies
                 </button>
               </Link>
-              {/* Primary Action: Apply Now */}
               <a
                 href={job['Link']}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full sm:w-auto px-6 py-3 brand-button font-bold rounded-lg flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-6 py-3 bg-orange-600 hover:bg-orange-500 text-white font-bold rounded-lg flex items-center justify-center gap-2 transition-colors"
               >
                 Apply Now
                 <ExternalLink size={16} />
               </a>
             </div>
-            <div className="flex justify-center items-center gap-6 pt-2">
+
+            {/* Mobile sticky footer */}
+            <div className="sm:hidden fixed bottom-0 left-0 w-full bg-[#1a1a1a] border-t border-gray-700 p-4 flex flex-col gap-3 z-50">
+              <a
+                href={job['Link']}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full px-6 py-3 bg-orange-600 hover:bg-orange-500 text-white font-bold rounded-lg flex items-center justify-center gap-2"
+              >
+                Apply Now
+                <ExternalLink size={16} />
+              </a>
+              <Link to="/become-referrer" className="w-full">
+                <button className="w-full px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white font-bold rounded-lg flex items-center justify-center gap-2">
+                  <Users size={16} />
+                  Refer candidates
+                </button>
+              </Link>
+            </div>
+
+            {/* Extra Links */}
+            <div className="flex justify-center items-center gap-6 pt-4 sm:pt-2">
               <a
                 href="https://www.whatsapp.com/channel/0029Va5RkYRBqbrCyLdiaL3M"
                 target="_blank"
@@ -112,7 +141,7 @@ const JobDetailModal = ({ job, onClose }) => {
                 className="flex items-center gap-2 text-xs text-green-400 hover:text-green-300"
               >
                 <MessageSquare size={14} />
-                Get Whatsapp Job Updates 
+                Get Whatsapp Job Updates
               </a>
               <button
                 onClick={handleCopyLink}
@@ -123,7 +152,6 @@ const JobDetailModal = ({ job, onClose }) => {
               </button>
             </div>
           </footer>
-          {/* --- END OF SECTION --- */}
         </div>
       </div>
       <Toast message="Link copied to clipboard!" show={showToast} />
