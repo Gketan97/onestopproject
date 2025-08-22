@@ -112,11 +112,25 @@ const ReferrerForm = () => {
         setIsFreeEmail(freeEmailProviders.includes(domain));
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        console.log("Form Data Submitted:", formData);
-        setIsSubmitted(true);
-    };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+        const response = await fetch('https://script.google.com/macros/s/AKfycbzqn78oMYFVEIbq4xDY735xbqv9N2GY0X3jMSHzinNqhNdunPql6JA-eTUyMczwgx9d/exec', {
+            method: 'POST',
+            body: new URLSearchParams(formData),
+        });
+
+        if (response.ok) {
+            setIsSubmitted(true);
+        } else {
+            alert('Failed to submit. Please try again.');
+        }
+    } catch (error) {
+        console.error('Error submitting form:', error);
+        alert('Something went wrong. Please try again later.');
+    }
+};
 
     const handleCopyLink = () => {
         const urlToCopy = window.location.href;
