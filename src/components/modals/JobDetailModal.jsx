@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Copy, ExternalLink, MessageSquare } from 'lucide-react';
+import { Link } from 'react-router-dom'; // Import Link for navigation
+import { Copy, ExternalLink, MessageSquare, Users } from 'lucide-react';
 
 // A simple, reusable toast notification component
 const Toast = ({ message, show }) => {
@@ -29,7 +30,7 @@ const JobDetailModal = ({ job, onClose }) => {
       setTimeout(() => setShowToast(false), 2000); // Hide toast after 2 seconds
     }).catch(err => {
       console.error('Failed to copy: ', err);
-      // Fallback for older browsers if needed
+      // Fallback for older browsers
       const textArea = document.createElement("textarea");
       textArea.value = url;
       document.body.appendChild(textArea);
@@ -50,24 +51,24 @@ const JobDetailModal = ({ job, onClose }) => {
 
   return (
     <>
-      {/* Solid black backdrop (no cluttered background) */}
-      <div 
+      {/* Solid black backdrop */}
+      <div
         className="fixed inset-0 bg-black flex items-center justify-center z-50 p-4"
         onClick={onClose}
       >
-        <div 
+        <div
           className="dark-theme-card-bg rounded-xl dark-theme-border border-2 w-full max-w-2xl max-h-[90vh] flex flex-col animate-slide-up"
           onClick={(e) => e.stopPropagation()}
         >
           <header className="p-6 border-b border-gray-700 flex justify-between items-start">
             <div className="flex items-start gap-4">
-              <img 
-                src={job['Company Logo URL']} 
-                alt={`${job.Company} logo`} 
+              <img
+                src={job['Company Logo URL']}
+                alt={`${job.Company} logo`}
                 className="w-16 h-16 rounded-lg object-contain bg-white p-1"
-                onError={(e) => { 
-                  e.target.onerror = null; 
-                  e.target.src='https://placehold.co/64x64/ffffff/1a1a1a?text=Logo'; 
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src='https://placehold.co/64x64/ffffff/1a1a1a?text=Logo';
                 }}
               />
               <div>
@@ -75,8 +76,8 @@ const JobDetailModal = ({ job, onClose }) => {
                 <p className="text-gray-400">{job.Company} - {job.Location}</p>
               </div>
             </div>
-            <button 
-              onClick={onClose} 
+            <button
+              onClick={onClose}
               className="text-gray-500 hover:text-white text-3xl leading-none"
             >
               &times;
@@ -86,31 +87,45 @@ const JobDetailModal = ({ job, onClose }) => {
           <div className="p-6 overflow-y-auto flex-grow">
             <h3 className="font-bold text-white mb-2">Job Description</h3>
             <p className="text-gray-400 whitespace-pre-wrap">{job['Job Description'] || job.Description}</p>
+
+            {/* --- UPDATED REFERRER CALLOUT SECTION --- */}
+            <div className="mt-8 p-4 bg-gray-800/50 rounded-lg border border-gray-700 text-center">
+                <h4 className="font-bold text-white">Want to refer candidates?</h4>
+                <p className="text-gray-400 text-sm mt-2">Join our platform to refer candidates for roles at your company and others.</p>
+                <Link to="/become-referrer">
+                    <button className="mt-4 px-6 py-2 brand-button text-sm font-bold rounded-lg flex items-center gap-2 mx-auto">
+                        <Users size={16} />
+                        Become a Referrer
+                    </button>
+                </Link>
+            </div>
+            {/* --- END OF SECTION --- */}
+
           </div>
 
           <footer className="p-6 border-t border-gray-700 flex flex-col sm:flex-row justify-between items-center gap-4">
             <div className="flex flex-col sm:flex-row items-center gap-4">
-              <a 
-                href="https://chat.whatsapp.com/your-channel-link" 
-                target="_blank" 
-                rel="noopener noreferrer" 
+              <a
+                href="https://www.whatsapp.com/channel/0029Va5RkYRBqbrCyLdiaL3M"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="flex items-center gap-2 text-sm text-green-400 hover:text-green-300"
               >
                 <MessageSquare size={16} />
                 Get Job Updates
               </a>
-              <button 
-                onClick={handleCopyLink} 
+              <button
+                onClick={handleCopyLink}
                 className="flex items-center gap-2 text-sm text-gray-400 hover:text-white"
               >
                 <Copy size={16} />
                 Copy Share Link
               </button>
             </div>
-            <a 
-              href={job['Link']} 
-              target="_blank" 
-              rel="noopener noreferrer" 
+            <a
+              href={job['Link']}
+              target="_blank"
+              rel="noopener noreferrer"
               className="px-6 py-3 brand-button font-bold rounded-lg flex items-center gap-2"
             >
               Apply Now
