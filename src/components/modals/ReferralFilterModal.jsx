@@ -1,26 +1,34 @@
-// src/components/modals/ReferralFilterModal.jsx
+import React, { useState, useMemo, useEffect } from 'react';
 
-import React, { useState, useMemo } from 'react';
-
-const ReferralFilterModal = ({ isOpen, onClose, allReferrals, onApplyFilters }) => {
+const ReferralFilterModal = ({ isOpen, onClose, allReferrals, onApplyFilters, activeFilters }) => {
   const [selectedCompanies, setSelectedCompanies] = useState([]);
   const [selectedRoles, setSelectedRoles] = useState([]);
 
+  // ✅ Sync state with activeFilters when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setSelectedCompanies(activeFilters?.companies || []);
+      setSelectedRoles(activeFilters?.roles || []);
+    }
+  }, [isOpen, activeFilters]);
+
+  // ✅ Build unique filter options from allReferrals
   const filterOptions = useMemo(() => {
-    // CORRECTED: Using 'Company' to match JobsPage filtering logic
-    const companies = [
-      ...new Set(allReferrals.map(ref => ref.Company).filter(Boolean))
-    ].sort();
+    const companiesSet = new Set();
+    const rolesSet = new Set();
 
-    // CORRECTED: Using 'Role' to match JobsPage filtering logic
-    const roles = [
-      ...new Set(allReferrals.map(ref => ref.Role).filter(Boolean))
-    ].sort();
+    allReferrals.forEach(ref => {
+      if (ref.company) companiesSet.add(ref.company.trim());
+      if (ref.designation) rolesSet.add(ref.designation.trim());
+    });
 
-    return { companies, roles };
+    return {
+      companies: Array.from(companiesSet).sort(),
+      roles: Array.from(rolesSet).sort()
+    };
   }, [allReferrals]);
 
-  const handleCheckboxChange = (value, type) => {
+  const toggleSelection = (value, type) => {
     const updater = type === 'company' ? setSelectedCompanies : setSelectedRoles;
     updater(prev =>
       prev.includes(value) ? prev.filter(item => item !== value) : [...prev, value]
@@ -30,7 +38,7 @@ const ReferralFilterModal = ({ isOpen, onClose, allReferrals, onApplyFilters }) 
   const handleApply = () => {
     onApplyFilters({
       companies: selectedCompanies,
-      roles: selectedRoles,
+      roles: selectedRoles
     });
     onClose();
   };
@@ -45,15 +53,15 @@ const ReferralFilterModal = ({ isOpen, onClose, allReferrals, onApplyFilters }) 
   if (!isOpen) return null;
 
   return (
-    // UPDATED: Increased opacity and added backdrop-blur for a cleaner look
     <div
-      className="fixed inset-0 bg-black bg-opacity-95 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-black bg-opacity-90 backdrop-blur-sm flex items-center justify-center z-50 p-4"
       onClick={onClose}
     >
       <div
         className="dark-theme-card-bg rounded-xl dark-theme-border border-2 w-full max-w-2xl max-h-[90vh] flex flex-col animate-slide-up"
         onClick={e => e.stopPropagation()}
       >
+        {/* Header */}
         <header className="p-6 border-b border-gray-700 flex justify-between items-center">
           <h2 className="text-2xl font-bold text-white">Filter Referrals</h2>
           <button
@@ -64,6 +72,7 @@ const ReferralFilterModal = ({ isOpen, onClose, allReferrals, onApplyFilters }) 
           </button>
         </header>
 
+        {/* Body */}
         <div className="p-6 overflow-y-auto flex-grow">
           {/* Company Filter */}
           <div className="mb-6">
@@ -77,7 +86,7 @@ const ReferralFilterModal = ({ isOpen, onClose, allReferrals, onApplyFilters }) 
                   <input
                     type="checkbox"
                     checked={selectedCompanies.includes(company)}
-                    onChange={() => handleCheckboxChange(company, 'company')}
+                    onChange={() => toggleSelection(company, 'company')}
                     className="form-checkbox bg-gray-800 border-gray-600 text-orange-500"
                   />
                   {company}
@@ -98,7 +107,7 @@ const ReferralFilterModal = ({ isOpen, onClose, allReferrals, onApplyFilters }) 
                   <input
                     type="checkbox"
                     checked={selectedRoles.includes(role)}
-                    onChange={() => handleCheckboxChange(role, 'role')}
+                    onChange={() => toggleSelection(role, 'role')}
                     className="form-checkbox bg-gray-800 border-gray-600 text-orange-500"
                   />
                   {role}
@@ -108,6 +117,7 @@ const ReferralFilterModal = ({ isOpen, onClose, allReferrals, onApplyFilters }) 
           </div>
         </div>
 
+        {/* Footer */}
         <footer className="p-6 border-t border-gray-700 flex justify-end items-center gap-4">
           <button
             onClick={handleClear}
