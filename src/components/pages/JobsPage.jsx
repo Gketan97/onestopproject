@@ -1,7 +1,6 @@
 // src/pages/JobsPage.jsx
 
 import React, { useState, useEffect, useMemo } from 'react';
-// CORRECTED: Reverted to relative paths from the confirmed file structure
 import { useDataFetching } from '../../hooks/useDataFetching.js';
 
 // Components
@@ -25,6 +24,7 @@ const useDebounce = (value, delay) => {
 const ITEMS_PER_PAGE = window.innerWidth < 768 ? 6 : 10;
 
 const JobsPage = () => {
+  // allReferrals is now already normalized by the hook
   const { allJobs, allReferrals, loading, error, fetchAllData } = useDataFetching();
   
   const [activeTab, setActiveTab] = useState('jobs');
@@ -38,17 +38,6 @@ const JobsPage = () => {
   const [highlightedJobId, setHighlightedJobId] = useState(null);
 
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
-
-  // FIX: Normalize referral data once to ensure consistent property names
-  const normalizedReferrals = useMemo(() => {
-    return allReferrals.map(ref => ({
-      ...ref,
-      name: ref.Name || ref['Referrer Name'] || 'Anonymous',
-      designation: ref.Designation || ref.Role || 'N/A',
-      company: ref['Company name'] || ref.Company || 'N/A',
-      link: ref['LinkedIn ID url'] || ref.link || '#'
-    }));
-  }, [allReferrals]);
 
   const filteredData = useMemo(() => {
     const lowercasedQuery = debouncedSearchQuery.toLowerCase();
@@ -67,7 +56,7 @@ const JobsPage = () => {
       }
       return results;
     } else { // Referrals
-      let results = normalizedReferrals;
+      let results = allReferrals; // Use the already normalized data directly
       if (activeReferralFilters.companies.length > 0) {
         results = results.filter(ref => activeReferralFilters.companies.includes(ref.company));
       }
@@ -84,7 +73,7 @@ const JobsPage = () => {
       // Shuffle the results for even distribution
       return [...results].sort(() => Math.random() - 0.5);
     }
-  }, [debouncedSearchQuery, activeTab, allJobs, normalizedReferrals, activeJobFilters, activeReferralFilters]);
+  }, [debouncedSearchQuery, activeTab, allJobs, allReferrals, activeJobFilters, activeReferralFilters]);
   
   useEffect(() => {
     setCurrentPage(1);
@@ -222,7 +211,7 @@ const JobsPage = () => {
       <ReferralFilterModal
         isOpen={isReferralFilterModalOpen}
         onClose={() => setIsReferralFilterModalOpen(false)}
-        allReferrals={normalizedReferrals} // Use normalized data for filters
+        allReferrals={allReferrals} // Use the original allReferrals from the hook
         onApplyFilters={setActiveReferralFilters}
       />
     </>
