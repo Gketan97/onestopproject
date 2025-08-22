@@ -1,7 +1,7 @@
 // src/components/cards/ReferralCard.jsx
 
 import React from 'react';
-import { Briefcase, Building2, ArrowRight } from 'lucide-react';
+import { Briefcase, Building2, ArrowRight, Linkedin } from 'lucide-react';
 
 const ReferralCard = ({ referral }) => {
   // Use data keys that match the normalized data from useDataFetching.js
@@ -39,7 +39,8 @@ const ReferralCard = ({ referral }) => {
         // ENHANCEMENT: Changed button color and added transition
         className="bg-orange-600 hover:bg-orange-700 text-white w-full mt-5 py-2.5 rounded-lg font-bold flex items-center justify-center gap-2 text-center transition-colors"
       >
-        Request Referral
+        <Linkedin size={16} />
+        Request on LinkedIn
         {/* ENHANCEMENT: Arrow now slides right on card hover */}
         <ArrowRight size={16} className="transition-transform duration-200 group-hover:translate-x-1" />
       </a>
