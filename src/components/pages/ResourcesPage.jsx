@@ -1,76 +1,66 @@
 import React from 'react';
-import { FileText, Mail, Map, Link as LinkIcon, ChevronRight } from 'lucide-react';
+import { FileText, Mail, Map, Link as LinkIcon } from 'lucide-react';
 
 // --- Data for the Resource Cards ---
 const resourcesData = [
     {
-        icon: <FileText size={24} className="text-orange-400" />,
-        title: "Download Ketan's Resume",
-        description: "Downlaod Ketan's Resume that was shortlisted in 50+ product companies along with Youtube video Tutorial",
-        ctaText: "Download",
-        topmateUrl: "https://topmate.io/ketan_goel_analytics_expert/1639667?utm_source=public_profile&utm_campaign=ketan_goel_analytics_expert" // Replace with your actual Topmate URL
+        icon: FileText,
+        title: "The Ultimate Resume Kit",
+        description: "Get the exact resume template that unlocked interviews at Amazon, Flipkart, and more.",
+        bgUrl: "https://images.unsplash.com/photo-1587440871875-191322ee64b0?q=80&w=2071&auto=format&fit=crop", // Abstract background
+        topmateUrl: "https://topmate.io/your-profile/1"
     },
     {
-        icon: <Mail size={24} className="text-orange-400" />,
-        title: " Download 12,000+ HR Email List ",
-        description: "Access a curated list of HR professionals and recruiters from over 12,000 top companies in India.",
-        ctaText: "Download",
-        topmateUrl: "https://topmate.io/ketan_goel_analytics_expert/1622508?utm_source=public_profile&utm_campaign=ketan_goel_analytics_expert" // Replace with your actual Topmate URL
+        icon: Mail,
+        title: "12,000+ HR Contacts",
+        description: "A curated list of HR professionals and recruiters from top companies in India.",
+        bgUrl: "https://images.unsplash.com/photo-1516321497487-e288fb19713f?q=80&w=2070&auto=format&fit=crop", // Abstract background
+        topmateUrl: "https://topmate.io/your-profile/2"
     },
     {
-        icon: <Map size={24} className="text-orange-400" />,
+        icon: Map,
         title: "60-Day Analytics Roadmap",
-        description: "A step-by-step guide to mastering the skills needed to land a top-tier analytics role in just two months.",
-        ctaText: "Download",
-        topmateUrl: "https://topmate.io/ketan_goel_analytics_expert/521790?utm_source=public_profile&utm_campaign=ketan_goel_analytics_expert" // Replace with your actual Topmate URL
+        description: "A step-by-step guide to mastering the skills for a top-tier analytics role.",
+        bgUrl: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop", // Abstract background
+        topmateUrl: "https://topmate.io/your-profile/3"
     },
     {
-        icon: <LinkIcon size={24} className="text-orange-400" />,
+        icon: LinkIcon,
         title: "Discounted LinkedIn Premium",
-        description: "Unlock the full power of LinkedIn with an exclusive discount on a Premium subscription for our community members.",
-        ctaText: "Get access",
-        topmateUrl: "https://topmate.io/ketan_goel_analytics_expert/1454472?utm_source=public_profile&utm_campaign=ketan_goel_analytics_expert" // Replace with your actual Topmate URL
+        description: "Unlock the full power of LinkedIn with an exclusive discount for our community.",
+        bgUrl: "https://images.unsplash.com/photo-1611944212129-29955ae40213?q=80&w=2070&auto=format&fit=crop", // Corrected background URL
+        topmateUrl: "https://topmate.io/your-profile/4"
     }
 ];
 
-// --- Reusable Resource Card Component (for Desktop) ---
+// --- Unified, Responsive Resource Card Component ---
 const ResourceCard = ({ resource }) => {
+    const IconComponent = resource.icon;
     return (
-        <div className="bg-[#2a2a2a] border border-gray-700 rounded-xl p-6 flex flex-col items-start h-full transition-transform transform hover:-translate-y-1 hover:shadow-lg hover:shadow-orange-500/10">
-            <div className="bg-gray-800 p-3 rounded-full mb-4">
-                {resource.icon}
-            </div>
-            <h3 className="text-xl font-bold text-white mb-2">{resource.title}</h3>
-            <p className="text-gray-400 text-sm flex-grow mb-6">{resource.description}</p>
-            <a
-                href={resource.topmateUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full text-center mt-auto px-6 py-3 bg-orange-600 hover:bg-orange-500 text-white font-bold rounded-lg transition-colors"
-            >
-                {resource.ctaText}
-            </a>
-        </div>
-    );
-};
-
-// --- Reusable Resource List Item Component (for Mobile) ---
-const ResourceListItem = ({ resource }) => {
-    return (
-        <a
-            href={resource.topmateUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-4 bg-[#2a2a2a] border border-gray-700 rounded-xl p-4 transition-colors hover:bg-gray-800"
+        <a 
+            href={resource.topmateUrl} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="cursor-pointer group w-full block"
         >
-            <div className="bg-gray-800 p-3 rounded-full">
-                {resource.icon}
+            <div className="bg-[#2a2a2a] border border-gray-700 rounded-lg overflow-hidden transition-all duration-300 group-hover:border-orange-500/50 group-hover:shadow-xl group-hover:shadow-orange-500/10 group-hover:-translate-y-1 h-full flex flex-col">
+                <div className="relative w-full h-40">
+                    <img src={resource.bgUrl} alt={resource.title} className="w-full h-full object-cover opacity-30"/>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                        <IconComponent size={48} className="text-orange-400" />
+                    </div>
+                </div>
+                <div className="p-4 text-left flex flex-col flex-grow">
+                    <h3 className="font-bold text-white text-lg">{resource.title}</h3>
+                    <p className="text-gray-400 text-sm mt-1 flex-grow">{resource.description}</p>
+                    <div className="mt-4">
+                        <span className="w-full text-center px-6 py-2 bg-orange-600 hover:bg-orange-500 text-white font-bold rounded-lg transition-colors text-sm inline-block">
+                            Download Now
+                        </span>
+                        <p className="text-center text-gray-500 text-xs mt-2">via Topmate</p>
+                    </div>
+                </div>
             </div>
-            <div className="flex-grow">
-                <h3 className="font-bold text-white">{resource.title}</h3>
-                <p className="text-gray-400 text-xs mt-1">{resource.description}</p>
-            </div>
-            <ChevronRight size={20} className="text-gray-500 flex-shrink-0" />
         </a>
     );
 };
@@ -91,17 +81,10 @@ const ResourcesPage = () => {
                     </p>
                 </div>
 
-                {/* Desktop View: 2x2 Grid (Hidden on mobile) */}
-                <div className="hidden md:grid grid-cols-2 gap-8">
+                {/* --- RESPONSIVE RESOURCE GRID --- */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     {resourcesData.map((resource, index) => (
                         <ResourceCard key={index} resource={resource} />
-                    ))}
-                </div>
-
-                {/* Mobile View: Compact List (Hidden on desktop) */}
-                <div className="md:hidden space-y-4">
-                     {resourcesData.map((resource, index) => (
-                        <ResourceListItem key={index} resource={resource} />
                     ))}
                 </div>
             </div>
