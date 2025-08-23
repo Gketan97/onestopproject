@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { ShieldCheck, Zap, Users } from 'lucide-react';
 
@@ -23,31 +23,99 @@ const whyItWorks = [
 
 const testimonials = [
     {
-        quote: "This platform was a game-changer. I got a referral at my dream company within a week!",
-        name: "Aisha Khan",
-        role: "Software Engineer at Google"
+        pullQuote: "I started receiving calls within one week.",
+        quote: "I started receiving calls within one week after using this format. Kinda worked like magic for me. Now my resume is created from a recruiter's perspective, not from my own, and I just feel so confident!",
+        name: "Rajni",
+        role: "Mentee",
+        avatar: "https://placehold.co/100x100/F97316/FFFFFF?text=R"
     },
     {
-        quote: "The resources and mentorship available here are top-notch. It completely changed my job search strategy.",
-        name: "Rohan Mehta",
-        role: "Product Manager at Microsoft"
+        pullQuote: "He gave valuable insights on how to build a career.",
+        quote: "Ketan is an expert in Product and Analytics. He gave valuable insights on how to build a career in Product Management and shared helpful strategies for interview preparation, networking, and salary negotiation.",
+        name: "Leon Jose",
+        role: "Product Management Aspirant",
+        avatar: "https://placehold.co/100x100/F97316/FFFFFF?text=LJ"
+    },
+    {
+        pullQuote: "He didn't just teach me how to book interviews, but how to crack them.",
+        quote: "I liked the way Ketan tackled everything during our one-on-one call. He didn't just teach me how to book interviews but also how to approach and crack them using first principles.",
+        name: "Pallav Joshi",
+        role: "Mentee",
+        avatar: "https://placehold.co/100x100/F97316/FFFFFF?text=PJ"
+    },
+    {
+        pullQuote: "His insights truly made a difference in shaping my career plans.",
+        quote: "Ketan is incredibly helpful when it comes to career planning... He has a natural ability to listen, understand your goals, and offer practical advice that works. His insights truly made a difference.",
+        name: "Aditya Gupta",
+        role: "Career Transition Aspirant",
+        avatar: "https://placehold.co/100x100/F97316/FFFFFF?text=AG"
     }
 ];
 
-// --- "Ascend" Animation Component ---
+// --- Custom Hook for Scroll Animations ---
+const useInView = (options) => {
+    const ref = useRef(null);
+    const [isInView, setIsInView] = useState(false);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(([entry]) => {
+            if (entry.isIntersecting) {
+                setIsInView(true);
+                observer.unobserve(entry.target);
+            }
+        }, options);
+
+        if (ref.current) {
+            observer.observe(ref.current);
+        }
+
+        return () => {
+            if (ref.current) {
+                observer.unobserve(ref.current);
+            }
+        };
+    }, [ref, options]);
+
+    return [ref, isInView];
+};
+
+
+// --- Animated Background Component ---
 const AnimatedBackground = () => (
     <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
         <canvas id="ascend-canvas" className="w-full h-full"></canvas>
     </div>
 );
 
+// --- Testimonial Card Component ---
+const TestimonialCard = ({ testimonial }) => (
+    <div className="bg-[#2a2a2a] p-6 rounded-xl border border-gray-700 shadow-lg flex flex-col h-full">
+        <div className="flex items-center mb-4">
+            <img src={testimonial.avatar} alt={testimonial.name} className="w-12 h-12 rounded-full border-2 border-gray-600" />
+            <div className="ml-4">
+                <p className="text-white font-bold">{testimonial.name}</p>
+                <p className="text-sm text-gray-500">{testimonial.role}</p>
+            </div>
+        </div>
+        <p className="text-white font-semibold mb-2 text-lg">"{testimonial.pullQuote}"</p>
+        <p className="text-gray-400 italic text-sm flex-grow">"{testimonial.quote}"</p>
+    </div>
+);
+
+
 // --- Main HomePage Component ---
 const HomePage = () => {
     const [email, setEmail] = useState('');
     const [isSubmitted, setIsSubmitted] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false); // To handle loading state
+
+    const [whyRef, whyInView] = useInView({ threshold: 0.1, triggerOnce: true });
+    const [testimonialsRef, testimonialsInView] = useInView({ threshold: 0.1, triggerOnce: true });
+
 
     useEffect(() => {
         const canvas = document.getElementById('ascend-canvas');
+        if (!canvas) return;
         const ctx = canvas.getContext('2d');
         let particles = [];
         const numParticles = 100;
@@ -62,9 +130,9 @@ const HomePage = () => {
             for (let i = 0; i < numParticles; i++) {
                 particles.push({
                     x: Math.random() * canvas.width,
-                    y: canvas.height + Math.random() * 100, // Start below the screen
+                    y: canvas.height + Math.random() * 100,
                     vx: (Math.random() - 0.5) * 0.3,
-                    vy: -(Math.random() * 1 + 0.5), // Move upwards
+                    vy: -(Math.random() * 1 + 0.5),
                     radius: Math.random() * 2 + 1,
                     alpha: Math.random() * 0.5 + 0.1
                 });
@@ -72,42 +140,60 @@ const HomePage = () => {
         };
 
         const animate = () => {
+            if (!ctx) return;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-
             particles.forEach(p => {
                 p.x += p.vx;
                 p.y += p.vy;
-
-                // Reset particle when it goes off-screen
                 if (p.y < -10) {
                     p.y = canvas.height + 10;
                     p.x = Math.random() * canvas.width;
                 }
-                 if (p.x < -10 || p.x > canvas.width + 10) {
-                    p.vx *= -1;
-                }
-
+                if (p.x < -10 || p.x > canvas.width + 10) p.vx *= -1;
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
                 ctx.fillStyle = `rgba(249, 115, 22, ${p.alpha})`;
                 ctx.fill();
             });
-
             requestAnimationFrame(animate);
         };
 
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
         createParticles();
-        animate();
+        const animationFrameId = requestAnimationFrame(animate);
 
-        return () => window.removeEventListener('resize', resizeCanvas);
+        return () => {
+            window.removeEventListener('resize', resizeCanvas);
+            cancelAnimationFrame(animationFrameId);
+        }
     }, []);
 
-    const handleEmailSubmit = (e) => {
+    const handleEmailSubmit = async (e) => {
         e.preventDefault();
-        console.log('Email submitted:', email);
-        setIsSubmitted(true);
+        setIsSubmitting(true);
+
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbwVnxhMo46kezcormu5_4Q6vsLiQRXrq1gvMR8Yqr7fjHtGAhY692KHB27JLkHxGDXI/exec';
+        const formData = new FormData();
+        formData.append('email', email);
+
+        try {
+            const response = await fetch(scriptURL, {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (response.ok) {
+                setIsSubmitted(true);
+            } else {
+                alert('Submission failed. Please try again.');
+            }
+        } catch (error) {
+            console.error('Error submitting form:', error);
+            alert('An error occurred. Please try again later.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -115,7 +201,6 @@ const HomePage = () => {
             <AnimatedBackground />
             <main className="w-full max-w-7xl mx-auto p-4 md:p-8 flex flex-col items-center flex-grow z-10 relative">
                 
-                {/* Hero Section */}
                 <section className="text-center py-20 md:py-28 max-w-4xl">
                     <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold leading-tight text-white drop-shadow-lg">
                         Your Career Struggle
@@ -135,15 +220,16 @@ const HomePage = () => {
                                     type="email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    placeholder="Enter your email to get early access"
+                                    placeholder="Enter your email for early access"
                                     required
-                                    className="w-full pl-6 pr-36 py-4 bg-gray-800/50 border border-gray-700 rounded-full text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 backdrop-blur-sm"
+                                    className="w-full pl-6 pr-32 sm:pr-36 py-4 bg-gray-800/50 border border-gray-700 rounded-full text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 backdrop-blur-sm"
                                 />
                                 <button
                                     type="submit"
-                                    className="absolute right-2 top-1/2 -translate-y-1/2 px-6 py-2.5 bg-orange-600 hover:bg-orange-500 text-white font-bold rounded-full shadow-lg transition-all duration-300 transform hover:scale-105"
+                                    disabled={isSubmitting}
+                                    className="absolute right-2 top-1/2 -translate-y-1/2 px-4 sm:px-6 py-2.5 bg-orange-600 hover:bg-orange-500 text-white font-bold rounded-full shadow-lg transition-all duration-300 transform hover:scale-105 text-sm sm:text-base disabled:bg-gray-500 disabled:cursor-not-allowed"
                                 >
-                                    Notify Me
+                                    {isSubmitting ? 'Submitting...' : 'Notify Me'}
                                 </button>
                             </form>
                         ) : (
@@ -154,8 +240,7 @@ const HomePage = () => {
                     </div>
                 </section>
 
-                {/* Why OneStopCareers Section */}
-                <section className="mt-16 md:mt-20 w-full text-center max-w-5xl">
+                <section ref={whyRef} className={`mt-16 md:mt-20 w-full text-center max-w-5xl transition-all duration-1000 ${whyInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
                     <h2 className="text-3xl sm:text-4xl font-bold mb-12 dark-theme-text">
                         Cut Through the Noise
                     </h2>
@@ -175,20 +260,13 @@ const HomePage = () => {
                     </div>
                 </section>
 
-                {/* Testimonials */}
-                <section className="mt-16 md:mt-20 w-full text-center max-w-4xl">
-                    <h2 className="text-3xl sm:text-4xl font-bold mb-12 dark-theme-text">
+                <section ref={testimonialsRef} className={`mt-16 md:mt-20 w-full transition-all duration-1000 ${testimonialsInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+                    <h2 className="text-3xl sm:text-4xl font-bold mb-12 text-center dark-theme-text">
                         What Our Users Say
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {testimonials.map((testimonial, index) => (
-                            <div key={index} className="bg-[#2a2a2a] p-6 rounded-xl border border-gray-700 shadow-lg">
-                                <p className="text-gray-400 mb-4 italic">"{testimonial.quote}"</p>
-                                <div className="text-center">
-                                    <p className="text-white font-bold">{testimonial.name}</p>
-                                    <p className="text-sm text-gray-500">{testimonial.role}</p>
-                                </div>
-                            </div>
+                            <TestimonialCard key={index} testimonial={testimonial} />
                         ))}
                     </div>
                 </section>
