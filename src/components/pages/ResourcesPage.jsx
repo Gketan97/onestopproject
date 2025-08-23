@@ -8,28 +8,28 @@ const resourcesData = [
         title: "The Ultimate Resume Kit",
         description: "The exact template that unlocked interviews at Amazon, Flipkart, and more.",
         bgUrl: "https://images.unsplash.com/photo-1587440871875-191322ee64b0?q=80&w=2071&auto=format&fit=crop",
-        topmateUrl: "https://topmate.io/your-profile/1"
+        topmateUrl: "https://topmate.io/ketan_goel_analytics_expert?utm_campaign=ketan_goel_analytics_expert&utm_source=spotlight"
     },
     {
         icon: Mail,
         title: "12,000+ HR Contacts",
         description: "A curated list of HR professionals and recruiters from top companies in India.",
         bgUrl: "https://images.unsplash.com/photo-1516321497487-e288fb19713f?q=80&w=2070&auto=format&fit=crop",
-        topmateUrl: "https://topmate.io/your-profile/2"
+        topmateUrl: "https://topmate.io/ketan_goel_analytics_expert/1622508?utm_source=spotlight&utm_campaign=ketan_goel_analytics_expert"
     },
     {
         icon: Map,
         title: "60-Day Analytics Roadmap",
         description: "A step-by-step guide to mastering the skills for a top-tier analytics role.",
         bgUrl: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop",
-        topmateUrl: "https://topmate.io/your-profile/3"
+        topmateUrl: "https://topmate.io/ketan_goel_analytics_expert/521790?utm_source=spotlight&utm_campaign=ketan_goel_analytics_expert"
     },
     {
         icon: LinkIcon,
         title: "Discounted LinkedIn Premium",
         description: "Unlock the full power of LinkedIn with an exclusive discount for our community.",
         bgUrl: "https://images.unsplash.com/photo-1611944212129-29955ae40213?q=80&w=2070&auto=format&fit=crop",
-        topmateUrl: "https://topmate.io/your-profile/4"
+        topmateUrl: "https://topmate.io/ketan_goel_analytics_expert/1454472?utm_source=spotlight&utm_campaign=ketan_goel_analytics_expert"
     }
 ];
 
