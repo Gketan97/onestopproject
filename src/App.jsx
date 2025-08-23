@@ -8,7 +8,8 @@ import HomePage from './components/pages/HomePage.jsx';
 import DecisionTreePage from './components/pages/DecisionTreePage.jsx';
 import JobsPage from './components/pages/JobsPage.jsx';
 import ReferrerForm from './components/pages/ReferrerForm.jsx';
-import ResourcesPage from './components/pages/ResourcesPage.jsx'; // 1. Import the new page
+import ResourcesPage from './components/pages/ResourcesPage.jsx';
+import MentorsPage from './components/pages/MentorsPage.jsx'; // 1. Import the new MentorsPage
 import Header from './components/layout/Header.jsx';
 import MobileHeader from './components/layout/MobileHeader.jsx';
 import MobileNav from './components/layout/MobileNav.jsx';
@@ -56,7 +57,8 @@ const App = () => {
           <Route path="/decision-tree" element={<DecisionTreePage />} />
           <Route path="/jobs" element={<JobsPage />} />
           <Route path="/become-referrer" element={<ReferrerForm />} />
-          <Route path="/resources" element={<ResourcesPage />} /> {/* 2. Add the new route */}
+          <Route path="/resources" element={<ResourcesPage />} />
+          <Route path="/mentors" element={<MentorsPage />} /> {/* 2. Add the new route for the Mentors page */}
         </Routes>
       </main>
       <footer className="w-full max-w-7xl mx-auto p-4 text-center text-sm text-gray-500 border-t border-[#444] mt-12 md:mt-24 z-10">
