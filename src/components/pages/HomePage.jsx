@@ -1,99 +1,201 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { stages, testimonials, whyItWorks } from '../../data/appData';
+import { ShieldCheck, Zap, Users } from 'lucide-react';
 
+// --- Data for Page Sections ---
+const whyItWorks = [
+    {
+        icon: ShieldCheck,
+        title: "Verified Paths, Not Random Noise",
+        description: "Tired of generic YouTube advice and unverified content? We provide curated, proven strategies from industry insiders, cutting through the clutter to give you a clear path forward."
+    },
+    {
+        icon: Zap,
+        title: "Personalized Journeys, Not Generic Templates",
+        description: "Your career is unique. We ditch the one-size-fits-all approach of expensive courses for personalized guidance tailored to your specific goals and challenges."
+    },
+    {
+        icon: Users,
+        title: "Real Mentors, Not Just Creators",
+        description: "Connect with a trusted network of professionals who have actually been there. Get actionable insights and direct support from people who have achieved what you're aiming for."
+    }
+];
+
+const testimonials = [
+    {
+        quote: "This platform was a game-changer. I got a referral at my dream company within a week!",
+        name: "Aisha Khan",
+        role: "Software Engineer at Google"
+    },
+    {
+        quote: "The resources and mentorship available here are top-notch. It completely changed my job search strategy.",
+        name: "Rohan Mehta",
+        role: "Product Manager at Microsoft"
+    }
+];
+
+// --- "Ascend" Animation Component ---
+const AnimatedBackground = () => (
+    <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
+        <canvas id="ascend-canvas" className="w-full h-full"></canvas>
+    </div>
+);
+
+// --- Main HomePage Component ---
 const HomePage = () => {
-  return (
-    <main className="w-full max-w-7xl mx-auto p-4 md:p-8 flex flex-col items-center flex-grow z-10">
-      
-      {/* Hero Section */}
-      <section className="text-center py-16 md:py-24 max-w-4xl">
-        <h2 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold leading-tight text-white drop-shadow-lg">
-          <span className="gradient-text">Your Career Struggle</span>
-          <br />
-          Ends Here.
-        </h2>
-        <p className="mt-4 md:mt-6 text-lg md:text-xl text-gray-400 max-w-2xl mx-auto opacity-80">
-          A trusted platform to guide your professional journey with clarity, not confusion.
-        </p>
-        <div className="mt-8 md:mt-12">
-          <Link
-            to="/decision-tree"
-            className="px-8 py-4 brand-button font-bold text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 focus:outline-none focus:ring-4 focus:ring-gray-300 focus:ring-opacity-50"
-          >
-            Start Your Journey
-          </Link>
-        </div>
-      </section>
+    const [email, setEmail] = useState('');
+    const [isSubmitted, setIsSubmitted] = useState(false);
 
-      {/* How It Works */}
-      <section className="mt-12 md:mt-16 w-full">
-        <h3 className="text-2xl sm:text-3xl font-bold text-center mb-8 md:mb-12 dark-theme-text">
-          How It Works
-        </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {stages.map((stage, index) => {
-            const IconComponent = stage.icon;
-            return (
-              <Link
-                key={index}
-                to="/decision-tree"
-                className="group text-left dark-theme-card-bg p-6 rounded-xl dark-theme-border border-2 transition-all duration-300 ease-in-out hover:dark-theme-card-hover focus:outline-none focus:ring-2 focus:ring-orange-500"
-              >
-                <div className="flex items-center mb-4 space-x-4">
-                  <div className="p-3 rounded-full bg-white text-black shadow-lg transition-transform duration-300 group-hover:scale-110">
-                    {IconComponent && <IconComponent size="1.5rem" />}
-                  </div>
-                  <h4 className="text-xl font-bold text-white">{stage.title}</h4>
-                </div>
-                <p className="text-gray-400">{stage.description}</p>
-              </Link>
-            );
-          })}
-        </div>
-      </section>
+    useEffect(() => {
+        const canvas = document.getElementById('ascend-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        const numParticles = 100;
 
-      {/* OneStop Difference */}
-      <section className="mt-12 md:mt-16 w-full text-center max-w-5xl">
-        <h3 className="text-2xl sm:text-3xl font-bold mb-8 dark-theme-text">
-          The OneStop Difference
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
-          {whyItWorks.map((item, index) => {
-            const IconComponent = item.icon;
-            return (
-              <div key={index} className="flex flex-col items-start p-6 rounded-xl dark-theme-card-bg dark-theme-border border-2 shadow-lg">
-                <div className="p-3 rounded-full bg-gray-700 text-orange-400 mb-4 shadow-lg">
-                  {IconComponent && <IconComponent size="1.75rem" />}
-                </div>
-                <h4 className="text-xl font-bold text-white mb-2">{item.title}</h4>
-                <p className="text-gray-400">{item.description}</p>
-              </div>
-            );
-          })}
-        </div>
-      </section>
+        const resizeCanvas = () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        };
 
-      {/* Testimonials */}
-      <section className="mt-12 md:mt-16 w-full text-center max-w-4xl">
-        <h3 className="text-2xl sm:text-3xl font-bold mb-8 dark-theme-text">
-          What Our Users Say
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {testimonials.map((testimonial, index) => (
-            <div key={index} className="dark-theme-card-bg p-6 rounded-xl dark-theme-border border-2 shadow-lg">
-              <p className="text-gray-400 mb-4 italic">"{testimonial.quote}"</p>
-              <div className="text-center">
-                <p className="text-white font-bold">{testimonial.name}</p>
-                <p className="text-sm text-gray-500">{testimonial.role}</p>
-              </div>
-            </div>
-          ))}
+        const createParticles = () => {
+            particles = [];
+            for (let i = 0; i < numParticles; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: canvas.height + Math.random() * 100, // Start below the screen
+                    vx: (Math.random() - 0.5) * 0.3,
+                    vy: -(Math.random() * 1 + 0.5), // Move upwards
+                    radius: Math.random() * 2 + 1,
+                    alpha: Math.random() * 0.5 + 0.1
+                });
+            }
+        };
+
+        const animate = () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            particles.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+
+                // Reset particle when it goes off-screen
+                if (p.y < -10) {
+                    p.y = canvas.height + 10;
+                    p.x = Math.random() * canvas.width;
+                }
+                 if (p.x < -10 || p.x > canvas.width + 10) {
+                    p.vx *= -1;
+                }
+
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(249, 115, 22, ${p.alpha})`;
+                ctx.fill();
+            });
+
+            requestAnimationFrame(animate);
+        };
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+        createParticles();
+        animate();
+
+        return () => window.removeEventListener('resize', resizeCanvas);
+    }, []);
+
+    const handleEmailSubmit = (e) => {
+        e.preventDefault();
+        console.log('Email submitted:', email);
+        setIsSubmitted(true);
+    };
+
+    return (
+        <div className="bg-black text-[#e0e0e0] relative isolate" style={{ fontFamily: "'Inter', sans-serif" }}>
+            <AnimatedBackground />
+            <main className="w-full max-w-7xl mx-auto p-4 md:p-8 flex flex-col items-center flex-grow z-10 relative">
+                
+                {/* Hero Section */}
+                <section className="text-center py-20 md:py-28 max-w-4xl">
+                    <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold leading-tight text-white drop-shadow-lg">
+                        Your Career Struggle
+                        <br />
+                        Ends Here.
+                    </h1>
+                    <p className="mt-6 text-lg md:text-xl text-gray-400 max-w-2xl mx-auto">
+                        A trusted platform to guide your professional journey with clarity, not confusion.
+                    </p>
+                     <p className="mt-8 text-orange-400 font-semibold">
+                        Our AI-powered career agent is coming soon to diagnose your career and put you in the right direction.
+                    </p>
+                    <div className="mt-8">
+                        {!isSubmitted ? (
+                            <form onSubmit={handleEmailSubmit} className="relative max-w-md mx-auto">
+                                <input
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    placeholder="Enter your email to get early access"
+                                    required
+                                    className="w-full pl-6 pr-36 py-4 bg-gray-800/50 border border-gray-700 rounded-full text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 backdrop-blur-sm"
+                                />
+                                <button
+                                    type="submit"
+                                    className="absolute right-2 top-1/2 -translate-y-1/2 px-6 py-2.5 bg-orange-600 hover:bg-orange-500 text-white font-bold rounded-full shadow-lg transition-all duration-300 transform hover:scale-105"
+                                >
+                                    Notify Me
+                                </button>
+                            </form>
+                        ) : (
+                            <div className="text-green-400 font-semibold p-4 bg-green-900/50 rounded-lg">
+                                You're on the list! We'll let you know the moment we launch.
+                            </div>
+                        )}
+                    </div>
+                </section>
+
+                {/* Why OneStopCareers Section */}
+                <section className="mt-16 md:mt-20 w-full text-center max-w-5xl">
+                    <h2 className="text-3xl sm:text-4xl font-bold mb-12 dark-theme-text">
+                        Cut Through the Noise
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
+                        {whyItWorks.map((item, index) => {
+                            const IconComponent = item.icon;
+                            return (
+                                <div key={index} className="flex flex-col items-start p-6 rounded-xl bg-[#2a2a2a] border border-gray-700 shadow-lg">
+                                    <div className="p-3 rounded-full bg-gray-700 text-orange-400 mb-4 shadow-lg">
+                                        {IconComponent && <IconComponent size="1.75rem" />}
+                                    </div>
+                                    <h3 className="text-xl font-bold text-white mb-2">{item.title}</h3>
+                                    <p className="text-gray-400">{item.description}</p>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </section>
+
+                {/* Testimonials */}
+                <section className="mt-16 md:mt-20 w-full text-center max-w-4xl">
+                    <h2 className="text-3xl sm:text-4xl font-bold mb-12 dark-theme-text">
+                        What Our Users Say
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        {testimonials.map((testimonial, index) => (
+                            <div key={index} className="bg-[#2a2a2a] p-6 rounded-xl border border-gray-700 shadow-lg">
+                                <p className="text-gray-400 mb-4 italic">"{testimonial.quote}"</p>
+                                <div className="text-center">
+                                    <p className="text-white font-bold">{testimonial.name}</p>
+                                    <p className="text-sm text-gray-500">{testimonial.role}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+                
+            </main>
         </div>
-      </section>
-      
-    </main>
-  );
+    );
 };
 
 export default HomePage;
