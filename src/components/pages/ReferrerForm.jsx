@@ -1,72 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
-
-// Custom Searchable Dropdown Component with React.memo()
-const SearchableDropdown = React.memo(({ options, value, onChange, name, placeholder }) => {
-    const [isOpen, setIsOpen] = useState(false);
-    const [searchTerm, setSearchTerm] = useState(value);
-    const dropdownRef = useRef(null);
-
-    useEffect(() => {
-        setSearchTerm(value);
-    }, [value]);
-
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-                setIsOpen(false);
-            }
-        };
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
-
-    const filteredOptions = options.filter(option =>
-        option.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
-    const handleSelect = (option) => {
-        onChange({ target: { name, value: option } });
-        setSearchTerm(option);
-        setIsOpen(false);
-    };
-
-    return (
-        <div className="relative" ref={dropdownRef}>
-            <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                onFocus={() => setIsOpen(true)}
-                placeholder={placeholder}
-                className="mt-2 block w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition"
-                required
-            />
-            {isOpen && (
-                <ul className="absolute z-10 w-full bg-gray-800 border border-gray-600 rounded-lg mt-1 max-h-60 overflow-y-auto">
-                    {filteredOptions.length > 0 ? (
-                        filteredOptions.map(option => (
-                            <li
-                                key={option}
-                                onClick={() => handleSelect(option)}
-                                className="px-4 py-2 text-white hover:bg-orange-600 cursor-pointer"
-                            >
-                                {option}
-                            </li>
-                        ))
-                    ) : (
-                        <li className="px-4 py-2 text-gray-500">No results found</li>
-                    )}
-                </ul>
-            )}
-        </div>
-    );
-});
+import React, { useState, useEffect } from 'react';
 
 const ReferrerForm = () => {
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [isVisible, setIsVisible] = useState(false);
 
-    // Separate state variables for each input field to prevent re-renders
+    // Separate state variables for each input field
     const [referrerName, setReferrerName] = useState('');
     const [referrerEmail, setReferrerEmail] = useState('');
     const [contactNumber, setContactNumber] = useState('');
@@ -75,29 +13,15 @@ const ReferrerForm = () => {
     const [designation, setDesignation] = useState('');
     const [experience, setExperience] = useState('');
 
-    const [companyList, setCompanyList] = useState([]);
-    const [roleList, setRoleList] = useState([]);
     const [isFreeEmail, setIsFreeEmail] = useState(false);
     const [copyButtonText, setCopyButtonText] = useState('Copy Link');
 
-    const cdnUrl = 'https://cdn.jsdelivr.net/gh/ketangoel16-creator/onestopcareers-data/job_data.json';
     const freeEmailProviders = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'aol.com', 'icloud.com', 'zoho.com', 'protonmail.com', 'yandex.com'];
 
     useEffect(() => {
         setIsVisible(true);
-        fetch(cdnUrl)
-            .then(response => response.ok ? response.json() : Promise.reject('Network response was not ok'))
-            .then(data => {
-                if (data['Company name'] && data['Job Roles']) {
-                    setCompanyList(data['Company name'].sort());
-                    setRoleList(data['Job Roles'].sort());
-                } else {
-                    throw new Error('JSON structure not as expected.');
-                }
-            })
-            .catch(error => console.error('Error fetching data:', error));
     }, []);
-
+    
     useEffect(() => {
         if (referrerEmail) {
             const domain = referrerEmail.split('@')[1];
@@ -224,12 +148,12 @@ const ReferrerForm = () => {
 
                         <div>
                             <label htmlFor="currentCompany" className="block text-sm font-medium text-gray-300">Current Company Name</label>
-                            <SearchableDropdown options={companyList} value={currentCompany} onChange={(e) => setCurrentCompany(e.target.value)} name="currentCompany" placeholder="Search or type company..." />
+                            <input type="text" id="currentCompany" name="currentCompany" value={currentCompany} onChange={(e) => setCurrentCompany(e.target.value)} required className="mt-2 block w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition" />
                         </div>
 
                         <div>
                             <label htmlFor="designation" className="block text-sm font-medium text-gray-300">Designation</label>
-                            <SearchableDropdown options={roleList} value={designation} onChange={(e) => setDesignation(e.target.value)} name="designation" placeholder="Search or type role..." />
+                            <input type="text" id="designation" name="designation" value={designation} onChange={(e) => setDesignation(e.target.value)} required className="mt-2 block w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition" />
                         </div>
 
                         <div className="md:col-span-2">
