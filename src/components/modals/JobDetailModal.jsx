@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, BrowserRouter as Router } from 'react-router-dom'; // Import Router for Link to work
-import { Copy, ExternalLink, MessageSquare, Users } from 'lucide-react';
+import { Copy, ExternalLink, MessageSquare } from 'lucide-react';
 
 // A simple, reusable toast notification component
 const Toast = ({ message, show }) => {
@@ -43,7 +42,7 @@ const JobDetailModal = ({ job, onClose }) => {
     document.body.removeChild(textArea);
   };
 
-  // If no job data is provided, render nothing.
+  // If no job data is provided, the component renders nothing.
   if (!job) return null;
 
   return (
@@ -132,46 +131,4 @@ const JobDetailModal = ({ job, onClose }) => {
   );
 };
 
-
-// --- PREVIEW WRAPPER COMPONENT ---
-// This component simulates how JobDetailModal would be used in your app.
-const App = () => {
-  const [selectedJob, setSelectedJob] = useState(null);
-
-  // Sample job data to make the modal visible in the preview
-  const sampleJob = {
-    id: 1,
-    'Job Title': 'Senior Frontend Engineer',
-    'Company': 'Innovate Inc.',
-    'Location': 'Bengaluru, India',
-    'Company Logo URL': 'https://placehold.co/64x64/ffffff/1a1a1a?text=Logo',
-    'Job Description': 'We are looking for a skilled Frontend Engineer to join our team...\n\nResponsibilities:\n- Develop new user-facing features\n- Build reusable code and libraries for future use\n- Ensure the technical feasibility of UI/UX designs',
-    'Link': '#'
-  };
-
-  const openModal = () => setSelectedJob(sampleJob);
-  const closeModal = () => setSelectedJob(null);
-
-  return (
-    // Router is needed because the modal contains a <Link> component
-    <Router>
-      <div className="bg-black text-white min-h-screen flex flex-col items-center justify-center p-4">
-        <div className="text-center">
-            <h1 className="text-2xl font-bold mb-4">Job Modal Preview</h1>
-            <p className="text-gray-400 mb-8">Click the button below to open the job detail modal.</p>
-            <button 
-                onClick={openModal}
-                className="px-6 py-3 bg-orange-600 hover:bg-orange-500 text-white font-bold rounded-lg"
-            >
-                Show Job Details
-            </button>
-        </div>
-        
-        {/* The Modal will only appear when a job is selected */}
-        <JobDetailModal job={selectedJob} onClose={closeModal} />
-      </div>
-    </Router>
-  );
-};
-
-export default App;
+export default JobDetailModal;
