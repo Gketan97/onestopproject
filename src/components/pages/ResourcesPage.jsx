@@ -1,40 +1,39 @@
 import React from 'react';
-import { FileText, Mail, Map, Link as LinkIcon } from 'lucide-react';
+import { FileText, Mail, Map, Link as LinkIcon, ChevronRight } from 'lucide-react';
 
 // --- Data for the Resource Cards ---
-// You can easily add or update resources here.
 const resourcesData = [
     {
         icon: <FileText size={24} className="text-orange-400" />,
         title: "Master the Art of Resume Creation",
-        description: "Download original resume which got shortlisted in 50+ Product companies like Amazon , American Express, Swiggy , Makemytrip etc.",
+        description: "Resume creation is an art. Learn it from Ketan through a YouTube tutorial and download his FAANG-approved resume to make your own edits.",
         ctaText: "Access via Topmate",
-        topmateUrl: "https://topmate.io/ketan_goel_analytics_expert/1639667?utm_source=public_profile&utm_campaign=ketan_goel_analytics_expert" // Replace with your actual Topmate URL
+        topmateUrl: "https://topmate.io/your-profile/1" // Replace with your actual Topmate URL
     },
     {
         icon: <Mail size={24} className="text-orange-400" />,
         title: "12,000+ HR Contacts",
         description: "Access a curated list of HR professionals and recruiters from over 12,000 top companies in India.",
         ctaText: "Access via Topmate",
-        topmateUrl: "https://topmate.io/ketan_goel_analytics_expert/1622508?utm_source=public_profile&utm_campaign=ketan_goel_analytics_expert" // Replace with your actual Topmate URL
+        topmateUrl: "https://topmate.io/your-profile/2" // Replace with your actual Topmate URL
     },
     {
         icon: <Map size={24} className="text-orange-400" />,
         title: "60-Day Analytics Roadmap",
         description: "A step-by-step guide to mastering the skills needed to land a top-tier analytics role in just two months.",
         ctaText: "Access via Topmate",
-        topmateUrl: "https://topmate.io/ketan_goel_analytics_expert/521790?utm_source=public_profile&utm_campaign=ketan_goel_analytics_expert" // Replace with your actual Topmate URL
+        topmateUrl: "https://topmate.io/your-profile/3" // Replace with your actual Topmate URL
     },
     {
         icon: <LinkIcon size={24} className="text-orange-400" />,
         title: "Discounted LinkedIn Premium",
         description: "Unlock the full power of LinkedIn with an exclusive discount on a Premium subscription for our community members.",
         ctaText: "Access via Topmate",
-        topmateUrl: "https://topmate.io/ketan_goel_analytics_expert/1454472?utm_source=public_profile&utm_campaign=ketan_goel_analytics_expert" // Replace with your actual Topmate URL
+        topmateUrl: "https://topmate.io/your-profile/4" // Replace with your actual Topmate URL
     }
 ];
 
-// --- Reusable Resource Card Component ---
+// --- Reusable Resource Card Component (for Desktop) ---
 const ResourceCard = ({ resource }) => {
     return (
         <div className="bg-[#2a2a2a] border border-gray-700 rounded-xl p-6 flex flex-col items-start h-full transition-transform transform hover:-translate-y-1 hover:shadow-lg hover:shadow-orange-500/10">
@@ -55,6 +54,28 @@ const ResourceCard = ({ resource }) => {
     );
 };
 
+// --- Reusable Resource List Item Component (for Mobile) ---
+const ResourceListItem = ({ resource }) => {
+    return (
+        <a
+            href={resource.topmateUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-4 bg-[#2a2a2a] border border-gray-700 rounded-xl p-4 transition-colors hover:bg-gray-800"
+        >
+            <div className="bg-gray-800 p-3 rounded-full">
+                {resource.icon}
+            </div>
+            <div className="flex-grow">
+                <h3 className="font-bold text-white">{resource.title}</h3>
+                <p className="text-gray-400 text-xs mt-1">{resource.description}</p>
+            </div>
+            <ChevronRight size={20} className="text-gray-500 flex-shrink-0" />
+        </a>
+    );
+};
+
+
 // --- Main Resources Page Component ---
 const ResourcesPage = () => {
     return (
@@ -70,10 +91,17 @@ const ResourcesPage = () => {
                     </p>
                 </div>
 
-                {/* Responsive Grid for Resource Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Desktop View: 2x2 Grid (Hidden on mobile) */}
+                <div className="hidden md:grid grid-cols-2 gap-8">
                     {resourcesData.map((resource, index) => (
                         <ResourceCard key={index} resource={resource} />
+                    ))}
+                </div>
+
+                {/* Mobile View: Compact List (Hidden on desktop) */}
+                <div className="md:hidden space-y-4">
+                     {resourcesData.map((resource, index) => (
+                        <ResourceListItem key={index} resource={resource} />
                     ))}
                 </div>
             </div>
