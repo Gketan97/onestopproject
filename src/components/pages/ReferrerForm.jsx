@@ -4,7 +4,6 @@ const ReferrerForm = () => {
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [isVisible, setIsVisible] = useState(false);
 
-    // Separate state variables for each input field
     const [referrerName, setReferrerName] = useState('');
     const [referrerEmail, setReferrerEmail] = useState('');
     const [contactNumber, setContactNumber] = useState('');
@@ -120,12 +119,12 @@ const ReferrerForm = () => {
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                        <div>
+                        <div key="referrerNameField">
                             <label htmlFor="referrerName" className="block text-sm font-medium text-gray-300">Name</label>
                             <input type="text" id="referrerName" name="referrerName" value={referrerName} onChange={(e) => setReferrerName(e.target.value)} required className="mt-2 block w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition" />
                         </div>
 
-                        <div>
+                        <div key="referrerEmailField">
                             <label htmlFor="referrerEmail" className="block text-sm font-medium text-gray-300">Email ID (Company email preferred)</label>
                             <input type="email" id="referrerEmail" name="referrerEmail" value={referrerEmail} onChange={(e) => setReferrerEmail(e.target.value)} onBlur={() => {
                                 const domain = referrerEmail.split('@')[1];
@@ -135,28 +134,28 @@ const ReferrerForm = () => {
                             <p className="mt-1 text-xs text-gray-500">Your email will never be shared publicly.</p>
                         </div>
 
-                        <div>
+                        <div key="contactNumberField">
                             <label htmlFor="contactNumber" className="block text-sm font-medium text-gray-300">Contact Number</label>
                             <input type="tel" id="contactNumber" name="contactNumber" value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} required pattern="[0-9]{10}" title="Please enter a 10-digit contact number" className="mt-2 block w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition" />
                             <p className="mt-1 text-xs text-gray-500">Your contact number is kept confidential.</p>
                         </div>
 
-                        <div>
+                        <div key="linkedinUrlField">
                             <label htmlFor="linkedinUrl" className="block text-sm font-medium text-gray-300">LinkedIn Profile URL</label>
                             <input type="url" id="linkedinUrl" name="linkedinUrl" value={linkedinUrl} onChange={(e) => setLinkedinUrl(e.target.value)} required placeholder="https://linkedin.com/in/your-profile" className="mt-2 block w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition" />
                         </div>
 
-                        <div>
+                        <div key="currentCompanyField">
                             <label htmlFor="currentCompany" className="block text-sm font-medium text-gray-300">Current Company Name</label>
                             <input type="text" id="currentCompany" name="currentCompany" value={currentCompany} onChange={(e) => setCurrentCompany(e.target.value)} required className="mt-2 block w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition" />
                         </div>
 
-                        <div>
+                        <div key="designationField">
                             <label htmlFor="designation" className="block text-sm font-medium text-gray-300">Designation</label>
                             <input type="text" id="designation" name="designation" value={designation} onChange={(e) => setDesignation(e.target.value)} required className="mt-2 block w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition" />
                         </div>
 
-                        <div className="md:col-span-2">
+                        <div key="experienceField" className="md:col-span-2">
                             <label htmlFor="experience" className="block text-sm font-medium text-gray-300">Years of Experience</label>
                             <select id="experience" name="experience" value={experience} onChange={(e) => setExperience(e.target.value)} required className="mt-2 block w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition">
                                 <option value="" disabled>Select your experience level</option>
