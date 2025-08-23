@@ -5,31 +5,31 @@ import { FileText, Mail, Map, Link as LinkIcon, ChevronRight } from 'lucide-reac
 const resourcesData = [
     {
         icon: <FileText size={24} className="text-orange-400" />,
-        title: "Master the Art of Resume Creation",
-        description: "Resume creation is an art. Learn it from Ketan through a YouTube tutorial and download his FAANG-approved resume to make your own edits.",
-        ctaText: "Access via Topmate",
-        topmateUrl: "https://topmate.io/your-profile/1" // Replace with your actual Topmate URL
+        title: "Download Ketan's Resume",
+        description: "Downlaod Ketan's Resume that was shortlisted in 50+ product companies along with Youtube video Tutorial",
+        ctaText: "Download",
+        topmateUrl: "https://topmate.io/ketan_goel_analytics_expert/1639667?utm_source=public_profile&utm_campaign=ketan_goel_analytics_expert" // Replace with your actual Topmate URL
     },
     {
         icon: <Mail size={24} className="text-orange-400" />,
-        title: "12,000+ HR Contacts",
+        title: " Download 12,000+ HR Email List ",
         description: "Access a curated list of HR professionals and recruiters from over 12,000 top companies in India.",
-        ctaText: "Access via Topmate",
-        topmateUrl: "https://topmate.io/your-profile/2" // Replace with your actual Topmate URL
+        ctaText: "Download",
+        topmateUrl: "https://topmate.io/ketan_goel_analytics_expert/1622508?utm_source=public_profile&utm_campaign=ketan_goel_analytics_expert" // Replace with your actual Topmate URL
     },
     {
         icon: <Map size={24} className="text-orange-400" />,
         title: "60-Day Analytics Roadmap",
         description: "A step-by-step guide to mastering the skills needed to land a top-tier analytics role in just two months.",
-        ctaText: "Access via Topmate",
-        topmateUrl: "https://topmate.io/your-profile/3" // Replace with your actual Topmate URL
+        ctaText: "Download",
+        topmateUrl: "https://topmate.io/ketan_goel_analytics_expert/521790?utm_source=public_profile&utm_campaign=ketan_goel_analytics_expert" // Replace with your actual Topmate URL
     },
     {
         icon: <LinkIcon size={24} className="text-orange-400" />,
         title: "Discounted LinkedIn Premium",
         description: "Unlock the full power of LinkedIn with an exclusive discount on a Premium subscription for our community members.",
-        ctaText: "Access via Topmate",
-        topmateUrl: "https://topmate.io/your-profile/4" // Replace with your actual Topmate URL
+        ctaText: "Get access",
+        topmateUrl: "https://topmate.io/ketan_goel_analytics_expert/1454472?utm_source=public_profile&utm_campaign=ketan_goel_analytics_expert" // Replace with your actual Topmate URL
     }
 ];
 
