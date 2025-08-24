@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, BrowserRouter as Router } from 'react-router-dom';
+// Using standard <a> tags for preview stability. In your app, these will be <Link> components.
 
 // --- Self-Contained Logo Component ---
 const Logo = ({ size = 40 }) => {
@@ -24,18 +24,18 @@ const Header = () => {
     // --- FIX: Ensures this header is ONLY visible on medium screens and up ---
     <header className="bg-black/80 backdrop-blur-sm sticky top-0 z-50 border-b border-gray-800 hidden md:block">
       <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-3">
+        <a href="/" className="flex items-center gap-3">
           <Logo size={40} /> 
           <span className="text-2xl font-extrabold text-white">
             <span className="font-bold">OneStop</span>
             <span className="font-medium text-gray-300">Careers</span>
           </span>
-        </Link>
+        </a>
         <nav className="flex items-center space-x-8">
-          <Link to="/" className="nav-link text-gray-300 hover:text-white font-bold transition-colors">Home</Link>
-          <Link to="/jobs" className="nav-link text-gray-300 hover:text-white font-bold transition-colors">Find Jobs</Link>
-          <Link to="/resources" className="nav-link text-gray-300 hover:text-white font-bold transition-colors">Resources</Link>
-          <Link to="/mentors" className="nav-link text-gray-300 hover:text-white font-bold transition-colors">Mentors</Link>
+          <a href="/" className="nav-link text-gray-300 hover:text-white font-bold transition-colors">Home</a>
+          <a href="/jobs" className="nav-link text-gray-300 hover:text-white font-bold transition-colors">Find Jobs</a>
+          <a href="/resources" className="nav-link text-gray-300 hover:text-white font-bold transition-colors">Resources</a>
+          <a href="/mentors" className="nav-link text-gray-300 hover:text-white font-bold transition-colors">Mentors</a>
         </nav>
       </div>
     </header>
@@ -45,14 +45,12 @@ const Header = () => {
 // --- Preview Wrapper ---
 const App = () => {
     return (
-        <Router>
-            <div className="bg-black">
-                <Header />
-                <div className="text-center text-white p-10">
-                    <p>Header component preview above.</p>
-                </div>
+        <div className="bg-black">
+            <Header />
+            <div className="text-center text-white p-10">
+                <p>Header component preview above.</p>
             </div>
-        </Router>
+        </div>
     )
 }
 
