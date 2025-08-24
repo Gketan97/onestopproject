@@ -28,4 +28,4 @@ const Header = () => (
   </header>
 );
 
-export default Header; // ✅ required
+export default Header;
