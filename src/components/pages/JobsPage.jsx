@@ -169,7 +169,7 @@ return (
 									
 return (									
 <>									
-<div className="w-full max-w-7xl mx-auto p-4 md:p-8 flex-grow z-10">									
+<div className="w-full max-w-7xl mx-auto p-4 md:p-8 flex-grow z-10 bg-black text-white min-h-screen">									
 <SearchAndTabs									
 activeTab={activeTab}									
 onTabClick={setActiveTab}									
