@@ -1,4 +1,3 @@
-// src/components/MobileNav.jsx
 import React from "react";
 import { NavLink } from "react-router-dom";
 import { Home, Briefcase, BookOpen, Users } from "lucide-react";
@@ -8,7 +7,7 @@ const MobileNav = () => {
     "flex flex-col items-center justify-center flex-1 py-1 text-xs transition-colors duration-200";
 
   return (
-    <nav className="fixed bottom-0 left-0 w-full bg-black/90 backdrop-blur-md z-50 border-t border-gray-800 flex h-14">
+    <nav className="fixed bottom-0 left-0 w-full bg-black/90 backdrop-blur-md z-50 border-t border-gray-800 flex h-14 md:hidden">
       <NavLink
         to="/"
         className={({ isActive }) =>
