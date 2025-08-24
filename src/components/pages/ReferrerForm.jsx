@@ -102,15 +102,15 @@ const [copyButtonText, setCopyButtonText] = useState('Copy Link');
 
 const cdnUrl = 'https://cdn.jsdelivr.net/gh/ketangoel16-creator/onestopcareers-data/job_data.json';
 const freeEmailProviders = [
-gmail.com',
-yahoo.com',
-hotmail.com',
-outlook.com',
-aol.com',
-icloud.com',
-zoho.com',
-protonmail.com',
-yandex.com'
+'gmail.com',
+'yahoo.com',
+'hotmail.com',
+'outlook.com',
+'aol.com',
+'icloud.com',
+'zoho.com',
+'protonmail.com',
+'yandex.com'
 ];
 
 // Fade in + fetch dropdown data (with cleanup)
@@ -173,7 +173,7 @@ if (!proceed) return;
 
 try {
 const response = await fetch(
-https://script.google.com/macros/s/AKfycbzqn78oMYFVEIbq4xDY735xbqv9N2GY0X3jMSHzinNqhNdunPql6JA-eTUyMczwgx9d/exec',
+'https://script.google.com/macros/s/AKfycbzqn78oMYFVEIbq4xDY735xbqv9N2GY0X3jMSHzinNqhNdunPql6JA-eTUyMczwgx9d/exec',
 {
 method: 'POST',
 body: new URLSearchParams(formData)
