@@ -117,6 +117,11 @@ const ResourcesPage = () => {
             {/* Main Container */}
             <div className="w-full max-w-7xl mx-auto p-4 md:p-8">
                 
+                {/* ✅ Headline Added */}
+                <h1 className="text-center font-extrabold text-white text-2xl md:text-4xl mb-6">
+                    Explore Our Resources
+                </h1>
+
                 {/* Mobile View: Vertical List */}
                 <div className="md:hidden space-y-4">
                     {resourcesData.map((resource, index) => (
