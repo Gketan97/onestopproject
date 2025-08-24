@@ -1,7 +1,9 @@
 import React from 'react';
 import { FileText, Mail, Map, Link as LinkIcon, ChevronRight } from 'lucide-react';
 
-// --- Data for the Resource Cards ---
+// -------------------------------------
+// Resource Data
+// -------------------------------------
 const resourcesData = [
     {
         icon: FileText,
@@ -33,7 +35,9 @@ const resourcesData = [
     }
 ];
 
-// --- Resource Card for Desktop Grid ---
+// -------------------------------------
+// Resource Card (Desktop Grid)
+// -------------------------------------
 const ResourceCard = ({ resource }) => {
     const IconComponent = resource.icon;
     return (
@@ -43,18 +47,32 @@ const ResourceCard = ({ resource }) => {
             rel="noopener noreferrer" 
             className="cursor-pointer group w-full block"
         >
-            <div className="bg-[#2a2a2a] border border-gray-700 rounded-lg overflow-hidden transition-all duration-300 group-hover:border-orange-500/50 group-hover:shadow-xl group-hover:shadow-orange-500/10 group-hover:-translate-y-1 h-full flex flex-col">
+            <div className="bg-[#2a2a2a] border border-gray-700 rounded-lg overflow-hidden transition-all duration-300 
+                            group-hover:border-orange-500/50 group-hover:shadow-xl group-hover:shadow-orange-500/10 
+                            group-hover:-translate-y-1 hover:scale-105 h-full flex flex-col">
+                
+                {/* Background Image with Icon Overlay */}
                 <div className="relative w-full h-40">
-                    <img src={resource.bgUrl} alt={resource.title} className="w-full h-full object-cover opacity-30 group-hover:opacity-50 transition-opacity"/>
+                    <img 
+                        src={resource.bgUrl} 
+                        alt={resource.title} 
+                        loading="lazy"
+                        className="w-full h-full object-cover opacity-30 group-hover:opacity-50 transition-opacity"
+                    />
                     <div className="absolute inset-0 flex items-center justify-center">
                         <IconComponent size={48} className="text-orange-400" />
                     </div>
                 </div>
+
+                {/* Text Content */}
                 <div className="p-4 text-left flex flex-col flex-grow">
                     <h3 className="font-bold text-white text-lg">{resource.title}</h3>
                     <p className="text-gray-400 text-sm mt-1 flex-grow">{resource.description}</p>
+                    
+                    {/* CTA Button */}
                     <div className="mt-4">
-                        <span className="w-full text-center px-6 py-2 bg-orange-600 hover:bg-orange-500 text-white font-bold rounded-lg transition-colors text-sm inline-block">
+                        <span className="w-full text-center px-6 py-2 bg-orange-600 hover:bg-orange-500 
+                                         text-white font-bold rounded-lg transition-colors text-sm inline-block">
                             Download Now
                         </span>
                         <p className="text-center text-gray-500 text-xs mt-2">via Topmate</p>
@@ -65,7 +83,9 @@ const ResourceCard = ({ resource }) => {
     );
 };
 
-// --- Resource List Item for Mobile ---
+// -------------------------------------
+// Resource List Item (Mobile)
+// -------------------------------------
 const ResourceListItem = ({ resource }) => {
     const IconComponent = resource.icon;
     return (
@@ -73,7 +93,8 @@ const ResourceListItem = ({ resource }) => {
             href={resource.topmateUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-4 bg-[#2a2a2a] border border-gray-700 rounded-xl p-4 transition-colors hover:bg-gray-800"
+            className="flex items-center gap-4 bg-[#2a2a2a] border border-gray-700 rounded-xl p-4 
+                       transition-colors hover:bg-gray-800"
         >
             <div className="bg-gray-800 p-3 rounded-full">
                 <IconComponent size={24} className="text-orange-400" />
@@ -87,27 +108,18 @@ const ResourceListItem = ({ resource }) => {
     );
 };
 
-
-// --- Main Resources Page Component ---
+// -------------------------------------
+// Main Resources Page Component
+// -------------------------------------
 const ResourcesPage = () => {
     return (
         <div className="bg-black min-h-screen text-white">
+            {/* Main Container */}
             <div className="w-full max-w-7xl mx-auto p-4 md:p-8">
-                {/* Header Section */}
-                <div className="text-center mb-12">
-                    <h1 className="text-4xl md:text-5xl font-bold text-white">
-                        Career-Boosting Tools
-                    </h1>
-                    <p className="text-gray-400 mt-4 max-w-3xl mx-auto">
-                        Handpicked resources, delivered via our Topmate service, to give you an edge in your job search.
-                    </p>
-                </div>
-
-                {/* --- RESPONSIVE RESOURCE LIST --- */}
-
+                
                 {/* Mobile View: Vertical List */}
                 <div className="md:hidden space-y-4">
-                     {resourcesData.map((resource, index) => (
+                    {resourcesData.map((resource, index) => (
                         <ResourceListItem key={index} resource={resource} />
                     ))}
                 </div>
