@@ -9,7 +9,7 @@ const mentorsData = [
         description: "Analytics Lead @ Meesho | Career Mentor",
         avatarUrl: "https://raw.githubusercontent.com/Gketan97/onestopproject/rollback-aug_18_186/ketan%20Image.jpeg", 
         bio: "As the Analytics Lead for Mall at Meesho, I use data to solve complex problems in brand discovery, pricing, and fraud detection. With over 5 years of experience working across Business, Product, and Data Science teams, I'm passionate about sharing my insights. I founded the Career Acceleration Club, a community of over 100k professionals, and regularly speak at universities to help individuals navigate their career challenges and create real-world impact.",
-        topmateUrl: "https://topmate.io/ketan_goel_analytics_expert",
+        topmateUrl: "https://topmate.io/ketan_goel_analytics_expert/page/mFvABxpBEr",
     }
 ];
 
