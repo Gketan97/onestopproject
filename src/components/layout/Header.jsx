@@ -41,18 +41,3 @@ const Header = () => {
     </header>
   );
 };
-
-// --- Preview Wrapper ---
-const App = () => {
-    return (
-        <div className="bg-black">
-            <Header />
-            <div className="text-center text-white p-10">
-                <p>Header component preview above.</p>
-            </div>
-        </div>
-    )
-}
-
-
-export default App;
