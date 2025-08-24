@@ -6,13 +6,13 @@ const resourcesData = [
     {
         icon: FileText,
         title: "The Ultimate Resume Kit",
-        description: "The exact template that unlocked interviews at Amazon, Flipkart, and more.",
+        description: "The exact template that unlocked interviews at Amazon, Flipkart, and more along with video tutorial",
         bgUrl: "https://images.unsplash.com/photo-1587440871875-191322ee64b0?q=80&w=2071&auto=format&fit=crop",
-        topmateUrl: "https://topmate.io/ketan_goel_analytics_expert?utm_campaign=ketan_goel_analytics_expert&utm_source=spotlight"
+        topmateUrl: "https://topmate.io/ketan_goel_analytics_expert/1639667?utm_source=spotlight&utm_campaign=ketan_goel_analytics_expert"
     },
     {
         icon: Mail,
-        title: "12,000+ HR Contacts",
+        title: "12,000+ HR Email list",
         description: "A curated list of HR professionals and recruiters from top companies in India.",
         bgUrl: "https://images.unsplash.com/photo-1516321497487-e288fb19713f?q=80&w=2070&auto=format&fit=crop",
         topmateUrl: "https://topmate.io/ketan_goel_analytics_expert/1622508?utm_source=spotlight&utm_campaign=ketan_goel_analytics_expert"
