@@ -173,7 +173,7 @@ if (!proceed) return;
 
 try {
 const response = await fetch(
-'https://script.google.com/macros/s/AKfycbzqn78oMYFVEIbq4xDY735xbqv9N2GY0X3jMSHzinNqhNdunPql6JA-eTUyMczwgx9d/exec',
+'https://script.google.com/macros/s/AKfycbz6WwJDsfHeP-XM1oxk26q_5cmgKpLcE2sku9Bs88d8RXvSaqOC9hvZtlhjOK92BWgX/exec',
 {
 method: 'POST',
 body: new URLSearchParams(formData)
