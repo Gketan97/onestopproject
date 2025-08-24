@@ -74,14 +74,14 @@ const MentorsPage = () => {
     const featuredMentor = mentorsData.find(m => m.isFeatured);
     
     return (
-        <div className="bg-black min-h-screen text-white">
+        <div className="bg-black min-h-screen text-white pt-16 md:pt-20">
             <div className="w-full max-w-7xl mx-auto p-4 md:p-8">
                 {/* Header Section */}
                 <div className="text-center mb-12">
-                    <h1 className="text-4xl md:text-5xl font-bold text-white">
+                    <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold text-white leading-snug">
                         Connect with Industry Experts
                     </h1>
-                    <p className="text-gray-400 mt-4 max-w-3xl mx-auto">
+                    <p className="text-gray-400 mt-3 sm:mt-4 max-w-3xl mx-auto text-sm sm:text-base">
                         Get personalized guidance from top professionals to accelerate your career growth. Book a 1:1 session today.
                     </p>
                 </div>
