@@ -1,5 +1,5 @@
 import React from 'react';
-// Using standard <a> tags for preview stability. In your app, these will be <Link> components.
+import { Link } from 'react-router-dom';
 
 // --- Self-Contained Logo Component ---
 const Logo = ({ size = 40 }) => {
@@ -21,23 +21,25 @@ const Logo = ({ size = 40 }) => {
 
 const Header = () => {
   return (
-    // --- FIX: Ensures this header is ONLY visible on medium screens and up ---
+    // This header is hidden on mobile (screens smaller than 'md') and visible on desktop.
     <header className="bg-black/80 backdrop-blur-sm sticky top-0 z-50 border-b border-gray-800 hidden md:block">
       <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-        <a href="/" className="flex items-center gap-3">
+        <Link to="/" className="flex items-center gap-3">
           <Logo size={40} /> 
           <span className="text-2xl font-extrabold text-white">
             <span className="font-bold">OneStop</span>
             <span className="font-medium text-gray-300">Careers</span>
           </span>
-        </a>
+        </Link>
         <nav className="flex items-center space-x-8">
-          <a href="/" className="nav-link text-gray-300 hover:text-white font-bold transition-colors">Home</a>
-          <a href="/jobs" className="nav-link text-gray-300 hover:text-white font-bold transition-colors">Find Jobs</a>
-          <a href="/resources" className="nav-link text-gray-300 hover:text-white font-bold transition-colors">Resources</a>
-          <a href="/mentors" className="nav-link text-gray-300 hover:text-white font-bold transition-colors">Mentors</a>
+          <Link to="/" className="nav-link text-gray-300 hover:text-white font-bold transition-colors">Home</Link>
+          <Link to="/jobs" className="nav-link text-gray-300 hover:text-white font-bold transition-colors">Find Jobs</Link>
+          <Link to="/resources" className="nav-link text-gray-300 hover:text-white font-bold transition-colors">Resources</Link>
+          <Link to="/mentors" className="nav-link text-gray-300 hover:text-white font-bold transition-colors">Mentors</Link>
         </nav>
       </div>
     </header>
   );
 };
+
+export default Header;
