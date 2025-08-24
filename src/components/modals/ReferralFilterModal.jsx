@@ -1,140 +1,109 @@
 import React, { useState, useMemo, useEffect } from 'react';
 
 const ReferralFilterModal = ({ isOpen, onClose, allReferrals, onApplyFilters, activeFilters }) => {
-  const [selectedCompanies, setSelectedCompanies] = useState([]);
-  const [selectedRoles, setSelectedRoles] = useState([]);
+    const [selectedRoles, setSelectedRoles] = useState([]);
 
-  // ✅ Sync state with activeFilters when modal opens
-  useEffect(() => {
-    if (isOpen) {
-      setSelectedCompanies(activeFilters?.companies || []);
-      setSelectedRoles(activeFilters?.roles || []);
-    }
-  }, [isOpen, activeFilters]);
+    // Sync state with activeFilters when modal opens
+    useEffect(() => {
+        if (isOpen) {
+            setSelectedRoles(activeFilters?.roles || []);
+        }
+    }, [isOpen, activeFilters]);
 
-  // ✅ Build unique filter options from allReferrals
-  const filterOptions = useMemo(() => {
-    const companiesSet = new Set();
-    const rolesSet = new Set();
+    // Build unique filter options from allReferrals
+    const filterOptions = useMemo(() => {
+        const rolesSet = new Set();
+        (allReferrals || []).forEach(ref => {
+            if (ref.designation) rolesSet.add(ref.designation.trim());
+        });
+        return {
+            roles: Array.from(rolesSet).sort()
+        };
+    }, [allReferrals]);
 
-    allReferrals.forEach(ref => {
-      if (ref.company) companiesSet.add(ref.company.trim());
-      if (ref.designation) rolesSet.add(ref.designation.trim());
-    });
-
-    return {
-      companies: Array.from(companiesSet).sort(),
-      roles: Array.from(rolesSet).sort()
+    const toggleRoleSelection = (value) => {
+        setSelectedRoles(prev =>
+            prev.includes(value) ? prev.filter(item => item !== value) : [...prev, value]
+        );
     };
-  }, [allReferrals]);
 
-  const toggleSelection = (value, type) => {
-    const updater = type === 'company' ? setSelectedCompanies : setSelectedRoles;
-    updater(prev =>
-      prev.includes(value) ? prev.filter(item => item !== value) : [...prev, value]
-    );
-  };
+    const handleApply = () => {
+        onApplyFilters({
+            roles: selectedRoles
+        });
+        onClose();
+    };
 
-  const handleApply = () => {
-    onApplyFilters({
-      companies: selectedCompanies,
-      roles: selectedRoles
-    });
-    onClose();
-  };
+    const handleClear = () => {
+        setSelectedRoles([]);
+        onApplyFilters({ roles: [] });
+        onClose();
+    };
 
-  const handleClear = () => {
-    setSelectedCompanies([]);
-    setSelectedRoles([]);
-    onApplyFilters({ companies: [], roles: [] });
-    onClose();
-  };
+    if (!isOpen) return null;
 
-  if (!isOpen) return null;
-
-  return (
-    <div
-      className="fixed inset-0 bg-black bg-opacity-90 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-      onClick={onClose}
-    >
-      <div
-        className="dark-theme-card-bg rounded-xl dark-theme-border border-2 w-full max-w-2xl max-h-[90vh] flex flex-col animate-slide-up"
-        onClick={e => e.stopPropagation()}
-      >
-        {/* Header */}
-        <header className="p-6 border-b border-gray-700 flex justify-between items-center">
-          <h2 className="text-2xl font-bold text-white">Filter Referrals</h2>
-          <button
+    return (
+        <div
+            className="fixed inset-0 bg-black bg-opacity-90 backdrop-blur-sm flex items-center justify-center z-50 p-4"
             onClick={onClose}
-            className="text-gray-500 hover:text-white text-3xl leading-none"
-          >
-            &times;
-          </button>
-        </header>
+        >
+            <div
+                className="bg-[#2a2a2a] rounded-xl border border-gray-700 w-full max-w-2xl max-h-[90vh] flex flex-col animate-slide-up"
+                onClick={e => e.stopPropagation()}
+            >
+                {/* Header */}
+                <header className="p-6 border-b border-gray-700 flex justify-between items-center">
+                    <h2 className="text-2xl font-bold text-white">Filter Referrals</h2>
+                    <button
+                        onClick={onClose}
+                        className="text-gray-500 hover:text-white text-3xl leading-none"
+                    >
+                        &times;
+                    </button>
+                </header>
 
-        {/* Body */}
-        <div className="p-6 overflow-y-auto flex-grow">
-          {/* Company Filter */}
-          <div className="mb-6">
-            <h3 className="font-bold text-white mb-3">Company</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-48 overflow-y-auto">
-              {filterOptions.companies.map(company => (
-                <label
-                  key={company}
-                  className="flex items-center gap-2 text-gray-300 cursor-pointer"
-                >
-                  <input
-                    type="checkbox"
-                    checked={selectedCompanies.includes(company)}
-                    onChange={() => toggleSelection(company, 'company')}
-                    className="form-checkbox bg-gray-800 border-gray-600 text-orange-500"
-                  />
-                  {company}
-                </label>
-              ))}
-            </div>
-          </div>
+                {/* Body */}
+                <div className="p-6 overflow-y-auto flex-grow">
+                    {/* Role Filter */}
+                    <div>
+                        <h3 className="font-bold text-white mb-3">Role</h3>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-64 overflow-y-auto">
+                            {filterOptions.roles.map(role => (
+                                <label
+                                    key={role}
+                                    className="flex items-center gap-2 text-gray-300 cursor-pointer"
+                                >
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedRoles.includes(role)}
+                                        onChange={() => toggleRoleSelection(role)}
+                                        className="form-checkbox bg-gray-800 border-gray-600 text-orange-500 rounded focus:ring-orange-500"
+                                    />
+                                    {role}
+                                </label>
+                            ))}
+                        </div>
+                    </div>
+                </div>
 
-          {/* Role Filter */}
-          <div>
-            <h3 className="font-bold text-white mb-3">Role</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-48 overflow-y-auto">
-              {filterOptions.roles.map(role => (
-                <label
-                  key={role}
-                  className="flex items-center gap-2 text-gray-300 cursor-pointer"
-                >
-                  <input
-                    type="checkbox"
-                    checked={selectedRoles.includes(role)}
-                    onChange={() => toggleSelection(role, 'role')}
-                    className="form-checkbox bg-gray-800 border-gray-600 text-orange-500"
-                  />
-                  {role}
-                </label>
-              ))}
+                {/* Footer */}
+                <footer className="p-6 border-t border-gray-700 flex justify-end items-center gap-4">
+                    <button
+                        onClick={handleClear}
+                        className="text-sm text-gray-400 hover:text-white"
+                    >
+                        Clear All
+                    </button>
+                    <button
+                        onClick={handleApply}
+                        className="px-8 py-3 bg-orange-600 hover:bg-orange-500 text-white font-bold rounded-lg"
+                    >
+                        Apply Filters
+                    </button>
+                </footer>
             </div>
-          </div>
         </div>
-
-        {/* Footer */}
-        <footer className="p-6 border-t border-gray-700 flex justify-end items-center gap-4">
-          <button
-            onClick={handleClear}
-            className="text-sm text-gray-400 hover:text-white"
-          >
-            Clear All
-          </button>
-          <button
-            onClick={handleApply}
-            className="px-8 py-3 brand-button font-bold rounded-lg"
-          >
-            Apply Filters
-          </button>
-        </footer>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default ReferralFilterModal;
