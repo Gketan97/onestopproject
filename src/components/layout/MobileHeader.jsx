@@ -1,14 +1,21 @@
-import React from 'react';
+import React from "react";
+import { Link } from "react-router-dom";
+import logo from "../../assets/logo.png"; // <-- adjust path to your logo
 
-const MobileHeader = ({ onMenuClick }) => (
-  <header className="bg-black/80 backdrop-blur-sm sticky top-0 z-50 border-b border-gray-800 md:hidden">
-    <div className="flex items-center justify-between px-4 py-3">
-      <a href="/" className="text-xl font-bold text-white">OneStop<span className="text-gray-300">Careers</span></a>
-      <button onClick={onMenuClick} className="text-white focus:outline-none">
-        ☰
-      </button>
-    </div>
-  </header>
-);
+const MobileHeader = () => {
+  return (
+    <header className="md:hidden fixed top-0 left-0 right-0 bg-black/90 backdrop-blur-sm border-b border-gray-800 z-50">
+      <div className="flex items-center justify-center h-14">
+        <Link to="/" className="flex items-center">
+          <img
+            src={logo}
+            alt="OneStopCareers Logo"
+            className="h-8 w-auto object-contain"
+          />
+        </Link>
+      </div>
+    </header>
+  );
+};
 
-export default MobileHeader; // ✅ required
+export default MobileHeader;
