@@ -2,18 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { initializeApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged, signInAnonymously } from 'firebase/auth';
-import { getFirestore, doc, setDoc, onSnapshot } from 'firebase/firestore';
+import { getFirestore } from 'firebase/firestore';
 
 import HomePage from './components/pages/HomePage.jsx';
 import DecisionTreePage from './components/pages/DecisionTreePage.jsx';
 import JobsPage from './components/pages/JobsPage.jsx';
 import ReferrerForm from './components/pages/ReferrerForm.jsx';
 import ResourcesPage from './components/pages/ResourcesPage.jsx';
-import MentorsPage from './components/pages/MentorsPage.jsx'; // 1. Import the new MentorsPage
+import MentorsPage from './components/pages/MentorsPage.jsx';
 import Header from './components/layout/Header.jsx';
 import MobileHeader from './components/layout/MobileHeader.jsx';
 import MobileNav from './components/layout/MobileNav.jsx';
 
+// ✅ Firebase Config
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -24,6 +25,7 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
+// ✅ Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
@@ -37,13 +39,14 @@ const App = () => {
       if (user) {
         setUserId(user.uid);
       } else {
-        signInAnonymously(auth).catch(error => console.error("Anonymous sign-in failed:", error));
+        signInAnonymously(auth).catch((error) =>
+          console.error('Anonymous sign-in failed:', error)
+        );
       }
     });
     return () => unsubscribe();
   }, []);
 
-  // Show mobile header on pages other than the Jobs page
   const showMobileHeader = location.pathname !== '/jobs';
 
   return (
@@ -58,7 +61,7 @@ const App = () => {
           <Route path="/jobs" element={<JobsPage />} />
           <Route path="/become-referrer" element={<ReferrerForm />} />
           <Route path="/resources" element={<ResourcesPage />} />
-          <Route path="/mentors" element={<MentorsPage />} /> {/* 2. Add the new route for the Mentors page */}
+          <Route path="/mentors" element={<MentorsPage />} />
         </Routes>
       </main>
       <footer className="w-full max-w-7xl mx-auto p-4 text-center text-sm text-gray-500 border-t border-[#444] mt-12 md:mt-24 z-10">
