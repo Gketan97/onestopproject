@@ -30,6 +30,8 @@ const MobileNav = () => {
 
       <a
         href="/case-studies/swiggy"
+        target="_blank"
+        rel="noopener noreferrer"
         className={`${base} text-accent bg-accent-light border-x border-accent-border`}
       >
         <CaseIcon />

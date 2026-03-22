@@ -36,6 +36,8 @@ const Header = () => {
                 <a
                   key={item.label}
                   href={item.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="px-3 py-2 text-sm font-medium text-accent bg-accent-light rounded-md hover:bg-accent-border transition-colors"
                 >
                   {item.label}
@@ -60,6 +62,8 @@ const Header = () => {
 
         <a
           href="/case-studies/swiggy"
+          target="_blank"
+          rel="noopener noreferrer"
           className="px-4 py-2 bg-accent text-white text-sm font-medium rounded-lg hover:bg-accent-dark transition-all hover:-translate-y-px"
         >
           Start free →
