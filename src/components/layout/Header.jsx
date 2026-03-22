@@ -1,28 +1,62 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 const Header = () => {
-  return (
-    <header className="bg-black/80 backdrop-blur-sm sticky top-0 z-50 border-b border-gray-800 hidden md:block">
-      <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-3">
-          <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect width="40" height="40" rx="12" fill="#18181B"/>
-            <circle cx="20" cy="20" r="12" stroke="#F97316" strokeOpacity="0.3" strokeWidth="3"/>
-            <circle cx="20" cy="20" r="5" fill="#F97316"/>
-          </svg>
-          <span className="text-2xl font-extrabold text-white">
-            <span className="font-bold">OneStop</span><span className="font-medium text-gray-300">Careers</span>
-          </span>
-        </Link>
-        <div className="hidden md:flex items-center space-x-8">
-          <nav className="flex items-center space-x-8">
-            <Link to="/" className="nav-link text-gray-300 hover:text-white font-bold transition-colors">Home</Link>
-            <Link to="/jobs" className="nav-link text-gray-300 hover:text-white font-bold transition-colors">Find Jobs</Link>
-            <Link to="/resources" className="nav-link text-gray-300 hover:text-white font-bold transition-colors">Resources</Link>
-            <Link to="/mentors" className="nav-link text-gray-300 hover:text-white font-bold transition-colors">Mentors</Link>
+  const location = useLocation();
+  const isJobsPage = location.pathname === '/jobs';
+
+  if (isJobsPage) {
+    return (
+      <header className="bg-black/80 backdrop-blur-sm sticky top-0 z-50 border-b border-gray-800 hidden md:block">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <Link to="/" className="font-serif text-xl text-white">
+            one<em className="text-[#C84B0C] not-italic">stop</em>careers
+          </Link>
+          <nav className="flex items-center gap-6">
+            <a href="/case-studies/swiggy" className="text-sm text-gray-400 hover:text-white transition-colors">Case Studies</a>
+            <Link to="/jobs" className="text-sm text-white font-medium">Jobs</Link>
+            <Link to="/decision-tree" className="text-sm text-gray-400 hover:text-white transition-colors">Decision Tree</Link>
+            <a href="/case-studies/swiggy" className="px-4 py-2 bg-[#C84B0C] text-white text-sm font-medium rounded-lg hover:bg-[#A03A08] transition-colors">
+              Start free →
+            </a>
           </nav>
         </div>
+      </header>
+    );
+  }
+
+  return (
+    <header className="bg-bg sticky top-0 z-50 border-b border-border hidden md:block">
+      <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+        <Link to="/" className="font-serif text-xl text-ink">
+          one<em className="text-accent not-italic">stop</em>careers
+        </Link>
+        <nav className="flex items-center gap-1">
+          <a
+            href="/case-studies/swiggy"
+            className="px-3 py-2 text-sm font-medium text-accent bg-accent-light rounded-md hover:bg-accent-border transition-colors"
+          >
+            Case Studies
+          </a>
+          <Link
+            to="/jobs"
+            className={`px-3 py-2 text-sm transition-colors rounded-md ${location.pathname === '/jobs' ? 'text-accent font-medium' : 'text-ink2 hover:text-ink hover:bg-surface'}`}
+          >
+            Jobs
+          </Link>
+          <Link
+            to="/decision-tree"
+            className={`px-3 py-2 text-sm transition-colors rounded-md ${location.pathname === '/decision-tree' ? 'text-accent font-medium' : 'text-ink2 hover:text-ink hover:bg-surface'}`}
+          >
+            Decision Tree
+          </Link>
+        </nav>
+        <a
+          href="/case-studies/swiggy"
+          className="px-4 py-2 bg-accent text-white text-sm font-medium rounded-lg hover:bg-accent-dark transition-all hover:-translate-y-px"
+        >
+          Start free →
+        </a>
       </div>
     </header>
   );
