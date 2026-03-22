@@ -2,11 +2,16 @@ import React, { useEffect } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { initializeApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged, signInAnonymously } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
 
 import HomePage from './components/pages/HomePage.jsx';
 import DecisionTreePage from './components/pages/DecisionTreePage.jsx';
 import JobsPage from './components/pages/JobsPage.jsx';
+import ReferrerForm from './components/pages/ReferrerForm.jsx';
+import ResourcesPage from './components/pages/ResourcesPage.jsx';
+import MentorsPage from './components/pages/MentorsPage.jsx';
 import Header from './components/layout/Header.jsx';
+import MobileHeader from './components/layout/MobileHeader.jsx';
 import MobileNav from './components/layout/MobileNav.jsx';
 
 const firebaseConfig = {
@@ -37,22 +42,24 @@ const App = () => {
   const isJobsPage = location.pathname === '/jobs';
 
   return (
-    <div className={`min-h-screen font-sans flex flex-col relative pb-16 md:pb-0 ${isJobsPage ? 'bg-[#1a1a1a] text-[#e0e0e0]' : 'bg-bg text-ink'}`}>
+    <div className="min-h-screen bg-bg font-sans text-ink flex flex-col relative pb-16 md:pb-0">
       <Header />
+      <MobileHeader />
       <MobileNav />
       <main className="flex-grow">
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/decision-tree" element={<DecisionTreePage />} />
           <Route path="/jobs" element={<JobsPage />} />
+          <Route path="/become-referrer" element={<ReferrerForm />} />
+          <Route path="/resources" element={<ResourcesPage />} />
+          <Route path="/mentors" element={<MentorsPage />} />
         </Routes>
       </main>
-      {!isJobsPage && (
-        <footer className="w-full max-w-7xl mx-auto px-4 py-6 text-center border-t border-border mt-16 md:mt-24 z-10">
-          <p className="font-serif text-lg text-ink mb-1">one<em className="text-accent not-italic">stop</em>careers</p>
-          <p className="text-xs text-ink3">&copy; 2025 onestopcareers. All rights reserved.</p>
-        </footer>
-      )}
+      <footer className="w-full max-w-7xl mx-auto px-4 py-6 text-center border-t border-border mt-12 md:mt-24 z-10">
+        <p className="font-serif text-lg text-ink mb-1">one<em className="text-accent not-italic">stop</em>careers</p>
+        <p className="text-xs text-ink3">&copy; 2025 onestopcareers. All rights reserved.</p>
+      </footer>
     </div>
   );
 };
