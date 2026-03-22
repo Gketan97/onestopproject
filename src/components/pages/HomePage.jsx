@@ -1,313 +1,156 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, Zap, Users } from 'lucide-react';
+import { decisionTree } from '../../data/appData';
 
-// --- Data for Page Sections ---
-const whyItWorks = [
-  {
-    icon: ShieldCheck,
-    title: "Verified Paths, Not Random Noise",
-    description:
-      "Tired of generic YouTube advice and unverified content? We provide curated, proven strategies from industry insiders, cutting through the clutter to give you a clear path forward.",
+const RESULT_COPY = {
+  job_hunt: {
+    headline: 'Your job search is disorganised.',
+    body: "The Swiggy case study teaches the thinking pattern that gets you noticed — structured root cause analysis under pressure. It's the skill interviewers can't ignore.",
+    cta: 'Start Swiggy case study',
   },
-  {
-    icon: Zap,
-    title: "Personalized Journeys, Not Generic Templates",
-    description:
-      "Your career is unique. We ditch the one-size-fits-all approach of expensive courses for personalized guidance tailored to your specific goals and challenges.",
+  interview: {
+    headline: "You're not passing interviews.",
+    body: 'Most candidates fail on structured thinking, not SQL. The Swiggy case study simulates the exact kind of question where candidates fall short — and fixes it.',
+    cta: 'Start Swiggy case study',
   },
-  {
-    icon: Users,
-    title: "Real Mentors, Not Just Creators",
-    description:
-      "Connect with a trusted network of professionals who have actually been there. Get actionable insights and direct support from people who have achieved what you're aiming for.",
+  upskilling: {
+    headline: 'You need to build skills, not memorise them.',
+    body: 'The Swiggy case study is active learning — you write real queries, hit real dead ends, and get evaluated on what you actually produce. Not a course. A simulation.',
+    cta: 'Start Swiggy case study',
   },
-];
-
-const testimonials = [
-  {
-    pullQuote: "I started receiving calls within one week.",
-    quote:
-      "I started receiving calls within one week after using this format. Kinda worked like magic for me. Now my resume is created from a recruiter's perspective, not from my own, and I just feel so confident!",
-    name: "Rajni",
-    role: "Mentee",
-    avatar: "https://placehold.co/100x100/F97316/FFFFFF?text=R",
+  exploration: {
+    headline: "You're still figuring out your path.",
+    body: 'Starting with an investigation is the best move — it shows you whether analytical thinking energises you. 45 minutes will tell you more than a month of research.',
+    cta: 'Try the Swiggy case study',
   },
-  {
-    pullQuote: "He gave valuable insights on how to build a career.",
-    quote:
-      "Ketan is an expert in Product and Analytics. He gave valuable insights on how to build a career in Product Management and shared helpful strategies for interview preparation, networking, and salary negotiation.",
-    name: "Leon Jose",
-    role: "Product Management Aspirant",
-    avatar: "https://placehold.co/100x100/F97316/FFFFFF?text=LJ",
-  },
-  {
-    pullQuote: "He didn't just teach me how to book interviews, but how to crack them.",
-    quote:
-      "I liked the way Ketan tackled everything during our one-on-one call. He didn't just teach me how to book interviews but also how to approach and crack them using first principles.",
-    name: "Pallav Joshi",
-    role: "Mentee",
-    avatar: "https://placehold.co/100x100/F97316/FFFFFF?text=PJ",
-  },
-  {
-    pullQuote: "His insights truly made a difference in shaping my career plans.",
-    quote:
-      "Ketan is incredibly helpful when it comes to career planning... He has a natural ability to listen, understand your goals, and offer practical advice that works. His insights truly made a difference.",
-    name: "Aditya Gupta",
-    role: "Career Transition Aspirant",
-    avatar: "https://placehold.co/100x100/F97316/FFFFFF?text=AG",
-  },
-];
-
-// --- Custom Hook for Scroll Animations ---
-const useInView = (options) => {
-  const ref = useRef(null);
-  const [isInView, setIsInView] = useState(false);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) {
-        setIsInView(true);
-        observer.unobserve(entry.target);
-      }
-    }, options);
-
-    if (ref.current) {
-      observer.observe(ref.current);
-    }
-
-    return () => {
-      if (ref.current) {
-        observer.unobserve(ref.current);
-      }
-    };
-  }, [ref, options]);
-
-  return [ref, isInView];
 };
 
-// --- Animated Background Component ---
-const AnimatedBackground = () => (
-  <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
-    <canvas id="ascend-canvas" className="w-full h-full"></canvas>
-  </div>
-);
+const PHASE_STYLES = [
+  { bg: '#FDF2EC', color: '#C84B0C', border: '#F2C4A5', label: 'Phase 1 · Watch' },
+  { bg: '#EDF1FD', color: '#1E4FCC', border: '#A8B8F0', label: 'Phase 2 · Practice' },
+  { bg: '#EDF6F1', color: '#1A6B45', border: '#A8D9BC', label: 'Phase 3 · Execute' },
+];
 
-// --- Testimonial Card Component ---
-const TestimonialCard = ({ testimonial }) => (
-  <div className="bg-[#2a2a2a] p-6 rounded-xl border border-gray-700 shadow-lg flex flex-col h-full">
-    <div className="flex items-center mb-4">
-      <img
-        src={testimonial.avatar}
-        alt={testimonial.name}
-        className="w-12 h-12 rounded-full border-2 border-gray-600"
-      />
-      <div className="ml-4">
-        <p className="text-white font-bold">{testimonial.name}</p>
-        <p className="text-sm text-gray-500">{testimonial.role}</p>
-      </div>
-    </div>
-    <p className="text-white font-semibold mb-2 text-lg">"{testimonial.pullQuote}"</p>
-    <p className="text-gray-400 italic text-sm flex-grow">"{testimonial.quote}"</p>
-  </div>
-);
+const DecisionTreePage = () => {
+  const [currentQuestionId, setCurrentQuestionId] = useState('start');
+  const [resultKey, setResultKey] = useState(null);
+  const [stepCount, setStepCount] = useState(1);
 
-// --- Main HomePage Component ---
-const HomePage = () => {
-  const [email, setEmail] = useState('');
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const decisionTreeData = decisionTree['stage1'];
+  const currentQuestion = decisionTreeData.find(q => q.id === currentQuestionId);
 
-  const [whyRef, whyInView] = useInView({ threshold: 0.1, triggerOnce: true });
-  const [testimonialsRef, testimonialsInView] = useInView({ threshold: 0.1, triggerOnce: true });
-
-  // Canvas background animation
-  useEffect(() => {
-    const canvas = document.getElementById('ascend-canvas');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-
-    let particles = [];
-    const numParticles = 100;
-
-    const resizeCanvas = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-
-    const createParticles = () => {
-      particles = [];
-      for (let i = 0; i < numParticles; i++) {
-        particles.push({
-          x: Math.random() * canvas.width,
-          y: canvas.height + Math.random() * 100,
-          vx: (Math.random() - 0.5) * 0.3,
-          vy: -(Math.random() * 1 + 0.5),
-          radius: Math.random() * 2 + 1,
-          alpha: Math.random() * 0.5 + 0.1,
-        });
-      }
-    };
-
-    const animate = () => {
-      if (!ctx) return;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      particles.forEach((p) => {
-        p.x += p.vx;
-        p.y += p.vy;
-        if (p.y < -10) {
-          p.y = canvas.height + 10;
-          p.x = Math.random() * canvas.width;
-        }
-        if (p.x < -10 || p.x > canvas.width + 10) p.vx *= -1;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(249, 115, 22, ${p.alpha})`;
-        ctx.fill();
-      });
-      requestAnimationFrame(animate);
-    };
-
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
-    createParticles();
-    const animationFrameId = requestAnimationFrame(animate);
-
-    return () => {
-      window.removeEventListener('resize', resizeCanvas);
-      cancelAnimationFrame(animationFrameId);
-    };
-  }, []);
-
-  const handleEmailSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    const scriptURL =
-      'https://script.google.com/macros/s/AKfycbwVnxhMo46kezcormu5_4Q6vsLiQRXrq1gvMR8Yqr7fjHtGAhY692KHB27JLkHxGDXI/exec';
-    const formData = new FormData();
-    formData.append('email', email);
-
-    try {
-      const response = await fetch(scriptURL, {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (response.ok) {
-        setIsSubmitted(true);
-      } else {
-        alert('Submission failed. Please try again.');
-      }
-    } catch (error) {
-      console.error('Error submitting form:', error);
-      alert('An error occurred. Please try again later.');
-    } finally {
-      setIsSubmitting(false);
+  const handleOptionClick = (nextId) => {
+    if (!nextId) {
+      const branch = currentQuestionId.split('_')[0];
+      setResultKey(branch in RESULT_COPY ? branch : 'job_hunt');
+    } else {
+      setCurrentQuestionId(nextId);
+      setStepCount(prev => prev + 1);
     }
   };
 
+  const handleReset = () => {
+    setCurrentQuestionId('start');
+    setResultKey(null);
+    setStepCount(1);
+  };
+
+  // Result screen
+  if (resultKey) {
+    const result = RESULT_COPY[resultKey];
+    return (
+      <div className="min-h-screen bg-bg flex flex-col items-center justify-center p-4">
+        <div className="w-full max-w-lg">
+          <p className="label mb-3">Your diagnosis</p>
+          <h2 className="font-serif text-3xl md:text-4xl text-ink leading-tight mb-4">
+            {result.headline}
+          </h2>
+          <p className="text-ink2 text-base leading-relaxed mb-8">{result.body}</p>
+
+          <div className="bg-ink rounded-xl p-6 mb-6">
+            <p className="font-mono text-xs text-white/40 tracking-widest uppercase mb-4">Case 01 · Free · ~45 min</p>
+            <p className="text-white font-medium text-base mb-1">Swiggy Orders Investigation</p>
+            <p className="text-white/60 text-sm mb-5 leading-relaxed">
+              3-phase case study. Watch a senior analyst work. Do it yourself. Execute under mock interview pressure.
+            </p>
+            <div className="flex flex-wrap gap-2 mb-5">
+              {PHASE_STYLES.map((p) => (
+                <span
+                  key={p.label}
+                  className="font-mono text-[10px] font-semibold px-3 py-1 rounded-full"
+                  style={{ background: p.bg, color: p.color, border: `1px solid ${p.border}` }}
+                >
+                  {p.label}
+                </span>
+              ))}
+            </div>
+            <a
+              href="/case-studies/swiggy"
+              className="block w-full text-center py-3 px-6 bg-accent text-white font-medium rounded-lg hover:bg-accent-dark transition-all"
+            >
+              {result.cta} →
+            </a>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <button onClick={handleReset} className="text-sm text-ink3 hover:text-ink2 transition-colors">
+              ← Retake quiz
+            </button>
+            <Link to="/jobs" className="text-sm text-ink3 hover:text-ink2 transition-colors">
+              Browse jobs instead →
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Fallback if question not found
+  if (!currentQuestion) {
+    return (
+      <div className="min-h-screen bg-bg flex flex-col items-center justify-center p-4 text-center">
+        <h2 className="font-serif text-3xl text-ink mb-4">Thanks for your answers!</h2>
+        <Link to="/" className="px-6 py-3 brand-button rounded-lg font-medium">Return to Home</Link>
+      </div>
+    );
+  }
+
   return (
-    <div
-      className="bg-black text-[#e0e0e0] relative isolate"
-      style={{ fontFamily: "'Inter', sans-serif" }}
-    >
-      <AnimatedBackground />
+    <div className="min-h-screen bg-bg flex flex-col items-center justify-center p-4">
+      <div className="w-full max-w-lg">
+        <div className="mb-8 text-center">
+          <p className="label mb-4">Career diagnosis</p>
+          <p className="font-mono text-xs text-ink3">Question {stepCount}</p>
+        </div>
 
-      <main className="w-full max-w-7xl mx-auto p-4 md:p-8 flex flex-col items-center flex-grow z-10 relative">
-        {/* ============================= HERO SECTION ============================= */}
-        <section className="text-center py-20 md:py-28 max-w-4xl">
-          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold leading-tight text-white drop-shadow-lg">
-            Your Career Struggle <br /> Ends Here.
-          </h1>
-          <p className="mt-6 text-lg md:text-xl text-gray-400 max-w-2xl mx-auto">
-            A trusted platform to guide your professional journey with clarity, not confusion.
-          </p>
-          <p className="mt-8 text-orange-400 font-semibold">
-            Our AI-powered career agent is coming soon to diagnose your career and put you in the
-            right direction.
-          </p>
-
-          {/* Updated Email Form Layout */}
-          <div className="mt-8">
-            {!isSubmitted ? (
-              <form
-                onSubmit={handleEmailSubmit}
-                className="flex flex-col sm:flex-row gap-4 justify-center max-w-xl mx-auto"
+        <div className="bg-surface border border-border rounded-xl p-6 md:p-8 mb-4">
+          <h2 className="font-serif text-xl md:text-2xl text-ink mb-6 leading-snug">
+            {currentQuestion.question}
+          </h2>
+          <div className="flex flex-col gap-3">
+            {currentQuestion.options.map((option, index) => (
+              <button
+                key={index}
+                onClick={() => handleOptionClick(option.nextQuestionId)}
+                className="w-full text-left px-5 py-4 bg-bg border border-border rounded-lg text-sm text-ink hover:border-accent hover:bg-accent-light transition-all duration-200 font-medium"
               >
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email for early access"
-                  required
-                  className="flex-1 px-6 py-4 bg-gray-800/50 border border-gray-700 rounded-full text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 backdrop-blur-sm"
-                />
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="px-6 py-4 bg-orange-600 hover:bg-orange-500 text-white font-bold rounded-full shadow-lg transition-all duration-300 transform hover:scale-105 text-sm sm:text-base disabled:bg-gray-500 disabled:cursor-not-allowed"
-                >
-                  {isSubmitting ? 'Submitting...' : 'Notify Me'}
-                </button>
-              </form>
-            ) : (
-              <div className="text-green-400 font-semibold p-4 bg-green-900/50 rounded-lg">
-                You're on the list! We'll let you know the moment we launch.
-              </div>
-            )}
-          </div>
-        </section>
-        {/* ============================= END HERO SECTION ============================= */}
-
-        {/* WHY IT WORKS SECTION */}
-        <section
-          ref={whyRef}
-          className={`mt-16 md:mt-20 w-full text-center max-w-5xl transition-all duration-1000 ${
-            whyInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-          }`}
-        >
-          <h2 className="text-3xl sm:text-4xl font-bold mb-12 dark-theme-text">
-            Cut Through the Noise
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
-            {whyItWorks.map((item, index) => {
-              const IconComponent = item.icon;
-              return (
-                <div
-                  key={index}
-                  className="flex flex-col items-start p-6 rounded-xl bg-[#2a2a2a] border border-gray-700 shadow-lg"
-                >
-                  <div className="p-3 rounded-full bg-gray-700 text-orange-400 mb-4 shadow-lg">
-                    {IconComponent && <IconComponent size="1.75rem" />}
-                  </div>
-                  <h3 className="text-xl font-bold text-white mb-2">{item.title}</h3>
-                  <p className="text-gray-400">{item.description}</p>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-
-        {/* TESTIMONIALS SECTION */}
-        <section
-          ref={testimonialsRef}
-          className={`mt-16 md:mt-20 w-full transition-all duration-1000 ${
-            testimonialsInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-          }`}
-        >
-          <h2 className="text-3xl sm:text-4xl font-bold mb-12 text-center dark-theme-text">
-            What Our Users Say
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <TestimonialCard key={index} testimonial={testimonial} />
+                {option.text}
+              </button>
             ))}
           </div>
-        </section>
-      </main>
+          {currentQuestion.insight && (
+            <p className="text-xs text-ink3 mt-5 italic">{currentQuestion.insight}</p>
+          )}
+        </div>
+
+        <div className="text-center">
+          <button onClick={handleReset} className="text-xs text-ink3 hover:text-ink2 transition-colors">
+            ← Start over
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
 
-export default HomePage;
+export default DecisionTreePage;

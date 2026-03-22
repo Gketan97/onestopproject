@@ -1,6 +1,95 @@
-@tailwind base; 
+@tailwind base;
 @tailwind components;
 @tailwind utilities;
-body.modal-open {
-  overflow: hidden;
+
+:root {
+  --bg: #FAFAF7;
+  --surface: #F3F2ED;
+  --surface2: #EBEBE4;
+  --ink: #1A1A0F;
+  --ink2: #52524A;
+  --ink3: #9B9B8F;
+  --border: #E0DFD8;
+  --border2: #CCCCC3;
+  --accent: #C84B0C;
+  --accent-dark: #A03A08;
+  --accent-light: #FDF2EC;
+  --accent-border: #F2C4A5;
+  --phase1: #C84B0C;
+  --phase2: #1E4FCC;
+  --phase3: #1A6B45;
+  --green: #1A6B45;
+  --green-bg: #EDF6F1;
+  --green-border: #A8D9BC;
+  --serif: 'Instrument Serif', Georgia, serif;
+  --sans: 'DM Sans', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', monospace;
 }
+
+* { box-sizing: border-box; }
+html { -webkit-font-smoothing: antialiased; scroll-behavior: smooth; }
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1.65;
+}
+body.modal-open { overflow: hidden; }
+
+.font-serif { font-family: var(--serif); }
+.font-mono  { font-family: var(--mono); }
+
+.brand-button {
+  background: var(--accent);
+  color: #fff;
+  transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
+}
+.brand-button:hover {
+  background: var(--accent-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(200,75,12,0.28);
+}
+.brand-button:active { transform: translateY(0); }
+
+.gradient-text {
+  background: linear-gradient(135deg, var(--accent) 0%, #E8813C 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.label {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--ink3);
+  text-transform: uppercase;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  font-family: var(--mono);
+}
+.pill-phase1 { background: var(--accent-light); color: var(--phase1); border: 1px solid var(--accent-border); }
+.pill-phase2 { background: #EDF1FD; color: var(--phase2); border: 1px solid #A8B8F0; }
+.pill-phase3 { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
+.pill-surface { background: var(--surface2); color: var(--ink2); border: 1px solid var(--border); }
+
+.card { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+.card-surface { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+
+/* Jobs page keeps dark theme */
+.dark-theme-bg { background: #1a1a1a; }
+.dark-theme-card-bg { background: #2a2a2a; }
+.dark-theme-card-hover { background: #3a3a3a; }
+.dark-theme-border { border-color: #444; }
+.dark-theme-text { color: #e0e0e0; }

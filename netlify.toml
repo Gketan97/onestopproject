@@ -1,16 +1,12 @@
-# =================================================================
-# FILE: netlify.toml
-# PURPOSE: Configure the build settings and add the essential
-# redirect rule to make client-side routing (and deep links) work correctly.
-# =================================================================
-
 [build]
   command = "npm run build"
   publish = "dist"
 
-# This is the new section that fixes the "broken link" issue.
-# It tells Netlify to serve the index.html for any path that isn't a file,
-# allowing React Router to handle the routing.
+[[redirects]]
+  from = "/case-studies/swiggy"
+  to = "/case-studies/swiggy.html"
+  status = 200
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
