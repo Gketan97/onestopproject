@@ -2,6 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
+<<<<<<< Updated upstream
 :root {
   --bg: #FAFAF7;
   --surface: #F3F2ED;
@@ -27,6 +28,55 @@
 }
 
 * { box-sizing: border-box; }
+=======
+/* ── CSS custom properties — mirrors tailwind.config.js exactly ── */
+:root {
+  --bg:            #FAFAF7;
+  --surface:       #F3F2ED;
+  --surface2:      #EBEBE4;
+  --ink:           #1A1A0F;
+  --ink2:          #52524A;
+  --ink3:          #9B9B8F;
+  --border:        #E0DFD8;
+  --border2:       #CCCCC3;
+
+  --accent:        #C84B0C;
+  --accent-dark:   #A03A08;
+  --accent-light:  #FDF2EC;
+  --accent-border: #F2C4A5;
+
+  --phase1:        #C84B0C;
+  --phase2:        #1E4FCC;
+  --phase3:        #1A6B45;
+
+  --green:         #1A6B45;
+  --green-bg:      #EDF6F1;
+  --green-border:  #A8D9BC;
+
+  --red:           #B03030;
+  --red-bg:        #FDF2F2;
+  --red-border:    #E8AAAA;
+
+  --amber:         #9B5200;
+  --amber-bg:      #FEF7EE;
+  --amber-border:  #F0C98A;
+
+  --blue:          #1E4FCC;
+  --blue-bg:       #EDF1FD;
+  --blue-border:   #A8B8F0;
+
+  --serif: 'Instrument Serif', Georgia, serif;
+  --sans:  'DM Sans', system-ui, sans-serif;
+  --mono:  'JetBrains Mono', monospace;
+
+  /* BUG FIX #7: Single source of truth for desktop header height.
+     SearchAndTabs uses md:top-[var(--header-h)] to stay in sync. */
+  --header-h: 53px;
+}
+
+/* ── Base ──────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+>>>>>>> Stashed changes
 html { -webkit-font-smoothing: antialiased; scroll-behavior: smooth; }
 body {
   font-family: var(--sans);
@@ -37,9 +87,17 @@ body {
 }
 body.modal-open { overflow: hidden; }
 
+<<<<<<< Updated upstream
 .font-serif { font-family: var(--serif); }
 .font-mono  { font-family: var(--mono); }
 
+=======
+/* ── Typography utilities ──────────────────────────────────────── */
+.font-serif { font-family: var(--serif); }
+.font-mono  { font-family: var(--mono); }
+
+/* ── Brand button (used in Jobs page) ─────────────────────────── */
+>>>>>>> Stashed changes
 .brand-button {
   background: var(--accent);
   color: #fff;
@@ -52,6 +110,10 @@ body.modal-open { overflow: hidden; }
 }
 .brand-button:active { transform: translateY(0); }
 
+<<<<<<< Updated upstream
+=======
+/* ── Gradient text ─────────────────────────────────────────────── */
+>>>>>>> Stashed changes
 .gradient-text {
   background: linear-gradient(135deg, var(--accent) 0%, #E8813C 100%);
   -webkit-background-clip: text;
@@ -59,6 +121,10 @@ body.modal-open { overflow: hidden; }
   background-clip: text;
 }
 
+<<<<<<< Updated upstream
+=======
+/* ── Mono label ────────────────────────────────────────────────── */
+>>>>>>> Stashed changes
 .label {
   font-family: var(--mono);
   font-size: 10px;
@@ -68,6 +134,10 @@ body.modal-open { overflow: hidden; }
   text-transform: uppercase;
 }
 
+<<<<<<< Updated upstream
+=======
+/* ── Phase pills ───────────────────────────────────────────────── */
+>>>>>>> Stashed changes
 .pill {
   display: inline-flex;
   align-items: center;
@@ -79,6 +149,7 @@ body.modal-open { overflow: hidden; }
   white-space: nowrap;
   font-family: var(--mono);
 }
+<<<<<<< Updated upstream
 .pill-phase1 { background: var(--accent-light); color: var(--phase1); border: 1px solid var(--accent-border); }
 .pill-phase2 { background: #EDF1FD; color: var(--phase2); border: 1px solid #A8B8F0; }
 .pill-phase3 { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
@@ -93,3 +164,25 @@ body.modal-open { overflow: hidden; }
 .dark-theme-card-hover { background: #3a3a3a; }
 .dark-theme-border { border-color: #444; }
 .dark-theme-text { color: #e0e0e0; }
+=======
+.pill-phase1  { background: var(--accent-light); color: var(--phase1); border: 1px solid var(--accent-border); }
+.pill-phase2  { background: var(--blue-bg);      color: var(--phase2); border: 1px solid var(--blue-border); }
+.pill-phase3  { background: var(--green-bg);     color: var(--phase3); border: 1px solid var(--green-border); }
+.pill-surface { background: var(--surface2);     color: var(--ink2);   border: 1px solid var(--border); }
+.pill-green   { background: var(--green-bg);     color: var(--green);  border: 1px solid var(--green-border); }
+
+/* ── Cards ─────────────────────────────────────────────────────── */
+.card         { background: var(--bg);      border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+.card-surface { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+
+/* ── Jobs page dark theme (kept — used by JobCard, ReferralCard, modals) ── */
+.dark-theme-bg        { background: #1a1a1a; }
+.dark-theme-card-bg   { background: #2a2a2a; }
+.dark-theme-card-hover { background: #3a3a3a; }
+.dark-theme-border    { border-color: #444; }
+.dark-theme-text      { color: #e0e0e0; }
+
+/* ── Portfolio page utility ────────────────────────────────────── */
+.portfolio-prose p { margin-bottom: 0.75rem; }
+.portfolio-prose p:last-child { margin-bottom: 0; }
+>>>>>>> Stashed changes

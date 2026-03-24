@@ -1,38 +1,61 @@
-// src/components/layout/SearchAndTabs.jsx
-
 import React from 'react';
+import { Search, SlidersHorizontal } from 'lucide-react';
 
 const TabButton = ({ tabName, activeTab, label, onClick }) => (
   <button
     onClick={() => onClick(tabName)}
-    className={`px-4 py-2 text-sm font-semibold rounded-md transition-colors ${activeTab === tabName ? 'bg-orange-500 text-white' : 'text-gray-400 hover:bg-gray-700'}`}
+    className={`
+      px-5 py-2 text-sm font-medium rounded-lg transition-colors duration-150
+      ${activeTab === tabName
+        ? 'bg-accent text-white'
+        : 'text-ink2 hover:text-ink hover:bg-surface'}
+    `}
   >
     {label}
   </button>
 );
 
-const SearchAndTabs = ({ activeTab, onTabClick, searchQuery, onSearchChange, onFilterClick }) => {
-  return (
-    <div className="sticky top-0 md:top-20 bg-[#1a1a1a] py-4 z-20 -mx-4 px-4 border-b border-gray-800">
-      <div className="relative max-w-7xl mx-auto">
+const SearchAndTabs = ({ activeTab, onTabClick, searchQuery, onSearchChange, onFilterClick }) => (
+  // BUG FIX #7: Replaced hardcoded md:top-[53px] with md:top-[var(--header-h)]
+  // Header height is declared as --header-h in index.css so both stay in sync.
+  <div className="sticky top-0 md:top-[var(--header-h)] bg-bg/95 backdrop-blur-md py-3 z-20 -mx-4 px-4 border-b border-border">
+    <div className="relative max-w-7xl mx-auto">
+      {/* Search input */}
+      <div className="relative mb-3">
+        <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink3 pointer-events-none" />
         <input
           type="text"
           value={searchQuery}
           onChange={onSearchChange}
-          placeholder={activeTab === 'jobs' ? "Search by title, company..." : "Search by role, company, referrer..."}
-          className="w-full p-3 pl-4 pr-12 bg-gray-800 text-white rounded-lg border-2 border-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-500"
+          placeholder={
+            activeTab === 'jobs'
+              ? 'Search by title, company, location…'
+              : 'Search by role, company, referrer…'
+          }
+          className="
+            w-full pl-10 pr-12 py-2.5
+            bg-bg border border-border rounded-lg
+            text-ink text-sm placeholder:text-ink3
+            focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent
+            transition-colors duration-150
+          "
         />
-        {/* The filter button is now always visible and its action is controlled by the parent */}
-        <button onClick={onFilterClick} className="absolute inset-y-0 right-0 flex items-center justify-center px-4 text-gray-400 hover:text-white">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><title>Filter Icon</title><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+        <button
+          onClick={onFilterClick}
+          className="absolute inset-y-0 right-0 flex items-center justify-center px-3.5 text-ink3 hover:text-ink transition-colors"
+          aria-label="Open filters"
+        >
+          <SlidersHorizontal size={16} />
         </button>
       </div>
-      <div className="max-w-7xl mx-auto flex items-center justify-center gap-4 mt-4">
-        <TabButton tabName="jobs" activeTab={activeTab} label="Jobs" onClick={onTabClick} />
+
+      {/* Tabs */}
+      <div className="flex items-center justify-center gap-2">
+        <TabButton tabName="jobs"      activeTab={activeTab} label="Jobs"      onClick={onTabClick} />
         <TabButton tabName="referrals" activeTab={activeTab} label="Referrals" onClick={onTabClick} />
       </div>
     </div>
-  );
-};
+  </div>
+);
 
 export default SearchAndTabs;

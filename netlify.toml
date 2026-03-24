@@ -2,12 +2,37 @@
   command = "npm run build"
   publish = "dist"
 
+<<<<<<< Updated upstream
 [[redirects]]
   from = "/case-studies/swiggy"
   to = "/case-studies/swiggy.html"
   status = 200
 
+=======
+[functions]
+  directory = "netlify/functions"
+
+# Case study HTML — served as static file
+[[redirects]]
+  from = "/case-studies/swiggy"
+  to   = "/case-studies/swiggy.html"
+  status = 200
+
+# Portfolio — React handles routing
+[[redirects]]
+  from = "/portfolio/*"
+  to   = "/index.html"
+  status = 200
+
+# SPA fallback — must be last
+>>>>>>> Stashed changes
 [[redirects]]
   from = "/*"
-  to = "/index.html"
+  to   = "/index.html"
   status = 200
+
+[dev]
+  command   = "npm run dev"
+  port      = 8888
+  targetPort = 5173
+  publish   = "dist"

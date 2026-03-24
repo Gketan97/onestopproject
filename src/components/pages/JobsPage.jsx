@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 // src/pages/JobsPage.jsx									
 									
 import React, { useState, useEffect, useMemo } from 'react';									
@@ -223,3 +224,266 @@ onApplyFilters={setActiveReferralFilters}
 };									
 									
 export default JobsPage;									
+=======
+// src/components/pages/JobsPage.jsx
+
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { Link } from 'react-router-dom';
+import { useDataFetching } from '../../hooks/useDataFetching.js';
+
+import SearchAndTabs from '../layout/SearchAndTabs';
+import JobCard from '../cards/Jobcard.jsx';
+import ReferralCard from '../cards/ReferralCard.jsx';
+import JobDetailModal from '../modals/JobDetailModal.jsx';
+import FilterModal from '../modals/FilterModal.jsx';
+import ReferralFilterModal from '../modals/ReferralFilterModal.jsx';
+import WhatsAppCalloutBar from '../layout/WhatsAppCalloutBar.jsx';
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+const useDebounce = (value, delay) => {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+  useEffect(() => {
+    const handler = setTimeout(() => setDebouncedValue(value), delay);
+    return () => clearTimeout(handler);
+  }, [value, delay]);
+  return debouncedValue;
+};
+
+// BUG FIX #2: Was computed at module level using window.innerWidth (not reactive,
+// crashes in non-browser environments). Now a function called inside component.
+const getItemsPerPage = () =>
+  (typeof window !== 'undefined' && window.innerWidth < 768 ? 6 : 10);
+
+// BUG FIX #11: Referral shuffle was inside useMemo, causing the list to reshuffle
+// on every keypress. This helper is called once when data loads.
+const shuffleOnce = (arr) => [...arr].sort(() => Math.random() - 0.5);
+
+// ── Component ─────────────────────────────────────────────────────────────────
+
+const JobsPage = () => {
+  const { allJobs, allReferrals, loading, error, fetchAllData } = useDataFetching();
+
+  const [activeTab, setActiveTab]                               = useState('jobs');
+  const [searchQuery, setSearchQuery]                           = useState('');
+  const [selectedJob, setSelectedJob]                           = useState(null);
+  const [isJobFilterModalOpen, setIsJobFilterModalOpen]         = useState(false);
+  const [isReferralFilterModalOpen, setIsReferralFilterModalOpen] = useState(false);
+
+  // BUG FIX #5: Removed dead `companies` key — ReferralFilterModal only exposes
+  // role filtering, so companies was always [] and the filter block was unreachable.
+  const [activeJobFilters, setActiveJobFilters]           = useState({ titles: [] });
+  const [activeReferralFilters, setActiveReferralFilters] = useState({ roles: [] });
+
+  const [currentPage, setCurrentPage]         = useState(1);
+  const [highlightedJobId, setHighlightedJobId] = useState(null);
+  const [itemsPerPage, setItemsPerPage]         = useState(getItemsPerPage);
+
+  // BUG FIX #2: Keep itemsPerPage reactive on window resize
+  useEffect(() => {
+    const handleResize = () => setItemsPerPage(getItemsPerPage());
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // BUG FIX #11: Shuffle referrals once when data loads, not on every render
+  const shuffledReferrals = useMemo(() => shuffleOnce(allReferrals), [allReferrals]);
+
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
+
+  const filteredData = useMemo(() => {
+    const q = debouncedSearchQuery.toLowerCase();
+
+    if (activeTab === 'jobs') {
+      let results = allJobs;
+      if (activeJobFilters.titles.length > 0) {
+        results = results.filter(job => activeJobFilters.titles.includes(job['Job Title']));
+      }
+      if (q) {
+        results = results.filter(job =>
+          (job['Job Title'] || '').toLowerCase().includes(q) ||
+          (job.Company     || '').toLowerCase().includes(q) ||
+          (job.Location    || '').toLowerCase().includes(q)
+        );
+      }
+      return results;
+    }
+
+    // Referrals — use pre-shuffled copy so order is stable across filter changes
+    let results = shuffledReferrals;
+    if (activeReferralFilters.roles.length > 0) {
+      results = results.filter(ref => activeReferralFilters.roles.includes(ref.designation));
+    }
+    if (q) {
+      results = results.filter(ref =>
+        (ref.company     || '').toLowerCase().includes(q) ||
+        (ref.designation || '').toLowerCase().includes(q) ||
+        (ref.name        || '').toLowerCase().includes(q)
+      );
+    }
+    return results;
+  }, [debouncedSearchQuery, activeTab, allJobs, shuffledReferrals, activeJobFilters, activeReferralFilters]);
+
+  // Reset to page 1 whenever filters / tab / query change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab, debouncedSearchQuery, activeJobFilters, activeReferralFilters]);
+
+  const currentData = useMemo(
+    () => filteredData.slice(0, currentPage * itemsPerPage),
+    [currentPage, filteredData, itemsPerPage]
+  );
+
+  const hasMoreData = currentData.length < filteredData.length;
+
+  // ── Modal / scroll handlers ───────────────────────────────────────────────
+
+  const handleOpenModal = useCallback((job) => {
+    setSelectedJob(job);
+    window.location.hash = `job-${job.id}`;
+  }, []);
+
+  const handleCloseModal = useCallback(() => {
+    setSelectedJob(null);
+    if (window.history.pushState) {
+      window.history.pushState('', document.title, window.location.pathname + window.location.search);
+    } else {
+      window.location.hash = '';
+    }
+  }, []);
+
+  // Restore job from URL hash on data load
+  useEffect(() => {
+    if (allJobs.length > 0 && window.location.hash.startsWith('#job-')) {
+      const jobId    = parseInt(window.location.hash.replace('#job-', ''), 10);
+      const jobIndex = filteredData.findIndex(j => j.id === jobId);
+      if (jobIndex !== -1) {
+        const pageOfJob = Math.floor(jobIndex / itemsPerPage) + 1;
+        setCurrentPage(pageOfJob);
+        setTimeout(() => {
+          const el = document.getElementById(`job-card-${jobId}`);
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            setHighlightedJobId(jobId);
+            setTimeout(() => setHighlightedJobId(null), 3000);
+          }
+        }, 100);
+      }
+    }
+  }, [allJobs, filteredData, itemsPerPage]);
+
+  // Lock body scroll when any modal is open
+  useEffect(() => {
+    const body          = document.body;
+    const originalStyle = window.getComputedStyle(body).overflow;
+    if (selectedJob || isJobFilterModalOpen || isReferralFilterModalOpen) {
+      body.style.overflow = 'hidden';
+    } else {
+      body.style.overflow = originalStyle;
+    }
+    return () => { body.style.overflow = originalStyle; };
+  }, [selectedJob, isJobFilterModalOpen, isReferralFilterModalOpen]);
+
+  const handleFilterClick = () => {
+    if (activeTab === 'jobs') setIsJobFilterModalOpen(true);
+    else setIsReferralFilterModalOpen(true);
+  };
+
+  // ── Render ────────────────────────────────────────────────────────────────
+
+  const renderContent = () => {
+    if (loading) return <p className="text-center text-ink3 mt-8 text-sm">Loading...</p>;
+    if (error) return (
+      <div className="text-center text-red mt-8">
+        <p>{error}</p>
+        <button onClick={fetchAllData} className="mt-4 px-6 py-2 brand-button rounded-lg">Retry</button>
+      </div>
+    );
+    if (currentData.length === 0) return <p className="text-center text-ink3 py-4 mt-8 text-sm">No results found.</p>;
+
+    if (activeTab === 'jobs') {
+      return (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+          {currentData.map((job) => (
+            <JobCard
+              key={job.id}
+              job={job}
+              onOpenModal={handleOpenModal}
+              isHighlighted={job.id === highlightedJobId}
+            />
+          ))}
+        </div>
+      );
+    }
+
+    if (activeTab === 'referrals') {
+      return (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+          {currentData.map((ref) => <ReferralCard referral={ref} key={ref.id} />)}
+        </div>
+      );
+    }
+  };
+
+  return (
+    <>
+      <div className="w-full max-w-7xl mx-auto p-4 md:p-8 flex-grow z-10 min-h-screen">
+        <SearchAndTabs
+          activeTab={activeTab}
+          onTabClick={setActiveTab}
+          searchQuery={searchQuery}
+          onSearchChange={(e) => setSearchQuery(e.target.value)}
+          onFilterClick={handleFilterClick}
+        />
+
+        <WhatsAppCalloutBar />
+
+        <div className="mt-8">
+          {renderContent()}
+          {hasMoreData && (
+            <div className="text-center mt-12">
+              <button
+                onClick={() => setCurrentPage(p => p + 1)}
+                className="px-8 py-3 brand-button font-bold rounded-lg"
+              >
+                Load More {activeTab === 'jobs' ? 'Jobs' : 'Referrals'}
+              </button>
+            </div>
+          )}
+        </div>
+
+        {activeTab === 'referrals' && !loading && !error && (
+          <div className="mt-12 text-center p-6 bg-surface rounded-xl border border-border">
+            <h3 className="font-semibold text-ink text-base">Want to refer candidates?</h3>
+            <p className="text-ink2 text-sm mt-2">
+              Join our platform to help others in the community and build your network.
+            </p>
+            <Link to="/become-referrer">
+              <button className="mt-4 px-6 py-2 brand-button text-sm font-bold rounded-lg">
+                Become a Referrer
+              </button>
+            </Link>
+          </div>
+        )}
+      </div>
+
+      {selectedJob && <JobDetailModal job={selectedJob} onClose={handleCloseModal} />}
+
+      <FilterModal
+        isOpen={isJobFilterModalOpen}
+        onClose={() => setIsJobFilterModalOpen(false)}
+        allJobs={allJobs}
+        onApplyFilters={setActiveJobFilters}
+      />
+      <ReferralFilterModal
+        isOpen={isReferralFilterModalOpen}
+        onClose={() => setIsReferralFilterModalOpen(false)}
+        allReferrals={allReferrals}
+        onApplyFilters={setActiveReferralFilters}
+      />
+    </>
+  );
+};
+
+export default JobsPage;
+>>>>>>> Stashed changes
