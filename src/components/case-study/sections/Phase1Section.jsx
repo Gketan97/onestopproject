@@ -1,116 +1,410 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import SlackThread, { SlackMessage } from '../shared/SlackThread.jsx';
-import ArjunVoice from '../shared/ArjunVoice.jsx';
 import ProduceFirst from '../shared/ProduceFirst.jsx';
-import SqlWorkbench from '../shared/SqlWorkbench.jsx';
-import { P1_STEPS } from '../data/swiggyData.js';
+import { P1_STEPS, SQL_RES } from '../data/swiggyData.js';
 
-// Safe renderer for static authored HTML from swiggyData.js
-// eslint-disable-next-line react/no-danger
-function CustomReveal({ html }) {
-  return <div dangerouslySetInnerHTML={{ __html: html }} />;
+
+// ── Typewriter hook ─────────────────────────────────────────
+function useTypewriter(text, speed = 14) {
+
+  const [displayed, setDisplayed] = useState('');
+  const [done, setDone] = useState(false);
+
+  useEffect(() => {
+
+    if (!text) return;
+
+    setDisplayed('');
+    setDone(false);
+
+    let i = 0;
+
+    const id = setInterval(() => {
+
+      i++;
+
+      setDisplayed(text.slice(0, i));
+
+      if (i >= text.length) {
+        clearInterval(id);
+        setDone(true);
+      }
+
+    }, speed);
+
+    return () => clearInterval(id);
+
+  }, [text, speed]);
+
+  return { displayed, done };
 }
 
-// Bug 4 fix: accept onSavePrediction callback so parent can persist user answers
-function Step({ step, onNext, onSavePrediction }) {
-  const [revealed, setRevealed] = useState(false);
+
+// ── Animated SQL table ──────────────────────────────────────
+function AnimatedResultsTable({ data, onDone }) {
+
+  const [visibleRows, setVisibleRows] = useState(0);
+
+  useEffect(() => {
+
+    if (!data?.rows?.length) return;
+
+    let i = 0;
+
+    const id = setInterval(() => {
+
+      i++;
+      setVisibleRows(i);
+
+      if (i >= data.rows.length) {
+
+        clearInterval(id);
+        setTimeout(() => onDone?.(), 300);
+
+      }
+
+    }, 140);
+
+    return () => clearInterval(id);
+
+  }, [data.rows.length]);
 
   return (
-    <div className="mb-4">
-      <div className="flex gap-3 items-start px-3 py-2.5 border border-phase1-border bg-phase1-bg rounded-xl mb-1">
-        <span className="font-mono text-[10px] font-bold text-phase1 flex-shrink-0 pt-0.5">{step.num}</span>
-        <p className="text-[13px] font-semibold text-phase1">{step.title}</p>
-      </div>
 
-      <ArjunVoice label="Arjun — what he's thinking" phase={1}>
-        {step.arjun}
-      </ArjunVoice>
+    <div className="overflow-x-auto max-h-52 overflow-y-auto transition-opacity duration-300">
 
-      {!revealed ? (
-        <ProduceFirst
-          id={`p1-pred-${step.num}`}
-          prompt={step.prediction}
-          minWords={5}
-          mockKey="clarify"
-          arjunAnswer={step.reveal.arjunAfter}
-          onSubmit={async ({ answer }) => {
-            // Bug 4 fix: save prediction answer to parent state before revealing
-            onSavePrediction?.(step.num - 1, answer);
-            setRevealed(true);
-          }}
-        />
-      ) : (
-        <div className="space-y-2">
-          {step.reveal.customHtml ? (
-            <CustomReveal html={step.reveal.customHtml} />
-          ) : step.reveal.sqlKey ? (
-            <SqlWorkbench
-              id={`p1-wb-${step.num}`}
-              title={step.reveal.sqlTitle}
-              dataKey={step.reveal.sqlKey}
-              showEvaluate={false}
-            />
-          ) : null}
+      <table className="w-full border-collapse font-mono text-[11px]">
 
-          <ArjunVoice label="Arjun — what he found" phase={1}>
-            {step.reveal.arjunAfter}
-          </ArjunVoice>
+        <thead>
+          <tr>
+            {data.cols.map(col => (
+              <th
+                key={col}
+                className="bg-sql-surface text-sql-kw px-2.5 py-1.5 text-left border-b border-sql-border text-[10px]"
+              >
+                {col}
+              </th>
+            ))}
+          </tr>
+        </thead>
 
-          {step.behaviourCode && (
-            <div className="flex items-center gap-2 px-3 py-2 bg-green-bg border border-green-border rounded-lg">
-              <span className="text-green font-bold text-xs">✓</span>
-              <p className="text-[11px] text-green leading-relaxed">{step.behaviourEvidence}</p>
-            </div>
-          )}
+        <tbody>
 
-          <button onClick={onNext} className="w-full py-2.5 bg-phase1 text-white text-sm font-medium rounded-lg hover:bg-accent-dark transition-colors">
-            {step.num < P1_STEPS.length ? `Watch step ${step.num + 1} →` : 'See how your predictions compared →'}
-          </button>
-        </div>
-      )}
+          {data.rows.slice(0, visibleRows).map((row, i) => (
+
+            <tr key={i} className="hover:bg-sql-surface transition">
+
+              {row.map((cell, j) => (
+                <td
+                  key={j}
+                  className="text-sql-text px-2.5 py-1.5 border-b border-sql-border/80"
+                >
+                  {cell}
+                </td>
+              ))}
+
+            </tr>
+
+          ))}
+
+        </tbody>
+
+      </table>
+
     </div>
+
   );
+
 }
 
-export default function Phase1Section({ onDone, onMarkBehaviour, onSavePrediction }) {
+
+// ── Live SQL run animation ──────────────────────────────────
+function LiveQueryReveal({ sqlTitle, sqlKey, children, onDataDone }) {
+
+  const [runPhase, setRunPhase] = useState('queuing');
+
+  useEffect(() => {
+
+    setRunPhase('queuing');
+
+    const t1 = setTimeout(() => setRunPhase('running'), 400);
+    const t2 = setTimeout(() => setRunPhase('results'), 1600);
+
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+
+  }, [sqlKey]);
+
+  return (
+
+    <div className="my-3 bg-sql-bg border border-sql-border rounded-xl overflow-hidden">
+
+      <div className="px-3.5 py-2 bg-sql-surface border-b border-sql-border flex justify-between">
+
+        <span className="font-mono text-[10px] text-sql-kw">
+          {sqlTitle}
+        </span>
+
+        <span className="font-mono text-[9px] text-sql-comment">
+          BigQuery · prod.swiggy
+        </span>
+
+      </div>
+
+
+      {runPhase === 'queuing' && (
+        <div className="px-4 py-4 text-sql-comment text-sm">
+          Queuing job…
+        </div>
+      )}
+
+      {runPhase === 'running' && (
+        <div className="px-4 py-4 text-sql-comment text-sm">
+          Running query…
+        </div>
+      )}
+
+      {runPhase === 'results' && children && (
+        <AnimatedResultsTable data={children} onDone={onDataDone} />
+      )}
+
+    </div>
+
+  );
+
+}
+
+
+// ── Arjun voice block ───────────────────────────────────────
+function ArjunTypewriter({ label, text }) {
+
+  const { displayed, done } = useTypewriter(text, 13);
+
+  return (
+
+    <div className="border-l-2 border-phase1 pl-4 py-2 my-3">
+
+      <p className="font-mono text-[9px] uppercase tracking-widest mb-1">
+        {label}
+      </p>
+
+      <p
+        aria-live="polite"
+        className="text-[13px] text-ink2 italic"
+      >
+        {displayed}
+
+        {!done && (
+          <span className="inline-block w-0.5 h-3.5 bg-current ml-1 animate-pulse"/>
+        )}
+
+      </p>
+
+    </div>
+
+  );
+
+}
+
+
+// ── Prediction confidence selector ──────────────────────────
+function ConfidenceSelector({ onChange }) {
+
+  const [value, setValue] = useState(null);
+
+  const options = ['Low', 'Medium', 'High'];
+
+  return (
+
+    <div className="mt-2 flex gap-2">
+
+      {options.map(o => (
+
+        <button
+          key={o}
+          onClick={() => {
+            setValue(o);
+            onChange?.(o);
+          }}
+          className={`px-3 py-1 text-xs rounded border ${
+            value === o
+              ? 'bg-phase1 text-white'
+              : 'bg-white text-ink'
+          }`}
+        >
+          {o}
+        </button>
+
+      ))}
+
+    </div>
+
+  );
+
+}
+
+
+// ── Step component ──────────────────────────────────────────
+function Step({ step, onNext, onSavePrediction }) {
+
+  const [phase, setPhase] = useState('prompt');
+  const [showInsight, setShowInsight] = useState(false);
+
+  const stepRef = useRef(null);
+
+  const sqlData = useMemo(
+    () => step.reveal.sqlKey ? SQL_RES[step.reveal.sqlKey] : null,
+    [step.reveal.sqlKey]
+  );
+
+
+  const handleSubmit = ({ answer }) => {
+
+    onSavePrediction?.(step.num - 1, answer);
+
+    setPhase('revealing');
+
+  };
+
+
+  return (
+
+    <div ref={stepRef} className="mb-8">
+
+      <h3 className="font-semibold mb-2">
+        Step {step.num}: {step.title}
+      </h3>
+
+
+      <ArjunTypewriter
+        label="Arjun — what he’s thinking"
+        text={step.arjun}
+      />
+
+
+      {phase === 'prompt' && (
+
+        <>
+
+          <ProduceFirst
+            id={`p1-${step.num}`}
+            prompt={step.prediction}
+            minWords={5}
+            onSubmit={handleSubmit}
+          />
+
+          <ConfidenceSelector
+            onChange={(c) => console.log('confidence', c)}
+          />
+
+        </>
+
+      )}
+
+
+      {phase !== 'prompt' && sqlData && (
+
+        <LiveQueryReveal
+          sqlTitle={step.reveal.sqlTitle}
+          sqlKey={step.reveal.sqlKey}
+          onDataDone={() => {
+            setPhase('revealed');
+            setShowInsight(true);
+          }}
+        >
+          {sqlData}
+        </LiveQueryReveal>
+
+      )}
+
+
+      {showInsight && (
+
+        <>
+          <ArjunTypewriter
+            label="Arjun — what he found"
+            text={step.reveal.arjunAfter}
+          />
+
+          <button
+            onClick={onNext}
+            className="mt-3 w-full py-3 bg-phase1 text-white rounded-lg"
+          >
+            Continue →
+          </button>
+        </>
+
+      )}
+
+    </div>
+
+  );
+
+}
+
+
+// ── Main Phase section ──────────────────────────────────────
+export default function Phase1Section({ onDone, onSavePrediction }) {
+
   const [currentStep, setCurrentStep] = useState(0);
 
   const advance = () => {
-    const step = P1_STEPS[currentStep];
-    if (step.behaviourCode) onMarkBehaviour?.(step.behaviourCode, step.behaviourEvidence);
-    if (currentStep < P1_STEPS.length - 1) setCurrentStep(s => s + 1);
-    else onDone();
+
+    if (currentStep < P1_STEPS.length - 1) {
+      setCurrentStep(s => s + 1);
+    } else {
+      onDone();
+    }
+
   };
 
-  return (
-    <div className="px-5 pb-6">
-      <div className="flex items-center gap-3 py-6">
-        <span className="font-mono text-[10px] font-semibold tracking-widest text-phase1 uppercase">Phase 1 · Watch</span>
-        <div className="flex-1 h-px bg-border" />
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full font-mono text-[9px] font-semibold border bg-phase1-bg text-phase1 border-phase1-border">~20 min</span>
-      </div>
 
-      <SlackThread channel="analytics-incident · Swiggy data team" className="mb-4">
-        <SlackMessage initials="PS" name="Priya S." time="Mon 9:14 AM">
-          Morning — orders are down 8.3% WoW as of Sunday. Significant enough that leadership noticed. Arjun, can you look into this before EOD? I need root cause, not just the number.
+  return (
+
+    <div className="max-w-3xl mx-auto px-6 pb-10">
+
+      <SlackThread channel="analytics-incident · Swiggy data team">
+
+        <SlackMessage
+          initials="PS"
+          name="Priya S."
+          time="Mon 9:14 AM"
+        >
+          Morning — orders are down 8.3% week-over-week as of Sunday. Leadership noticed. Arjun, can you take a look before EOD?
         </SlackMessage>
-        <SlackMessage initials="AJ" name="Arjun M." time="9:22 AM">
-          On it. Will start with the metric definition, then baseline, then decompose. Will Slack you by 3pm with root cause.
+
+        <SlackMessage
+          initials="AJ"
+          name="Arjun M."
+          time="9:22 AM"
+        >
+          On it. I’ll start with the metric definition, then baseline, then decompose. I’ll share a root cause update by 3pm.
         </SlackMessage>
+
       </SlackThread>
 
-      <ArjunVoice label="Arjun — before I touch any data" phase={1}>
-        When Priya says "orders are down 8.3%" — I always ask: which definition? Completed orders only? Including cancellations? Platform-wide or a specific vertical? If I pull the wrong metric, I'll spend 3 hours investigating noise.
-      </ArjunVoice>
 
-      {P1_STEPS.slice(0, currentStep + 1).map((step, i) => (
+      <ArjunTypewriter
+        label="Arjun — before I touch any data"
+        text={`When Priya says “orders are down 8.3%” — I always ask: which definition? Completed orders only? Including cancellations? Platform-wide or a specific vertical? If I pull the wrong metric, I’ll spend three hours investigating noise.`}
+      />
+
+
+      {P1_STEPS.slice(0, currentStep + 1).map(step => (
+
         <Step
-          key={step.num}
+          key={`step-${step.num}`}
           step={step}
           onNext={advance}
           onSavePrediction={onSavePrediction}
         />
+
       ))}
+
     </div>
+
   );
+
 }

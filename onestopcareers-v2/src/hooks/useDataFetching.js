@@ -84,7 +84,7 @@ export const useDataFetching = () => {
 
     for (const src of jobsSources) {
       try {
-        const res = await fetchWithTimeout(src, 7000);
+        const res = await fetchWithTimeout(src, 3000);
         if (!res.ok) continue;
         const data = await res.json();
         if (Array.isArray(data) && data.length > 0) {
@@ -98,7 +98,7 @@ export const useDataFetching = () => {
 
     let referralsData = [];
     try {
-      const res = await fetchWithTimeout(CDN_REFERRALS, 7000);
+      const res = await fetchWithTimeout(CDN_REFERRALS, 3000);
       if (res.ok) referralsData = await res.json();
     } catch {
       // referrals optional — silently fail

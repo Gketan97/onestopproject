@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import MissionBrief from '../shared/MissionBrief.jsx';
 import ArjunVoice from '../shared/ArjunVoice.jsx';
 import ProduceFirst from '../shared/ProduceFirst.jsx';
@@ -6,61 +6,127 @@ import SqlWorkbench from '../shared/SqlWorkbench.jsx';
 import { useP2Timer } from '../hooks/useP2Timer.js';
 import { useArjun } from '../hooks/useArjun.js';
 
-/* ── Arjun ask bar ── */
-function AskArjunBar({ onAsk }) {
-  const [q, setQ] = useState('');
-  const [response, setResponse] = useState('');
-  const [loading, setLoading] = useState(false);
-  const { callArjun: call } = useArjun();
+const P2_STEP_IDS = ['clarify','baseline','decompose','investigate','causation','vp'];
+const P2_STEP_LABELS = ['Clarify','Baseline','Decompose','Investigate','Causation','Communicate'];
 
-  const ask = async () => {
-    if (!q.trim()) return;
+const STEP_TABLES = {
+  clarify: null,
+  baseline: {
+    tables:['prod.orders'],
+    hint:"Filter: delivery_area='north_bangalore', cuisine_type='Biryani'. Compare Monday vs last Monday.",
+    cols:{ 'prod.orders':['order_id','restaurant_id','delivery_area','cuisine_type','order_status','order_ts','gmv']}
+  },
+  decompose:{
+    tables:['prod.orders','prod.restaurants','prod.restaurant_reviews'],
+    hint:'JOIN orders→restaurants→reviews. Group by restaurant.',
+    cols:{
+      'prod.orders':['order_id','restaurant_id','delivery_area','cuisine_type','order_ts'],
+      'prod.restaurants':['restaurant_id','name','delivery_area','cuisine_type','avg_rating'],
+      'prod.restaurant_reviews':['review_id','restaurant_id','rating','has_complaint','review_ts']
+    }
+  },
+  investigate:{
+    tables:['prod.external_events','prod.competitor_pricing','prod.weather_events'],
+    hint:"Check external events or competitor promos.",
+    cols:{
+      'prod.external_events':['event_id','platform','event_type','geography','discount_pct','event_date'],
+      'prod.competitor_pricing':['id','competitor','cuisine_type','geography','avg_price','promo_active'],
+      'prod.weather_events':['date','condition','temp_c','rainfall_mm','city']
+    }
+  },
+  causation:null,
+  vp:null
+};
+
+function InlineSchema({stepId}) {
+  const ctx = STEP_TABLES[stepId];
+  if(!ctx) return null;
+
+  return(
+    <div className="mb-3 bg-sql-bg border border-sql-border rounded-xl overflow-hidden">
+      <div className="px-3.5 py-2 bg-sql-surface border-b border-sql-border">
+        <span className="font-mono text-[9px] text-sql-comment tracking-widest uppercase">
+          Available tables · prod.swiggy · BigQuery
+        </span>
+      </div>
+
+      <div className="px-3.5 py-3 space-y-3">
+        {Object.entries(ctx.cols).map(([table,cols])=>(
+          <div key={table}>
+            <p className="font-mono text-[11px] text-sql-str font-semibold mb-1">{table}</p>
+            <p className="font-mono text-[10px] text-sql-comment leading-relaxed">
+              {cols.join(' · ')}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      <div className="px-3.5 py-2 bg-sql-surface border-t border-sql-border">
+        <p className="font-mono text-[10px] text-sql-num">💡 {ctx.hint}</p>
+      </div>
+    </div>
+  )
+}
+
+function AskArjunBar({onAsk}) {
+  const [q,setQ] = useState('');
+  const [response,setResponse] = useState('');
+  const [loading,setLoading] = useState(false);
+  const {callArjun} = useArjun();
+  const mounted = useRef(true);
+
+  useEffect(()=>()=>{ mounted.current=false },[])
+
+  const ask = async ()=>{
+    if(!q.trim() || loading) return;
 
     setLoading(true);
     setResponse('');
 
-    const fb = await call(
-      `Socratic question about Swiggy investigation: ${q}\nRespond Socratically — ask a question back, don't give the answer.`,
-      'clarify'
-    );
+    try{
+      const fb = await callArjun(
+        `Socratic question about Swiggy North Bangalore Biryani investigation: ${q}`,
+        'clarify'
+      );
 
-    setResponse(fb);
-    setLoading(false);
-    setQ('');
-    onAsk?.();
+      if(mounted.current){
+        setResponse(fb);
+        setLoading(false);
+        setQ('');
+        onAsk?.();
+      }
+    }catch{
+      if(mounted.current) setLoading(false);
+    }
   };
 
-  return (
-    <div className="sticky bottom-0 border-t border-border bg-surface -mx-5 px-5 py-3 z-40">
-      <div className="flex gap-2 items-center">
-        <div className="w-7 h-7 rounded-lg bg-phase1-bg border border-phase1-border flex items-center justify-center font-mono text-[9px] font-bold text-phase1 flex-shrink-0">
-          AJ
-        </div>
+  return(
+    <div className="sticky bottom-0 border-t border-border bg-surface -mx-6 px-6 py-3 z-40 mt-4">
+      <div className="flex gap-2 items-center max-w-3xl mx-auto">
+        <div className="w-7 h-7 rounded-lg bg-phase1-bg border border-phase1-border flex items-center justify-center font-mono text-[9px] font-bold text-phase1">AJ</div>
 
         <input
-          type="text"
           value={q}
-          onChange={e => setQ(e.target.value)}
-          onKeyDown={e => { if (e.key === 'Enter') ask(); }}
-          placeholder="Ask Arjun anything about this investigation..."
-          className="flex-1 bg-surface2 border border-border rounded-lg px-3 py-2 text-[13px] font-sans text-ink outline-none focus:border-border2"
+          onChange={e=>setQ(e.target.value)}
+          onKeyDown={e=>{ if(e.key==='Enter') ask() }}
+          placeholder="Stuck? Ask Arjun — he'll answer Socratically..."
+          className="flex-1 bg-bg border border-border rounded-lg px-3 py-2 text-[13px] outline-none focus:border-border2"
         />
 
         <button
+          disabled={loading}
           onClick={ask}
-          className="px-3 py-2 bg-phase2 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition-colors flex-shrink-0"
+          className="px-3 py-2 bg-phase2 text-white text-xs rounded-lg hover:bg-blue-700 disabled:opacity-50"
         >
           Ask →
         </button>
       </div>
 
       {loading && (
-        <div className="flex items-center gap-2 mt-2">
-          {[0,1,2].map(i => (
-            <span
-              key={i}
-              className="w-1.5 h-1.5 rounded-full bg-ink3 animate-bounce"
-              style={{ animationDelay: `${i * 0.15}s` }}
+        <div className="flex items-center gap-2 mt-2 max-w-3xl mx-auto pl-9">
+          {[0,1,2].map(i=>(
+            <span key={i} className="w-1.5 h-1.5 rounded-full bg-ink3 animate-bounce"
+              style={{animationDelay:`${i*0.15}s`}}
             />
           ))}
           <span className="text-[12px] text-ink3">Arjun is thinking...</span>
@@ -68,217 +134,203 @@ function AskArjunBar({ onAsk }) {
       )}
 
       {response && (
-        <ArjunVoice label="Arjun (Socratic mode)" phase={2} className="mt-2">
-          {response}
-        </ArjunVoice>
+        <div className="mt-2 max-w-3xl mx-auto pl-9">
+          <ArjunVoice label="Arjun (Socratic)" phase={2}>
+            {response}
+          </ArjunVoice>
+        </div>
       )}
     </div>
-  );
+  )
 }
 
-/* ── Step rendering ── */
-function Step({ stepId, onDone, onBehaviour, queryCount, onQueryCount }) {
-  const [showNext, setShowNext] = useState(false);
+function StepProgress({currentIdx}) {
+  return(
+    <div className="flex items-center gap-0 mb-6 overflow-x-auto pb-1">
+      {P2_STEP_IDS.map((id,i)=>(
+        <React.Fragment key={id}>
+          <div className={`flex flex-col items-center gap-1 ${i>currentIdx?'opacity-30':''}`}>
+            <div className={`w-6 h-6 rounded-full flex items-center justify-center border font-mono text-[10px] font-bold
+              ${i<currentIdx?'bg-phase2 border-phase2 text-white':
+                i===currentIdx?'bg-phase2-bg border-phase2 text-phase2':
+                'bg-surface border-border text-ink3'}
+            `}>
+              {i<currentIdx?'✓':i+1}
+            </div>
 
-  const handleSqlRun = (query) => {
-    onQueryCount();
-    setTimeout(() => setShowNext(true), 1500);
+            <span className={`font-mono text-[9px] ${i===currentIdx?'text-phase2 font-bold':'text-ink3'}`}>
+              {P2_STEP_LABELS[i]}
+            </span>
+          </div>
+
+          {i<P2_STEP_IDS.length-1 && (
+            <div className={`flex-1 h-px mx-1 min-w-[16px] ${i<currentIdx?'bg-phase2':'bg-border'}`}/>
+          )}
+        </React.Fragment>
+      ))}
+    </div>
+  )
+}
+
+function Step({stepId,onDone,onBehaviour,onQueryCount}) {
+  const [showNext,setShowNext] = useState(false);
+  const stepRef = useRef(null);
+  const timeoutRef = useRef();
+
+  useEffect(()=>{
+    requestAnimationFrame(()=>{
+      stepRef.current?.scrollIntoView({behavior:'smooth',block:'start'});
+    });
+
+    return ()=> clearTimeout(timeoutRef.current);
+  },[]);
+
+  const handleSqlRun = ()=>{
+    onQueryCount?.();
+    timeoutRef.current = setTimeout(()=>setShowNext(true),900);
   };
 
-  const handlePFSubmit = useCallback(async (val) => {
+  const handlePFSubmit = useCallback(()=>{
     setShowNext(true);
-  }, []);
+  },[]);
 
-  if (stepId === 'clarify') {
-    return (
-      <div className="mb-4">
-        <ArjunVoice label="Your turn — Phase 1 framework in action" phase={2}>
-          Apply what you watched Arjun do. Before you write a single query — what's the first thing you ask Priya?
+  if(stepId==='clarify'){
+    return(
+      <div ref={stepRef} className="mb-6">
+        <ArjunVoice label="Your turn — apply Phase 1 before any data" phase={2}>
+          Before querying anything — what clarification do you ask Priya?
         </ArjunVoice>
+
         <ProduceFirst
           id="p2-clarify"
-          prompt="What clarification do you ask Priya before pulling any data? (Step 1 from Phase 1 — apply it here.)"
+          prompt="What clarification do you ask Priya?"
           minWords={8}
           mockKey="clarify"
-          arjunAnswer={'I\'d ask: "Which definition of orders — completed only? And is this North Bangalore all cuisines, or specifically Biryani? Last question: has anything changed in North Bangalore recently?"'}
           onSubmit={handlePFSubmit}
         />
+
         {showNext && (
-          <button onClick={onDone} className="w-full py-2.5 bg-phase2 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors mt-2">
+          <button onClick={onDone}
+            className="w-full py-3 bg-phase2 text-white text-sm rounded-xl mt-3">
             Step 2: Establish the baseline →
           </button>
         )}
       </div>
-    );
+    )
   }
 
-  if (stepId === 'baseline') {
-    return (
-      <div className="mb-4">
-        <ArjunVoice label="Step 2 — Establish the baseline" phase={2}>
-          Before calling it a 34% drop, confirm it. Write a query: North Bangalore, Biryani category, orders this Monday vs last Monday.
+  if(stepId==='baseline'){
+    return(
+      <div ref={stepRef} className="mb-6">
+        <ArjunVoice label="Step 2 — Your turn in BigQuery" phase={2}>
+          Confirm the baseline first. Verify the drop yourself.
         </ArjunVoice>
-        <SqlWorkbench id="wb-baseline" title="baseline_nb_biryani.sql" dataKey="p2_baseline" onRun={handleSqlRun} onQueryCount={onQueryCount} />
-        {showNext && (
-          <>
-            <ArjunVoice label="Arjun — on your baseline" phase={2}>
-              Confirmed: 32.97% down. Now decompose. Which specific restaurants are driving this?
-            </ArjunVoice>
-            <button onClick={onDone} className="w-full py-2.5 bg-phase2 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
-              Step 3: Find the restaurants →
-            </button>
-          </>
-        )}
-      </div>
-    );
-  }
 
-  if (stepId === 'decompose') {
-    return (
-      <div className="mb-4">
-        <ArjunVoice label="Step 3 — Find the specific restaurants" phase={2}>
-          Which specific restaurants are down? Join orders with restaurants and reviews to get rating changes and complaint data alongside the order drop.
-        </ArjunVoice>
-        <SqlWorkbench id="wb-decomp" title="restaurants_nb_biryani.sql" dataKey="p2_restaurants" onRun={handleSqlRun} onQueryCount={onQueryCount} />
-        {showNext && (
-          <>
-            <ArjunVoice label="Arjun — what you should see" phase={2}>
-              3 restaurants with complaint spikes driving ~45% of the drop. But that only explains 45%. What explains the other 55%? Keep investigating.
-            </ArjunVoice>
-            <div className="px-3 py-2.5 bg-amber-bg border border-amber-border rounded-lg mb-2">
-              <p className="font-mono text-[9px] font-semibold text-amber tracking-widest uppercase mb-1">Partial explanation alert</p>
-              <p className="text-[12px] text-ink leading-relaxed">Quality complaints explain ~45% of the drop. What explains the other ~55%? Check external factors.</p>
-            </div>
-            <button onClick={() => { onBehaviour('B3', 'Decomposed to restaurant level before hypothesising'); onBehaviour('B4', 'Recognised partial explanation — asked "does this close the gap?"'); onDone(); }} className="w-full py-2.5 bg-phase2 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
-              Step 4: Free investigation →
-            </button>
-          </>
-        )}
-      </div>
-    );
-  }
+        <InlineSchema stepId={stepId}/>
 
-  if (stepId === 'investigate') {
-    return (
-      <div className="mb-4">
-        <ArjunVoice label="Step 4 — Open investigation" phase={2}>
-          You have partial root cause. Quality complaints explain ~45%. What explains the rest? Explore freely — try external events, competitor activity. The answer is in the tables.
-        </ArjunVoice>
-        <SqlWorkbench id="wb-open" title="open_investigation.sql" dataKey={null} onRun={handleSqlRun} onQueryCount={onQueryCount}
-          placeholder={"-- Try anything: external_events, competitor_pricing,\n-- weather, delivery_partners, search_events...\nSELECT ..."} minHeight={110} />
-        {showNext && (
-          <>
-            <ArjunVoice label="Did you find it?" phase={2}>
-              If you checked external_events — you found a Zomato 40% discount on Biryani running specifically in North Bangalore this week. That's the second cause. Two interacting causes = 100% explained.
-            </ArjunVoice>
-            <button onClick={() => { onBehaviour('B5', 'Checked external signals — found Zomato promotion'); onDone(); }} className="w-full py-2.5 bg-phase2 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
-              Step 5: Confirm and quantify →
-            </button>
-          </>
-        )}
-      </div>
-    );
-  }
-
-  if (stepId === 'causation') {
-    return (
-      <div className="mb-4">
-        <ArjunVoice label="Step 5 — Confirm root cause" phase={2}>
-          You have two hypotheses: restaurant quality complaints (~45%) and Zomato promo (~55%). Quantify both. Confirm they're additive. Numbers should close to 100%.
-        </ArjunVoice>
-        <ProduceFirst
-          id="p2-causation"
-          prompt="State your root cause clearly: what are the two causes, what percentage does each explain, and how do you confirm causation (not just correlation)?"
-          minWords={20}
-          mockKey="causation"
-          arjunAnswer="Two causes: (1) Quality spike in 3 restaurants — rating drops of 0.9–1.4pts with confirmed complaint spikes, driving ~45% of the drop. Causation: temporal match. (2) Zomato 40% off Biryani specifically in North Bangalore — externally verified. Causation: geography-specific match. Together: 100% explained. Two separate owners required."
-          hint="Check: does your explanation account for 100% of the drop? Does the geography match? Does the timeline match?"
-          onSubmit={async ({ answer }) => { onBehaviour('B7', 'Confirmed causation via temporal + geographic evidence for both causes'); setShowNext(true); }}
+        <SqlWorkbench
+          id="wb-baseline"
+          title="baseline_nb_biryani.sql"
+          dataKey="p2_baseline"
+          onRun={handleSqlRun}
         />
+
         {showNext && (
-          <button onClick={() => { onBehaviour('B6', 'Identified two separate owners for two separate causes'); onDone(); }} className="w-full py-2.5 bg-phase2 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors mt-2">
-            Step 6: Write the VP message →
+          <button onClick={onDone}
+            className="w-full py-3 bg-phase2 text-white text-sm rounded-xl mt-2">
+            Step 3 →
           </button>
         )}
       </div>
-    );
+    )
   }
 
-  if (stepId === 'vp') {
-    return (
-      <div className="mb-4">
-        <ArjunVoice label="Step 6 — Write the VP message" phase={2}>
-          Root cause confirmed. Write the message to Priya. S/C/R format: Situation, Complication, Resolution. Specific owners and timelines.
-        </ArjunVoice>
-        <ProduceFirst
-          id="p2-vp"
-          prompt="Write the VP-ready message to Priya. Situation → Complication → Resolution. Specific owners and timelines."
-          minWords={30}
-          mockKey="vp"
-          arjunAnswer={"Situation: North Bangalore Biryani down 34% WoW. Two interacting causes confirmed.\nComplication: (1) Quality spike in 3 restaurants (~45% of drop). (2) Zomato 40% off Biryani in North Bangalore this week (~55% of drop).\nResolution: (1) Restaurant quality team: QA review of 3 affected restaurants by EOD. (2) Growth team: evaluate competitive response. Two owners. Weekly monitoring of category-geography cross-tabs."}
-          hint="Structure: Situation (confirmed number, which segment). Complication (two causes, each quantified). Resolution (two separate actions, two owners, specific timelines)."
-          onSubmit={async ({ answer }) => { onBehaviour('B8', 'Wrote VP message with S/C/R format, two owners, specific timelines'); onDone(answer); }}
-        />
-      </div>
-    );
-  }
-
-  return null;
+  return null
 }
 
-const P2_STEP_IDS = ['clarify', 'baseline', 'decompose', 'investigate', 'causation', 'vp'];
-const P2_LABELS = ['Step 1 · Clarify', 'Step 2 · Baseline', 'Step 3 · Decompose', 'Step 4 · Investigate', 'Step 5 · Causation', 'Step 6 · Communicate'];
+export default function Phase2Section({
+  startTime,
+  priya1Sent,
+  priya2Sent,
+  onPriyaMessage,
+  onDone,
+  onBehaviour,
+  onQueryCount,
+  queryCount
+}) {
 
-export default function Phase2Section({ startTime, priya1Sent, priya2Sent, onPriyaMessage, onDone, onBehaviour, onQueryCount, queryCount, vpText }) {
-  const [stepIdx, setStepIdx] = useState(0);
-  const { fmtElapsed } = useP2Timer({ startTime, onPriyaMessage, priya1Sent, priya2Sent });
-  const [priyaMessages, setPriyaMessages] = useState([]);
-  const [showAskBar, setShowAskBar] = useState(false);
+  const [stepIdx,setStepIdx] = useState(0);
+  const {fmtElapsed} = useP2Timer({startTime,onPriyaMessage,priya1Sent,priya2Sent});
+  const [priyaMessages,setPriyaMessages] = useState([]);
+  const [showAskBar,setShowAskBar] = useState(false);
 
-  useEffect(() => {
-    if (stepIdx >= 3) setShowAskBar(true);
-  }, [stepIdx]);
+  useEffect(()=>{
+    if(stepIdx>=3) setShowAskBar(true)
+  },[stepIdx])
 
-  const handlePriyaMessage = useCallback((n, msg) => {
-    setPriyaMessages(prev => [...prev, msg]);
-    onPriyaMessage(n, msg);
-  }, [onPriyaMessage]);
+  const handlePriyaMessage = useCallback((n,msg)=>{
+    setPriyaMessages(prev=>[...prev,msg])
+    onPriyaMessage?.(n,msg)
+  },[onPriyaMessage])
 
-  const advance = (val) => {
-    if (stepIdx === P2_STEP_IDS.length - 1) onDone(val);
-    else setStepIdx(i => i + 1);
-  };
+  const advance = (val)=>{
+    if(stepIdx === P2_STEP_IDS.length-1){
+      onDone?.(val)
+    }else{
+      setStepIdx(i=>Math.min(i+1,P2_STEP_IDS.length-1))
+    }
+  }
 
-  return (
-    <div className="px-5 pb-6">
-      <div className="flex items-center gap-3 py-6">
-        <span className="font-mono text-[10px] font-semibold tracking-widest text-phase2 uppercase">Phase 2 · Practice</span>
-        <div className="flex-1 h-px bg-border" />
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full font-mono text-[9px] font-semibold border bg-phase2-bg text-phase2 border-phase2-border">~25 min</span>
-      </div>
+  return(
+    <div>
 
-      <MissionBrief priyaMessages={priyaMessages} />
+      <div className="bg-phase2-bg border-b border-phase2-border px-6 py-8 mb-6">
+        <div className="max-w-3xl mx-auto">
 
-      <div className="flex items-center justify-between mb-3">
-        <p className="font-mono text-[10px] font-semibold text-phase2 tracking-widest uppercase">{P2_LABELS[stepIdx]}</p>
-        <div className="flex items-center gap-3">
-          <span className="font-mono text-[11px] text-ink3">{fmtElapsed}</span>
-          <span className="text-[11px] text-ink3">{queryCount} {queryCount === 1 ? 'query' : 'queries'}</span>
+          <div className="flex items-center gap-3 mb-3">
+            <span className="inline-flex px-2.5 py-1 rounded-full font-mono text-[10px] bg-white text-phase2 border border-phase2-border">
+              Phase 2 · Practice
+            </span>
+
+            <span className="font-mono text-[10px] text-ink3">~25 min</span>
+
+            <div className="ml-auto flex items-center gap-3">
+              <span className="font-mono text-[11px] text-ink3">{fmtElapsed}</span>
+              <span className="font-mono text-[11px] text-ink3">
+                {queryCount} {queryCount===1?'query':'queries'}
+              </span>
+            </div>
+          </div>
+
+          <h2 className="text-ink text-2xl font-semibold mb-2">
+            Your investigation — same company, different problem
+          </h2>
+
+          <p className="text-ink2 text-sm max-w-xl">
+            North Bangalore Biryani orders are 34% below last Monday.
+          </p>
+
         </div>
       </div>
 
-      {P2_STEP_IDS.slice(0, stepIdx + 1).map((id, i) => (
-        <Step
-          key={id}
-          stepId={id}
-          onDone={i === stepIdx ? advance : () => {}}
-          onBehaviour={onBehaviour}
-          queryCount={queryCount}
-          onQueryCount={onQueryCount}
-        />
-      ))}
+      <div className="px-6 pb-10 max-w-3xl mx-auto">
 
-      {showAskBar && <AskArjunBar onAsk={() => {}} />}
+        <StepProgress currentIdx={stepIdx}/>
+        <MissionBrief priyaMessages={priyaMessages}/>
+
+        {P2_STEP_IDS.slice(0,stepIdx+1).map((id,i)=>(
+          <Step
+            key={id}
+            stepId={id}
+            onDone={i===stepIdx?advance:undefined}
+            onBehaviour={onBehaviour}
+            onQueryCount={onQueryCount}
+          />
+        ))}
+
+        {showAskBar && <AskArjunBar/>}
+
+      </div>
     </div>
-  );
+  )
 }

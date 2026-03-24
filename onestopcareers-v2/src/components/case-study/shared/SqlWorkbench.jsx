@@ -53,10 +53,10 @@ function ResultsTable({ data }) {
 
 export default function SqlWorkbench({
   id,
-  title = 'query.sql',       // Bug 7 fix: was 'filename', all callers pass 'title'
+  title = 'query.sql',        // Bug 7 fix: was 'filename', all callers use 'title'
   dataKey = null,
   placeholder = '-- Write your SQL query...\nSELECT ...',
-  onRun,                     // Bug 8 fix: was 'onQueryRun', all callers pass 'onRun'
+  onRun,                       // Bug 8 fix: was 'onQueryRun', all callers use 'onRun'
   showEvaluate = true,
 }) {
   const [query, setQuery] = useState('');
