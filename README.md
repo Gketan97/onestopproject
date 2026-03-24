@@ -1,6 +1,3 @@
-<<<<<<< Updated upstream
-# onestopproject_recoded
-=======
 # onestopcareers
 
 Analytics career education platform. Case study based learning starting with the Swiggy Orders Investigation.
@@ -147,4 +144,3 @@ Key tokens:
 
 Shared components are in `src/components/ui/index.jsx`:
 `PhasePill`, `MonoLabel`, `Button`, `CalloutCard`, `SqlBlock`, `ScoreBadge`, `Spinner`, `Divider`
->>>>>>> Stashed changes

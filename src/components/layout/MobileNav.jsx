@@ -1,10 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-<<<<<<< Updated upstream
-import { Home, Briefcase, BookOpen, Users } from 'lucide-react';
-=======
 import { Home, Briefcase } from 'lucide-react';
->>>>>>> Stashed changes
 
 const CaseIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -17,56 +13,25 @@ const CaseIcon = () => (
 
 const MobileNav = () => {
   const base = 'flex flex-col items-center justify-center flex-1 py-1 text-[10px] font-medium transition-colors duration-200';
-<<<<<<< Updated upstream
-  const active = 'text-accent';
-  const inactive = 'text-ink3';
-
-  return (
-    <nav className="fixed bottom-0 left-0 w-full bg-bg/95 backdrop-blur-md z-50 border-t border-border flex h-14 md:hidden">
-      <NavLink to="/" className={({ isActive }) => `${base} ${isActive ? active : inactive}`}>
-=======
   return (
     <nav className="fixed bottom-0 left-0 w-full bg-bg/95 backdrop-blur-md z-50 border-t border-border flex h-14 md:hidden">
       <NavLink to="/" className={({ isActive }) => `${base} ${isActive ? 'text-accent' : 'text-ink3'}`}>
->>>>>>> Stashed changes
         <Home className="w-5 h-5 mb-0.5" />
         <span>Home</span>
       </NavLink>
 
-<<<<<<< Updated upstream
-      <NavLink to="/jobs" className={({ isActive }) => `${base} ${isActive ? active : inactive}`}>
-=======
       <NavLink to="/jobs" className={({ isActive }) => `${base} ${isActive ? 'text-accent' : 'text-ink3'}`}>
->>>>>>> Stashed changes
         <Briefcase className="w-5 h-5 mb-0.5" />
         <span>Jobs</span>
       </NavLink>
 
       <a
         href="/case-studies/swiggy"
-<<<<<<< Updated upstream
-        target="_blank"
-        rel="noopener noreferrer"
-=======
->>>>>>> Stashed changes
         className={`${base} text-accent bg-accent-light border-x border-accent-border`}
       >
         <CaseIcon />
         <span>Cases</span>
       </a>
-<<<<<<< Updated upstream
-
-      <NavLink to="/resources" className={({ isActive }) => `${base} ${isActive ? active : inactive}`}>
-        <BookOpen className="w-5 h-5 mb-0.5" />
-        <span>Resources</span>
-      </NavLink>
-
-      <NavLink to="/mentors" className={({ isActive }) => `${base} ${isActive ? active : inactive}`}>
-        <Users className="w-5 h-5 mb-0.5" />
-        <span>Mentors</span>
-      </NavLink>
-=======
->>>>>>> Stashed changes
     </nav>
   );
 };

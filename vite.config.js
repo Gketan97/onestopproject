@@ -3,8 +3,6 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-<<<<<<< Updated upstream
-=======
   server: {
     proxy: {
       // In dev, proxy Netlify function calls to netlify dev server
@@ -14,5 +12,4 @@ export default defineConfig({
       },
     },
   },
->>>>>>> Stashed changes
 })

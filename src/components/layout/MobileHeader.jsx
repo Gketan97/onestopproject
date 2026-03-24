@@ -3,14 +3,10 @@ import { useLocation } from 'react-router-dom';
 
 const MobileHeader = () => {
   const location = useLocation();
-<<<<<<< Updated upstream
-  if (location.pathname === '/jobs') return null;
-=======
 
   // Jobs page has its own header treatment; portfolio is standalone
   if (location.pathname === '/jobs') return null;
   if (location.pathname.startsWith('/portfolio/')) return null;
->>>>>>> Stashed changes
 
   return (
     <header className="fixed top-0 left-0 w-full bg-bg/95 backdrop-blur-md z-50 border-b border-border flex items-center justify-center h-12 md:hidden">
