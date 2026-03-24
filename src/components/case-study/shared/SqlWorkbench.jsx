@@ -56,7 +56,7 @@ export default function SqlWorkbench({
   title = 'query.sql',        // Bug 7 fix: was 'filename', all callers use 'title'
   dataKey = null,
   placeholder = '-- Write your SQL query...\nSELECT ...',
-  onRun,                       // Bug 8 fix: was 'onQueryRun', all callers use 'onRun'
+  onRun,                       // Bug 8 fix: was 'onRun', all callers use 'onRun'
   showEvaluate = true,
 }) {
   const [query, setQuery] = useState('');
@@ -91,10 +91,10 @@ export default function SqlWorkbench({
     } else {
       setStatus({ text: data.status || 'Query complete', type: 'ok' });
       setResults(data);
-      onQueryRun?.(q);
+      onRun?.(q);
     }
     setRunning(false);
-  }, [query, dataKey, onQueryRun]);
+  }, [query, dataKey, onRun]);
 
   const evaluate = useCallback(async () => {
     const q = query.trim();
