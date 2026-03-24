@@ -49,22 +49,7 @@ const HomePage = () => (
               <p className="text-white font-medium text-sm mb-1">{title}</p>
               <p className="text-white/50 text-xs leading-relaxed">{body}</p>
             </div>
-            <a
-              href="/case-studies/swiggy"
-              className="block w-full text-center py-3 px-6 bg-accent text-white font-medium rounded-lg hover:bg-accent-dark transition-all"
-            >
-              {result.cta} →
-            </a>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <button onClick={handleReset} className="text-sm text-ink3 hover:text-ink2 transition-colors">
-              ← Retake quiz
-            </button>
-            <Link to="/jobs" className="text-sm text-ink3 hover:text-ink2 transition-colors">
-              Browse jobs instead →
-            </Link>
-          </div>
+          ))}
         </div>
         <a href="/case-studies/swiggy" className="block w-full text-center py-3 bg-accent text-white font-medium rounded-lg hover:bg-accent-dark transition-colors text-sm">
           Start now — it is free →
@@ -109,4 +94,4 @@ const HomePage = () => (
   </div>
 );
 
-export default DecisionTreePage;
+export default HomePage;
