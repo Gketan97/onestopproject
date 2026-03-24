@@ -21,7 +21,10 @@ module.exports = {
         serif:['"Instrument Serif"','Georgia','serif'],
         mono:['"JetBrains Mono"','monospace'],
       },
-      boxShadow: { accent:'0 4px 16px rgba(200,75,12,0.28)' },
+      boxShadow: {
+        accent: '0 4px 16px rgba(200,75,12,0.28)',
+        card:   '0 2px 8px rgba(26,26,15,0.06), 0 0 0 1px rgba(26,26,15,0.04)',
+      },
     },
   },
   plugins: [],

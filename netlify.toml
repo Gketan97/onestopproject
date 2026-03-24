@@ -5,26 +5,39 @@
 [functions]
   directory = "netlify/functions"
 
-# Case study HTML — served as static file
+# ── Case study routes ──────────────────────────────────────────────────────────
+# Direct HTML file — served as static (legacy URL, now also used by the iframe)
 [[redirects]]
-  from = "/case-studies/swiggy"
-  to   = "/case-studies/swiggy.html"
+  from   = "/case-studies/swiggy.html"
+  to     = "/case-studies/swiggy.html"
   status = 200
 
-# Portfolio — React handles routing
+# Clean URL → React case study wrapper at /case-study/swiggy
 [[redirects]]
-  from = "/portfolio/*"
-  to   = "/index.html"
+  from   = "/case-study/*"
+  to     = "/index.html"
   status = 200
 
-# SPA fallback — must be last
+# Legacy /case-studies/swiggy (no .html) → keep working
 [[redirects]]
-  from = "/*"
-  to   = "/index.html"
+  from   = "/case-studies/swiggy"
+  to     = "/case-studies/swiggy.html"
+  status = 200
+
+# ── Portfolio ──────────────────────────────────────────────────────────────────
+[[redirects]]
+  from   = "/portfolio/*"
+  to     = "/index.html"
+  status = 200
+
+# ── SPA fallback — must be last ────────────────────────────────────────────────
+[[redirects]]
+  from   = "/*"
+  to     = "/index.html"
   status = 200
 
 [dev]
-  command   = "npm run dev"
-  port      = 8888
+  command    = "npm run dev"
+  port       = 8888
   targetPort = 5173
-  publish   = "dist"
+  publish    = "dist"

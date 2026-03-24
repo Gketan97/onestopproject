@@ -8,10 +8,6 @@
 // on the same browser instead of being cross-device shareable.
 
 import { getApps } from 'firebase/app';
-import { nanoid } from 'nanoid';
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-const generatePortfolioId = () => nanoid(10);
 
 function localSave(portfolioId, data) {
   try { localStorage.setItem(`portfolio_${portfolioId}`, JSON.stringify(data)); } catch (_) {}
@@ -30,9 +26,16 @@ function isFirebaseReady() {
 }
 
 // ── Save ─────────────────────────────────────────────────────────────────────
+// BUG FIX #6: Accept caller-provided portfolioId instead of generating a new one.
+// DebriefSection generates its own ID and sets the portfolio URL from it —
+// if we generated a second ID here, Firestore would store a different record
+// and the shared link would 404.
 export const savePortfolio = async (data) => {
-  // Bug 6 fix: use caller-provided ID if present, otherwise generate one
-  const portfolioId = data.portfolioId || generatePortfolioId();
+  const portfolioId = data.portfolioId;
+  if (!portfolioId) {
+    console.error('savePortfolio: portfolioId is required');
+    return null;
+  }
 
   const document = {
     portfolioId,
@@ -46,8 +49,12 @@ export const savePortfolio = async (data) => {
     score:          typeof data.score === 'number' ? data.score : null,
     scoreSummary:   data.scoreSummary   || '',
     keyQueries:     data.keyQueries     || [],
+    completedPhases: data.completedPhases || [],
+    behaviours:     data.behaviours     || {},
+    p2QueryCount:   data.p2QueryCount   || 0,
+    hints:          data.hints          || 0,
     completedAt:    new Date().toISOString(),
-    version:        1,
+    version:        2,
   };
 
   if (isFirebaseReady()) {
