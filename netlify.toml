@@ -2,13 +2,6 @@
   command = "npm run build"
   publish = "dist"
 
-<<<<<<< Updated upstream
-[[redirects]]
-  from = "/case-studies/swiggy"
-  to = "/case-studies/swiggy.html"
-  status = 200
-
-=======
 [functions]
   directory = "netlify/functions"
 
@@ -25,7 +18,6 @@
   status = 200
 
 # SPA fallback — must be last
->>>>>>> Stashed changes
 [[redirects]]
   from = "/*"
   to   = "/index.html"
