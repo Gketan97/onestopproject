@@ -85,8 +85,7 @@ export const useDataFetching = () => {
       const referralsData = await referralsRes.json();
 
       // Normalise jobs into the shape components expect
-      const jobsArray = Array.isArray(jobsData) ? jobsData : jobsData.jobs || [];
-      const jobsWithIds = jobsArray.map(normalizeJob);
+      const jobsWithIds = jobsData.map(normalizeJob);
 
       // Normalise referrals (schema unchanged)
       const referralsWithIds = referralsData.map((ref, index) => ({
