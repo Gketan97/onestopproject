@@ -5,6 +5,20 @@
 [functions]
   directory = "netlify/functions"
 
+# ── COOP/COEP headers — required for DuckDB-Wasm SharedArrayBuffer ────────────
+# Scoped to case-study and portfolio only — keeps Razorpay payment popup safe
+[[headers]]
+  for = "/case-study/*"
+  [headers.values]
+    Cross-Origin-Opener-Policy = "same-origin"
+    Cross-Origin-Embedder-Policy = "require-corp"
+
+[[headers]]
+  for = "/portfolio/*"
+  [headers.values]
+    Cross-Origin-Opener-Policy = "same-origin"
+    Cross-Origin-Embedder-Policy = "require-corp"
+
 # ── Case study routes ──────────────────────────────────────────────────────────
 # Direct HTML file — served as static (legacy URL, now also used by the iframe)
 [[redirects]]

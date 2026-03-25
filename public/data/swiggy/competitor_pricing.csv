@@ -1,0 +1,5 @@
+id,competitor,cuisine_type,geography,avg_price,promo_active,recorded_date
+CP001,Zomato,Biryani,north_bangalore,149,True,2024-10-14
+CP002,Swiggy,Biryani,north_bangalore,240,False,2024-10-14
+CP003,Zomato,Chinese,north_bangalore,185,False,2024-10-14
+CP004,Swiggy,Chinese,north_bangalore,180,False,2024-10-14

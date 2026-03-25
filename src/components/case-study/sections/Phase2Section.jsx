@@ -3,6 +3,7 @@ import MissionBrief from '../shared/MissionBrief.jsx';
 import ArjunVoice from '../shared/ArjunVoice.jsx';
 import ProduceFirst from '../shared/ProduceFirst.jsx';
 import SqlWorkbench from '../shared/SqlWorkbench.jsx';
+import SchemaPanel from '../shared/SchemaPanel.jsx';
 import { useP2Timer } from '../hooks/useP2Timer.js';
 import { useArjun } from '../hooks/useArjun.js';
 
@@ -317,6 +318,7 @@ export default function Phase2Section({
 
         <StepProgress currentIdx={stepIdx}/>
         <MissionBrief priyaMessages={priyaMessages}/>
+        <SchemaPanel compact={true} />
 
         {P2_STEP_IDS.slice(0,stepIdx+1).map((id,i)=>(
           <Step

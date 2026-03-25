@@ -1,0 +1,5 @@
+config_key,current_value,previous_value,changed_at,changed_by
+target_segment,new_and_resurrected,all_users,2024-10-18T23:47:00,svc-crm-automation
+notification_suppression,returning_users_excluded,none,2024-10-18T23:52:00,svc-crm-automation
+campaign_name,Q4_new_user_push,Q3_retention,2024-10-18T23:45:00,product_growth_team
+send_frequency,daily,twice_weekly,2024-10-18T23:46:00,product_growth_team

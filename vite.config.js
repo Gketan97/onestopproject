@@ -4,12 +4,20 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
+    headers: {
+      // Required for DuckDB-Wasm SharedArrayBuffer support
+      'Cross-Origin-Opener-Policy': 'same-origin',
+      'Cross-Origin-Embedder-Policy': 'require-corp',
+    },
     proxy: {
-      // In dev, proxy Netlify function calls to netlify dev server
       '/.netlify/functions': {
         target: 'http://localhost:8888',
         changeOrigin: true,
       },
     },
+  },
+  // Prevent Vite from bundling the Wasm binary — must be served as static asset
+  optimizeDeps: {
+    exclude: ['@duckdb/duckdb-wasm'],
   },
 })

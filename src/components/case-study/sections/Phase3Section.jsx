@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import ArjunVoice from '../shared/ArjunVoice.jsx';
 import ProduceFirst from '../shared/ProduceFirst.jsx';
 import SqlWorkbench from '../shared/SqlWorkbench.jsx';
+import SchemaPanel from '../shared/SchemaPanel.jsx';
 import { P3_TASKS } from '../data/swiggyData.js';
 
 function Task({ task, onDone }) {
@@ -56,8 +57,10 @@ export default function Phase3Section({ onDone }) {
       </div>
 
       <ArjunVoice label="Phase 3 — No step structure" phase={3}>
-        No guided steps. No hints unless you ask for them. This is the open workbench — closest to a real BigQuery session. Four tasks. All 10 tables available. You design the analysis.
+        No guided steps. No hints unless you ask for them. This is the open workbench — closest to a real BigQuery session. Four tasks. All 9 tables available. You design the analysis.
       </ArjunVoice>
+
+      <SchemaPanel compact={true} />
 
       {P3_TASKS.map((task) => (
         <Task

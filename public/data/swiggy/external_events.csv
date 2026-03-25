@@ -1,0 +1,9 @@
+event_id,platform,event_type,geography,cuisine_type,discount_pct,event_date
+EVT001,Zomato,promo,north_bangalore,Biryani,40,2024-10-14
+EVT002,Zomato,promo,north_bangalore,Biryani,40,2024-10-15
+EVT003,Zomato,promo,north_bangalore,Biryani,40,2024-10-16
+EVT004,Zomato,promo,north_bangalore,Biryani,40,2024-10-17
+EVT005,Zomato,promo,north_bangalore,Biryani,40,2024-10-18
+EVT006,Dunzo,new_launch,south_bangalore,,,2024-10-15
+EVT007,Zomato,promo,east_bangalore,Chinese,20,2024-10-14
+EVT008,Swiggy,outage,,,,2024-10-09

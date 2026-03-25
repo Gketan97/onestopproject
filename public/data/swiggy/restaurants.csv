@@ -1,0 +1,15 @@
+restaurant_id,restaurant_name,cuisine_type,delivery_area,avg_rating,is_new,onboarded_date
+RST101,Biryani Palace NB,Biryani,north_bangalore,4.3,False,2023-06-01
+RST102,Royal Biryani,Biryani,north_bangalore,4.1,False,2022-11-15
+RST103,Hyderabad House,Biryani,north_bangalore,4.4,False,2023-02-20
+RST104,Biryani Bros,Biryani,north_bangalore,4.5,False,2021-09-10
+RST105,Paradise NB,Biryani,north_bangalore,4.6,False,2020-07-01
+RST106,Dragon Wok,Chinese,north_bangalore,4.2,False,2022-03-15
+RST107,Pizza Hub NB,Pizza,north_bangalore,4.0,False,2023-08-01
+RST201,Biryani Express,Biryani,south_bangalore,4.3,False,2022-05-10
+RST202,Southern Spice,South Indian,south_bangalore,4.5,False,2021-12-01
+RST203,Noodle House,Chinese,south_bangalore,4.1,False,2023-04-15
+RST301,East Biryani,Biryani,east_bangalore,4.2,False,2022-08-20
+RST401,West Grill,North Indian,west_bangalore,4.3,False,2023-01-10
+RST108,New Star Biryani,Biryani,north_bangalore,3.8,True,2024-07-15
+RST109,Fresh Bites,South Indian,north_bangalore,3.9,True,2024-08-01

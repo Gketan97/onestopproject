@@ -282,3 +282,102 @@ Phase 2: North Bangalore Biryani orders lagging post-fix. Two causes: restaurant
 Phase 3: Systemic — new restaurant cold-start, LTV vs GMV trade-off, restaurant health score, ranking recommendation.
 
 Evaluation style: Specific. Brief (2-4 sentences). Honest. Constructive — every gap gets a specific fix. Return plain text only.`;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SCHEMAS  (used by SchemaPanel — defines all queryable tables)
+// ─────────────────────────────────────────────────────────────────────────────
+export const SCHEMAS = {
+  'prod.orders': {
+    cols: [
+      { n: 'order_id',       t: 'VARCHAR',   k: true  },
+      { n: 'user_id',        t: 'VARCHAR',   k: false },
+      { n: 'restaurant_id',  t: 'VARCHAR',   k: false },
+      { n: 'order_date',     t: 'DATE',      k: false },
+      { n: 'order_status',   t: 'VARCHAR',   k: false },
+      { n: 'cuisine_type',   t: 'VARCHAR',   k: false },
+      { n: 'delivery_area',  t: 'VARCHAR',   k: false },
+      { n: 'city',           t: 'VARCHAR',   k: false },
+      { n: 'gmv',            t: 'INTEGER',   k: false },
+      { n: 'user_type',      t: 'VARCHAR',   k: false },
+    ],
+  },
+  'prod.restaurants': {
+    cols: [
+      { n: 'restaurant_id',   t: 'VARCHAR', k: true  },
+      { n: 'restaurant_name', t: 'VARCHAR', k: false },
+      { n: 'cuisine_type',    t: 'VARCHAR', k: false },
+      { n: 'delivery_area',   t: 'VARCHAR', k: false },
+      { n: 'avg_rating',      t: 'FLOAT',   k: false },
+      { n: 'is_new',          t: 'BOOLEAN', k: false },
+      { n: 'onboarded_date',  t: 'DATE',    k: false },
+    ],
+  },
+  'prod.restaurant_reviews': {
+    cols: [
+      { n: 'review_id',      t: 'VARCHAR', k: true  },
+      { n: 'restaurant_id',  t: 'VARCHAR', k: false },
+      { n: 'review_date',    t: 'DATE',    k: false },
+      { n: 'rating',         t: 'INTEGER', k: false },
+      { n: 'is_complaint',   t: 'BOOLEAN', k: false },
+      { n: 'review_text',    t: 'VARCHAR', k: false },
+    ],
+  },
+  'prod.users': {
+    cols: [
+      { n: 'user_id',               t: 'VARCHAR', k: true  },
+      { n: 'user_type',             t: 'VARCHAR', k: false },
+      { n: 'city',                  t: 'VARCHAR', k: false },
+      { n: 'first_order_date',      t: 'DATE',    k: false },
+      { n: 'first_restaurant_type', t: 'VARCHAR', k: false },
+    ],
+  },
+  'prod.notifications': {
+    cols: [
+      { n: 'notification_id',   t: 'VARCHAR',   k: true  },
+      { n: 'user_id',           t: 'VARCHAR',   k: false },
+      { n: 'notification_type', t: 'VARCHAR',   k: false },
+      { n: 'sent_at',           t: 'TIMESTAMP', k: false },
+      { n: 'week_of',           t: 'DATE',      k: false },
+    ],
+  },
+  'prod.crm_config': {
+    cols: [
+      { n: 'config_key',     t: 'VARCHAR',   k: true  },
+      { n: 'current_value',  t: 'VARCHAR',   k: false },
+      { n: 'previous_value', t: 'VARCHAR',   k: false },
+      { n: 'changed_at',     t: 'TIMESTAMP', k: false },
+      { n: 'changed_by',     t: 'VARCHAR',   k: false },
+    ],
+  },
+  'prod.external_events': {
+    cols: [
+      { n: 'event_id',      t: 'VARCHAR', k: true  },
+      { n: 'platform',      t: 'VARCHAR', k: false },
+      { n: 'event_type',    t: 'VARCHAR', k: false },
+      { n: 'geography',     t: 'VARCHAR', k: false },
+      { n: 'cuisine_type',  t: 'VARCHAR', k: false },
+      { n: 'discount_pct',  t: 'INTEGER', k: false },
+      { n: 'event_date',    t: 'DATE',    k: false },
+    ],
+  },
+  'prod.competitor_pricing': {
+    cols: [
+      { n: 'id',            t: 'VARCHAR', k: true  },
+      { n: 'competitor',    t: 'VARCHAR', k: false },
+      { n: 'cuisine_type',  t: 'VARCHAR', k: false },
+      { n: 'geography',     t: 'VARCHAR', k: false },
+      { n: 'avg_price',     t: 'INTEGER', k: false },
+      { n: 'promo_active',  t: 'BOOLEAN', k: false },
+      { n: 'recorded_date', t: 'DATE',    k: false },
+    ],
+  },
+  'prod.weather_events': {
+    cols: [
+      { n: 'date',        t: 'DATE',    k: true  },
+      { n: 'condition',   t: 'VARCHAR', k: false },
+      { n: 'temp_c',      t: 'INTEGER', k: false },
+      { n: 'rainfall_mm', t: 'INTEGER', k: false },
+      { n: 'city',        t: 'VARCHAR', k: false },
+    ],
+  },
+};
