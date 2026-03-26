@@ -10,6 +10,7 @@ const Logo = () => (
 );
 
 const navItems = [
+  { label: 'Home',         to: '/' },
   { label: 'Case Studies', to: '/case-studies' },
   { label: 'Jobs',         to: '/jobs' },
 ];
@@ -18,7 +19,7 @@ const Header = () => (
   <header
     className="sticky top-0 z-50 hidden md:block"
     style={{
-      background: 'rgba(8,8,16,0.85)',
+      background: 'rgba(8,8,16,0.88)',
       backdropFilter: 'blur(16px)',
       WebkitBackdropFilter: 'blur(16px)',
       borderBottom: '1px solid rgba(255,255,255,0.07)',
@@ -32,11 +33,12 @@ const Header = () => (
         </span>
       </NavLink>
 
-      <nav className="flex items-center gap-1">
+      <nav className="flex items-center gap-0.5">
         {navItems.map((item) => (
           <NavLink
             key={item.label}
             to={item.to}
+            end={item.to === '/'}
             className={({ isActive }) =>
               `px-3 py-2 text-sm transition-colors rounded-md font-medium ${
                 isActive

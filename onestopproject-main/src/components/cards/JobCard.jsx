@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MapPin, ArrowRight } from 'lucide-react';
+import { MapPin, ArrowRight, Zap } from 'lucide-react';
 
 // Consistent color from company name
 const companyColor = (name = '') => {
@@ -44,7 +44,6 @@ const CompanyLogo = ({ src, company }) => {
 const JobCard = ({ job, onOpenModal, isHighlighted }) => (
   <div
     id={`job-card-${job.id}`}
-    onClick={() => onOpenModal(job)}
     className={`
       bg-bg border border-border rounded-xl p-4
       flex flex-col justify-between h-full
@@ -53,7 +52,7 @@ const JobCard = ({ job, onOpenModal, isHighlighted }) => (
       ${isHighlighted ? 'ring-2 ring-accent shadow-accent' : ''}
     `}
   >
-    <div>
+    <div onClick={() => onOpenModal(job)}>
       <div className="flex items-start gap-3 mb-3">
         <CompanyLogo src={job['Company Logo URL']} company={job.Company} />
         <div className="min-w-0 flex-1">
@@ -61,24 +60,56 @@ const JobCard = ({ job, onOpenModal, isHighlighted }) => (
           <p className="text-xs text-ink2 mt-0.5">{job.Company}</p>
         </div>
       </div>
-      <div className="flex items-center gap-1.5 text-ink3 text-xs">
+      <div className="flex items-center gap-1.5 text-ink3 text-xs mb-4">
         <MapPin size={11} className="flex-shrink-0" />
         <span>{job.Location}</span>
       </div>
     </div>
 
-    <button
-      onClick={(e) => { e.stopPropagation(); onOpenModal(job); }}
-      className="
-        mt-4 w-full py-2 rounded-lg
-        bg-accent text-white text-xs font-medium
-        flex items-center justify-center gap-1.5
-        hover:bg-accent-dark transition-colors duration-150
-      "
-    >
-      View Details
-      <ArrowRight size={12} className="transition-transform duration-200 group-hover:translate-x-0.5" />
-    </button>
+    <div className="flex flex-col gap-2">
+      <button
+        onClick={(e) => { e.stopPropagation(); onOpenModal(job); }}
+        className="
+          w-full py-2 rounded-lg
+          bg-accent text-white text-xs font-medium
+          flex items-center justify-center gap-1.5
+          hover:bg-accent-dark transition-colors duration-150
+        "
+      >
+        View Details
+        <ArrowRight size={12} className="transition-transform duration-200 group-hover:translate-x-0.5" />
+      </button>
+
+      {/* Flywheel nudge — tempts user to prep before applying */}
+      <a
+        href="/"
+        onClick={e => e.stopPropagation()}
+        className="w-full py-1.5 rounded-lg flex items-center justify-center gap-1.5 transition-all duration-150"
+        style={{
+          background: 'rgba(252,128,25,0.07)',
+          border: '1px solid rgba(252,128,25,0.15)',
+          color: 'var(--phase1)',
+          fontSize: 10,
+          fontFamily: 'var(--mono)',
+          fontWeight: 700,
+          letterSpacing: '0.04em',
+          textDecoration: 'none',
+        }}
+        onMouseEnter={e => {
+          e.currentTarget.style.background = 'rgba(252,128,25,0.14)';
+          e.currentTarget.style.borderColor = 'rgba(252,128,25,0.35)';
+          e.currentTarget.style.boxShadow = '0 0 12px rgba(252,128,25,0.15)';
+        }}
+        onMouseLeave={e => {
+          e.currentTarget.style.background = 'rgba(252,128,25,0.07)';
+          e.currentTarget.style.borderColor = 'rgba(252,128,25,0.15)';
+          e.currentTarget.style.boxShadow = 'none';
+        }}
+      >
+        <Zap size={10} />
+        Prep for this role →
+      </a>
+    </div>
   </div>
 );
 

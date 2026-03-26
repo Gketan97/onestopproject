@@ -1,901 +1,605 @@
 // src/components/pages/HomePage.jsx
-// Redesigned homepage — bold, editorial, interview-first experience
+// SaaS-Noir Homepage — Pattern Interrupt for ambitious analysts
+// Sections: Hero → Stats → Resume Comparison → Framework Matrix → Final CTA
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowRight, Clock, Users, Zap, ChevronRight } from 'lucide-react';
+import { ArrowRight, Zap, Eye, Users } from 'lucide-react';
 
-// ── Company data ─────────────────────────────────────────────────────────────
+// ── Company ticker data ───────────────────────────────────────────────────────
 const COMPANIES = [
   { name: 'Swiggy',    abbr: 'SW', color: '#FC8019' },
   { name: 'Zomato',    abbr: 'ZO', color: '#E23744' },
   { name: 'Flipkart',  abbr: 'FL', color: '#2874F0' },
-  { name: 'PhonePe',   abbr: 'PP', color: '#5F259F' },
-  { name: 'CRED',      abbr: 'CR', color: '#1A1A1A' },
-  { name: 'Meesho',    abbr: 'ME', color: '#9B4DCA' },
   { name: 'Razorpay',  abbr: 'RA', color: '#2B64F5' },
+  { name: 'PhonePe',   abbr: 'PP', color: '#5F259F' },
+  { name: 'Uber',      abbr: 'UB', color: '#888' },
   { name: 'Google',    abbr: 'GO', color: '#4285F4' },
   { name: 'Amazon',    abbr: 'AM', color: '#FF9900' },
-  { name: 'Microsoft', abbr: 'MS', color: '#00A4EF' },
-  { name: 'Uber',      abbr: 'UB', color: '#000000' },
+  { name: 'CRED',      abbr: 'CR', color: '#9B4DCA' },
+  { name: 'Meesho',    abbr: 'ME', color: '#9B59B6' },
   { name: 'Atlassian', abbr: 'AT', color: '#0052CC' },
+  { name: 'Microsoft', abbr: 'MS', color: '#00A4EF' },
 ];
 
-// ── Typing effect hook ────────────────────────────────────────────────────────
-function useTypewriter(text, speed = 28, startDelay = 0) {
-  const [displayed, setDisplayed] = useState('');
-  const [done, setDone] = useState(false);
+// ── Hooks ─────────────────────────────────────────────────────────────────────
+function useScrollY() {
+  const [y, setY] = useState(0);
   useEffect(() => {
-    setDisplayed('');
-    setDone(false);
-    let i = 0;
-    const t = setTimeout(() => {
-      const iv = setInterval(() => {
-        i++;
-        setDisplayed(text.slice(0, i));
-        if (i >= text.length) { clearInterval(iv); setDone(true); }
-      }, speed);
-      return () => clearInterval(iv);
-    }, startDelay);
-    return () => clearTimeout(t);
-  }, [text, speed, startDelay]);
-  return { displayed, done };
+    const h = () => setY(window.scrollY);
+    window.addEventListener('scroll', h, { passive: true });
+    return () => window.removeEventListener('scroll', h);
+  }, []);
+  return y;
 }
 
-// ── Live interview hero ───────────────────────────────────────────────────────
-const INTERVIEW_Q = 'A user opens the Swiggy app, browses restaurants for 3–5 minutes, then closes without ordering. What are all the reasons that might happen?';
-const ANSWER_OPTIONS = [
-  { id: 'a', text: 'They got distracted by a notification.' },
-  { id: 'b', text: 'No restaurants available in their area.' },
-  { id: 'c', text: 'Payment failed on their previous order.' },
-  { id: 'd', text: 'App crashed or loaded too slowly.' },
-];
-
-const InterviewHero = ({ onEngaged }) => {
-  const [phase, setPhase] = useState('typing'); // typing | question | answered | revealed
-  const [selected, setSelected] = useState(null);
-  const { displayed: qText, done: qDone } = useTypewriter(INTERVIEW_Q, 18, 600);
-
+function useInView(threshold = 0.2) {
+  const ref = useRef(null);
+  const [inView, setInView] = useState(false);
   useEffect(() => {
-    if (qDone) setPhase('question');
-  }, [qDone]);
+    const obs = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) setInView(true); },
+      { threshold }
+    );
+    if (ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, [threshold]);
+  return [ref, inView];
+}
 
-  const handleSelect = (id) => {
-    if (phase !== 'question') return;
-    setSelected(id);
-    setPhase('answered');
-    setTimeout(() => {
-      setPhase('revealed');
-      onEngaged && onEngaged();
-    }, 700);
-  };
-
-  return (
-    <div className="interview-hero">
-      {/* Terminal header */}
-      <div className="terminal-bar">
-        <span className="dot red" /><span className="dot yellow" /><span className="dot green" />
-        <span className="terminal-label">INTERVIEW · SWIGGY ANALYTICS L2</span>
-      </div>
-
-      {/* Interviewer message */}
-      <div className="message-row interviewer">
-        <div className="avatar iv">IV</div>
-        <div className="bubble">
-          <div className="bubble-meta">Interviewer <span>· Product Analytics · Swiggy</span></div>
-          <div className="bubble-text">
-            {qText}
-            {phase === 'typing' && <span className="cursor">▋</span>}
-          </div>
-        </div>
-      </div>
-
-      {/* Options */}
-      {phase !== 'typing' && (
-        <div className={`options-grid ${phase === 'revealed' ? 'faded' : ''}`}>
-          <div className="options-label">— How do you respond?</div>
-          {ANSWER_OPTIONS.map((opt) => (
-            <button
-              key={opt.id}
-              onClick={() => handleSelect(opt.id)}
-              className={`option-btn ${selected === opt.id ? 'selected' : ''} ${phase === 'answered' || phase === 'revealed' ? 'locked' : ''}`}
-            >
-              <span className="opt-id">{opt.id.toUpperCase()}</span>
-              <span>{opt.text}</span>
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* Arjun reaction */}
-      {phase === 'revealed' && (
-        <div className="message-row arjun revealed-anim">
-          <div className="avatar ar">AR</div>
-          <div className="bubble arjun-bubble">
-            <div className="bubble-meta">Arjun <span>· 10 years at Swiggy</span></div>
-            <div className="bubble-text">
-              That's one reason — but a senior analyst structures this into <strong>4 categories</strong>: demand, supply, platform, and external. You just picked platform friction. What's missing?
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
+function useCountUp(target, duration, active) {
+  const [val, setVal] = useState(0);
+  useEffect(() => {
+    if (!active) return;
+    let start = null;
+    const step = ts => {
+      if (!start) start = ts;
+      const p = Math.min((ts - start) / duration, 1);
+      setVal(Math.floor((1 - Math.pow(1 - p, 3)) * target));
+      if (p < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }, [target, duration, active]);
+  return val;
+}
 
 // ── Ticker ────────────────────────────────────────────────────────────────────
-const Ticker = () => {
+function Ticker() {
   const doubled = [...COMPANIES, ...COMPANIES];
   return (
-    <div className="ticker-wrap">
-      <div className="ticker-inner">
+    <div style={{ overflow: 'hidden', position: 'relative', padding: '4px 0' }}>
+      <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 100, background: 'linear-gradient(to right, var(--bg), transparent)', zIndex: 2, pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 100, background: 'linear-gradient(to left, var(--bg), transparent)', zIndex: 2, pointerEvents: 'none' }} />
+      <div style={{ display: 'flex', gap: 10, width: 'max-content', animation: 'ticker 36s linear infinite' }}>
         {doubled.map((c, i) => (
-          <div key={i} className="ticker-chip">
-            <span className="ticker-abbr" style={{ background: c.color }}>{c.abbr}</span>
-            <span className="ticker-name">{c.name}</span>
+          <div key={i} style={{
+            display: 'inline-flex', alignItems: 'center', gap: 8,
+            padding: '6px 14px 6px 8px',
+            background: 'rgba(255,255,255,0.04)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: 999, flexShrink: 0,
+          }}>
+            <div style={{
+              width: 24, height: 24, borderRadius: 6,
+              background: c.color, display: 'flex', alignItems: 'center',
+              justifyContent: 'center',
+              fontFamily: 'var(--mono)', fontSize: 8, fontWeight: 800, color: '#fff',
+            }}>{c.abbr}</div>
+            <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--ink2)' }}>{c.name}</span>
           </div>
         ))}
       </div>
     </div>
   );
-};
+}
 
-// ── Salary comparison ─────────────────────────────────────────────────────────
-const SalaryBar = ({ label, lpa, max, color, delay }) => {
-  const [filled, setFilled] = useState(false);
-  useEffect(() => {
-    const t = setTimeout(() => setFilled(true), delay);
-    return () => clearTimeout(t);
-  }, [delay]);
-  const pct = (lpa / max) * 100;
+// ── Stat block ────────────────────────────────────────────────────────────────
+function Stat({ value, suffix, label, color, active }) {
+  const count = useCountUp(value, 1100, active);
   return (
-    <div className="salary-row">
-      <span className="salary-label">{label}</span>
-      <div className="salary-track">
-        <div
-          className="salary-fill"
-          style={{
-            width: filled ? `${pct}%` : '0%',
-            background: color,
-            transition: `width 0.9s cubic-bezier(0.16,1,0.3,1) ${delay}ms`,
-          }}
-        />
+    <div style={{ textAlign: 'center', padding: '28px 20px', background: 'rgba(8,8,16,0.5)', borderRight: '1px solid rgba(255,255,255,0.06)' }}>
+      <div style={{ fontFamily: 'var(--mono)', fontSize: 36, fontWeight: 800, color, letterSpacing: '-0.04em', lineHeight: 1 }}>
+        {count}{suffix}
       </div>
-      <span className="salary-value" style={{ color }}>₹{lpa}L</span>
+      <div style={{ fontFamily: 'var(--mono)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--ink3)', marginTop: 6 }}>{label}</div>
     </div>
   );
-};
+}
 
-// ── Social proof numbers ─────────────────────────────────────────────────────
-const STATS = [
-  { icon: Users, value: '40k+', label: 'on WhatsApp' },
-  { icon: Zap,   value: '4,200+', label: 'case studies done' },
-  { icon: Clock, value: '45 min', label: 'to interview-ready' },
-];
+// ── Resume Card ───────────────────────────────────────────────────────────────
+function ResumeCard({ variant, shortlisted }) {
+  const isB = variant === 'B';
 
-// ── Phase preview cards ────────────────────────────────────────────────────────
-const PHASES = [
-  {
-    num: '01', tag: 'WATCH', color: 'var(--phase1)', bg: 'rgba(252,128,25,0.08)', border: 'rgba(200,75,12,0.2)',
-    title: 'Investigate alongside a pro',
-    desc: 'Arjun — 10 years at Swiggy — works a real incident live. Predict his next move before every step.',
-    time: '~20 min',
-  },
-  {
-    num: '02', tag: 'PRACTICE', color: 'var(--phase2)', bg: 'rgba(79,128,255,0.08)', border: 'rgba(30,79,204,0.2)',
-    title: 'Same company, your SQL',
-    desc: 'Blank editor. New problem. Write the queries. Arjun evaluates your actual logic in real-time.',
-    time: '~25 min',
-  },
-  {
-    num: '03', tag: 'EXECUTE', color: 'var(--phase3)', bg: 'rgba(61,214,140,0.08)', border: 'rgba(26,107,69,0.2)',
-    title: 'Write the VP message',
-    desc: 'Open questions, no hints. Structure your findings into a message for the VP of Product.',
-    time: '~10 min',
-  },
-];
-
-// ── Main Component ─────────────────────────────────────────────────────────────
-const HomePage = () => {
-  const [engaged, setEngaged] = useState(false);
-  const ctaRef = useRef(null);
-
-  useEffect(() => {
-    if (engaged && ctaRef.current) {
-      setTimeout(() => ctaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 500);
-    }
-  }, [engaged]);
+  const data = {
+    A: {
+      badge: '✗ Rejected',
+      badgeBg: 'rgba(243,139,168,0.12)', badgeColor: '#F38BA8', badgeBorder: 'rgba(243,139,168,0.25)',
+      label: 'THE SQL WRITER', labelColor: '#F38BA8',
+      role: 'Data Analyst · No Response · 14 Days',
+      roleColor: 'var(--ink3)',
+      points: [
+        'Created weekly dashboards for marketing team',
+        'Ran SQL queries on request from stakeholders',
+        'Maintained data pipelines and ETL processes',
+        'Built Excel reports for monthly business reviews',
+      ],
+      dotBg: 'rgba(243,139,168,0.12)', dotColor: '#F38BA8', dotBorder: 'rgba(243,139,168,0.2)',
+      ptColor: 'var(--ink3)',
+      divider: 'rgba(243,139,168,0.1)',
+      footerColor: '#F38BA8', footerText: '● No callback · Ghosted',
+      cardBg: 'rgba(243,139,168,0.03)', cardBorder: 'rgba(243,139,168,0.12)',
+      glow: 'none',
+    },
+    B: {
+      badge: shortlisted ? '⚡ Shortlisted' : '○ Pending',
+      badgeBg: shortlisted ? 'var(--phase1)' : 'rgba(252,128,25,0.1)',
+      badgeColor: '#fff',
+      badgeBorder: 'rgba(252,128,25,0.4)',
+      label: 'THE INCIDENT RESPONDER', labelColor: '#FC8019',
+      role: shortlisted ? 'Senior Analyst · Interview in 2 Days ✓' : 'Senior Analyst · Submitted',
+      roleColor: shortlisted ? 'var(--ink)' : 'var(--ink2)',
+      points: [
+        'Identified 8.3% WoW revenue leak via root-cause investigation',
+        'Triaged delivery churn in North Bangalore within 48 hours',
+        'Authored Executive Brief for VP of Product — ₹28L impact',
+        'Built early-warning framework adopted across 3 verticals',
+      ],
+      dotBg: 'rgba(252,128,25,0.12)', dotColor: '#FC8019', dotBorder: 'rgba(252,128,25,0.25)',
+      ptColor: 'var(--ink2)',
+      divider: 'rgba(252,128,25,0.1)',
+      footerColor: shortlisted ? '#FC8019' : 'var(--ink3)',
+      footerText: shortlisted ? '● Interview scheduled · Thursday 3PM' : '○ Awaiting response',
+      cardBg: shortlisted ? 'rgba(252,128,25,0.06)' : 'rgba(252,128,25,0.03)',
+      cardBorder: shortlisted ? 'rgba(252,128,25,0.3)' : 'rgba(252,128,25,0.12)',
+      glow: shortlisted ? '0 0 40px rgba(252,128,25,0.18), 0 0 0 1px rgba(252,128,25,0.2)' : 'none',
+    },
+  }[variant];
 
   return (
-    <div className="hp-root">
+    <div style={{
+      position: 'relative',
+      borderRadius: 20,
+      padding: 24,
+      background: data.cardBg,
+      border: `1px solid ${data.cardBorder}`,
+      backdropFilter: 'blur(14px)',
+      WebkitBackdropFilter: 'blur(14px)',
+      boxShadow: data.glow,
+      transform: isB && shortlisted ? 'translateY(-6px)' : 'none',
+      transition: 'all 0.7s cubic-bezier(0.16,1,0.3,1)',
+      display: 'flex', flexDirection: 'column', gap: 18,
+    }}>
+      {/* Top badge */}
+      <div style={{ position: 'absolute', top: -14, left: '50%', transform: 'translateX(-50%)', zIndex: 2 }}>
+        <span style={{
+          display: 'inline-block', padding: '4px 14px', borderRadius: 999,
+          fontFamily: 'var(--mono)', fontSize: 10, fontWeight: 700,
+          letterSpacing: '0.1em', textTransform: 'uppercase',
+          background: data.badgeBg, color: data.badgeColor,
+          border: `1px solid ${data.badgeBorder}`,
+          boxShadow: isB && shortlisted ? '0 0 24px rgba(252,128,25,0.55)' : 'none',
+          animation: isB && shortlisted ? 'badge-pulse 2s ease-in-out infinite' : 'none',
+          whiteSpace: 'nowrap',
+        }}>
+          {data.badge}
+        </span>
+      </div>
 
-      {/* ── HERO ── */}
-      <section className="hp-hero">
-        <div className="hp-hero-inner">
+      {/* Header */}
+      <div style={{ marginTop: 8 }}>
+        <p style={{ fontFamily: 'var(--mono)', fontSize: 9, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: data.labelColor, marginBottom: 4 }}>
+          {data.label}
+        </p>
+        <p style={{ fontSize: 13, color: data.roleColor, fontWeight: 500 }}>{data.role}</p>
+      </div>
 
-          {/* Left column — context + CTA */}
-          <div className="hp-hero-left">
-            <div className="hp-eyebrow">
-              <span className="eyebrow-dot" />
-              FOR ANALYSTS · TOP TECH COMPANIES
-            </div>
+      <div style={{ height: 1, background: data.divider }} />
 
-            <h1 className="hp-h1">
-              Stop preparing.<br />
-              Start <em>performing.</em>
-            </h1>
+      {/* Points */}
+      <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {data.points.map((pt, i) => (
+          <li key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+            <span style={{
+              flexShrink: 0, marginTop: 2,
+              width: 16, height: 16, borderRadius: '50%',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 9, fontWeight: 800,
+              background: data.dotBg, color: data.dotColor,
+              border: `1px solid ${data.dotBorder}`,
+            }}>{isB ? '✓' : '✗'}</span>
+            <span style={{ fontSize: 13, lineHeight: 1.55, color: data.ptColor }}>{pt}</span>
+          </li>
+        ))}
+      </ul>
 
-            <p className="hp-sub">
-              The only platform where you investigate real data problems at real companies — the same way you'd do it on day one of the job.
-            </p>
+      <div style={{ height: 1, background: data.divider }} />
 
-            {/* Stats row */}
-            <div className="hp-stats">
-              {STATS.map((s) => (
-                <div key={s.label} className="hp-stat">
-                  <s.icon size={14} className="stat-icon" />
-                  <strong>{s.value}</strong>
-                  <span>{s.label}</span>
-                </div>
-              ))}
-            </div>
+      {/* Footer */}
+      <p style={{ fontFamily: 'var(--mono)', fontSize: 10, color: data.footerColor }}>{data.footerText}</p>
+    </div>
+  );
+}
 
-            <div className="hp-cta-row">
-              <a href="/case-study/swiggy" className="hp-btn-primary">
-                Try the Swiggy case — free
-                <ArrowRight size={15} />
-              </a>
-              <Link to="/case-studies" className="hp-btn-ghost">
-                See all cases <ChevronRight size={13} />
-              </Link>
-            </div>
-            <p className="hp-fine">No signup · No credit card · Portfolio link at end</p>
+// ── Framework Card ────────────────────────────────────────────────────────────
+function FrameworkCard({ Icon, tag, title, desc, accent, delay, visible }) {
+  return (
+    <div style={{
+      borderRadius: 20, padding: '28px 24px',
+      background: 'rgba(255,255,255,0.03)',
+      border: '1px solid rgba(255,255,255,0.08)',
+      backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+      display: 'flex', flexDirection: 'column', gap: 18,
+      opacity: visible ? 1 : 0,
+      transform: visible ? 'translateY(0)' : 'translateY(28px)',
+      transition: `opacity 0.6s ${delay}ms cubic-bezier(0.16,1,0.3,1), transform 0.6s ${delay}ms cubic-bezier(0.16,1,0.3,1)`,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+        <div style={{
+          width: 44, height: 44, borderRadius: 12, flexShrink: 0,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: `${accent}18`, border: `1px solid ${accent}30`,
+        }}>
+          <Icon size={20} color={accent} />
+        </div>
+        <span style={{
+          fontFamily: 'var(--mono)', fontSize: 9, fontWeight: 700,
+          letterSpacing: '0.12em', textTransform: 'uppercase',
+          padding: '4px 10px', borderRadius: 999,
+          background: `${accent}12`, color: accent, border: `1px solid ${accent}22`,
+          whiteSpace: 'nowrap',
+        }}>{tag}</span>
+      </div>
+      <div>
+        <h3 style={{ fontSize: 17, fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--ink)', marginBottom: 8, lineHeight: 1.3 }}>{title}</h3>
+        <p style={{ fontSize: 13, lineHeight: 1.65, color: 'var(--ink2)' }}>{desc}</p>
+      </div>
+    </div>
+  );
+}
+
+// ── Main ─────────────────────────────────────────────────────────────────────
+export default function HomePage() {
+  const scrollY = useScrollY();
+  const [shortlisted, setShortlisted] = useState(false);
+  const [resumeRef, resumeInView] = useInView(0.25);
+  const [fwRef, fwInView] = useInView(0.15);
+  const [statsRef, statsInView] = useInView(0.5);
+
+  useEffect(() => {
+    if (resumeInView && !shortlisted) {
+      const t = setTimeout(() => setShortlisted(true), 700);
+      return () => clearTimeout(t);
+    }
+  }, [resumeInView]);
+
+  const ORANGE = '#FC8019';
+  const BLUE   = '#4F80FF';
+  const GREEN  = '#3DD68C';
+
+  return (
+    <div style={{ background: 'var(--bg)', fontFamily: 'var(--sans)', minHeight: '100vh', overflowX: 'hidden' }}>
+
+      {/* ── Scroll-responsive ambient orbs ── */}
+      <div style={{
+        position: 'fixed', zIndex: 0, pointerEvents: 'none',
+        top: -240 + scrollY * 0.12, left: -240,
+        width: 680, height: 680, borderRadius: '50%',
+        background: `radial-gradient(circle, rgba(252,128,25,0.16) 0%, transparent 70%)`,
+        filter: 'blur(110px)',
+      }} />
+      <div style={{
+        position: 'fixed', zIndex: 0, pointerEvents: 'none',
+        bottom: -240 - scrollY * 0.06, right: -240,
+        width: 680, height: 680, borderRadius: '50%',
+        background: `radial-gradient(circle, rgba(79,128,255,0.20) 0%, transparent 70%)`,
+        filter: 'blur(110px)',
+      }} />
+
+      {/* ── Dotted grid ── */}
+      <div style={{
+        position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none',
+        backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.045) 1px, transparent 1px)',
+        backgroundSize: '20px 20px',
+      }} />
+
+      <div style={{ position: 'relative', zIndex: 1 }}>
+
+        {/* ════════ HERO ════════ */}
+        <section style={{ padding: 'clamp(72px,10vw,120px) 24px 80px', maxWidth: 920, margin: '0 auto', textAlign: 'center' }}>
+
+          {/* Pill */}
+          <div style={{ marginBottom: 32, animation: 'hp-up 0.6s both' }}>
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: 8,
+              padding: '7px 18px', borderRadius: 999,
+              fontFamily: 'var(--mono)', fontSize: 10, fontWeight: 700,
+              letterSpacing: '0.12em', textTransform: 'uppercase',
+              background: 'rgba(252,128,25,0.10)',
+              border: '1px solid rgba(252,128,25,0.28)',
+              color: ORANGE,
+            }}>
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: ORANGE, display: 'inline-block', animation: 'hp-pulse 2s ease-in-out infinite' }} />
+              Pattern Interrupt · For Ambitious Analysts
+            </span>
           </div>
 
-          {/* Right column — live interview terminal */}
-          <div className="hp-hero-right">
-            <div className="terminal-label-above">LIVE INTERVIEW SIMULATION</div>
-            <InterviewHero onEngaged={() => setEngaged(true)} />
-            {engaged && (
-              <p className="terminal-nudge revealed-anim">
-                This is how the case study starts. ↓
-              </p>
+          {/* Headline */}
+          <h1 style={{
+            fontSize: 'clamp(2.1rem, 6vw, 4rem)',
+            fontWeight: 800, lineHeight: 1.06,
+            letterSpacing: '-0.035em', color: 'var(--ink)',
+            marginBottom: 24,
+            animation: 'hp-up 0.7s 0.08s both',
+          }}>
+            SQL is the{' '}
+            <span style={{ background: `linear-gradient(135deg, ${ORANGE}, #FF9E50)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+              entry requirement.
+            </span>
+            <br />
+            Problem solving is the{' '}
+            <span style={{ background: `linear-gradient(135deg, ${BLUE}, #A0C0FF)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+              competitive edge.
+            </span>
+          </h1>
+
+          {/* Sub-copy */}
+          <p style={{
+            fontSize: 16, lineHeight: 1.72, color: 'var(--ink2)',
+            maxWidth: 560, margin: '0 auto 40px',
+            animation: 'hp-up 0.7s 0.16s both',
+          }}>
+            Most analysts are just human APIs for data pulls. The top 1% are{' '}
+            <strong style={{ color: 'var(--ink)', fontWeight: 600 }}>Strategic Partners</strong>{' '}
+            who triage incidents and drive revenue. Shift from{' '}
+            <span style={{ color: 'var(--ink3)', fontStyle: 'italic' }}>"Task Taker"</span>{' '}
+            to{' '}
+            <span style={{ color: ORANGE, fontWeight: 600 }}>"Decision Maker"</span>{' '}
+            in one afternoon.
+          </p>
+
+          {/* CTAs */}
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 12, flexWrap: 'wrap', animation: 'hp-up 0.7s 0.24s both' }}>
+            <a href="/case-study/swiggy"
+              className="hp-cta-primary"
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 8,
+                padding: '14px 30px', borderRadius: 12,
+                background: ORANGE, color: '#fff',
+                fontWeight: 700, fontSize: 15, letterSpacing: '-0.01em',
+                textDecoration: 'none',
+                boxShadow: `0 0 0 1px rgba(252,128,25,0.45), 0 8px 32px rgba(252,128,25,0.32)`,
+                transition: 'all 0.2s ease',
+              }}
+            >
+              Start the Swiggy Case <ArrowRight size={16} />
+            </a>
+            <a href="/case-studies"
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 8,
+                padding: '14px 24px', borderRadius: 12,
+                background: 'rgba(255,255,255,0.04)',
+                border: '1px solid rgba(255,255,255,0.10)',
+                color: 'var(--ink2)', fontWeight: 500, fontSize: 15,
+                textDecoration: 'none', backdropFilter: 'blur(12px)',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              Browse All Cases
+            </a>
+          </div>
+
+          <p style={{ marginTop: 18, fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--ink3)', animation: 'hp-up 0.7s 0.32s both' }}>
+            Free · No account · Portfolio link at end · ~45 min
+          </p>
+        </section>
+
+        {/* ════════ TICKER ════════ */}
+        <div style={{ padding: '0 0 80px' }}>
+          <p style={{ textAlign: 'center', fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--ink3)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 20 }}>
+            Analysts are getting hired right now at
+          </p>
+          <Ticker />
+        </div>
+
+        {/* ════════ STATS ════════ */}
+        <div ref={statsRef} style={{ padding: '0 24px 88px' }}>
+          <div style={{
+            maxWidth: 680, margin: '0 auto',
+            display: 'grid', gridTemplateColumns: 'repeat(3,1fr)',
+            background: 'rgba(255,255,255,0.05)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: 18, overflow: 'hidden',
+          }}>
+            <Stat value={45}  suffix="m"   label="To complete"          color={ORANGE} active={statsInView} />
+            <Stat value={3}   suffix=""    label="Investigation phases"  color={BLUE}   active={statsInView} />
+            <Stat value={28}  suffix="L"   label="Revenue impact"        color={GREEN}  active={statsInView} />
+          </div>
+        </div>
+
+        {/* ════════ RESUME COMPARISON ════════ */}
+        <section ref={resumeRef} style={{ padding: '0 24px 96px', maxWidth: 960, margin: '0 auto' }}>
+
+          <div style={{ textAlign: 'center', marginBottom: 56 }}>
+            <p style={{ fontFamily: 'var(--mono)', fontSize: 10, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--ink3)', marginBottom: 14 }}>
+              The Resume Reality Check
+            </p>
+            <h2 style={{ fontSize: 'clamp(1.6rem,3.5vw,2.6rem)', fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--ink)', lineHeight: 1.12, marginBottom: 14 }}>
+              Two analysts. Same tools.{' '}
+              <span style={{ color: ORANGE }}>Very different outcomes.</span>
+            </h2>
+            <p style={{ fontSize: 15, color: 'var(--ink2)', maxWidth: 480, margin: '0 auto', lineHeight: 1.65 }}>
+              The difference isn't SQL skill. It's how they frame their impact — and how they think when the data doesn't make sense.
+            </p>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px,1fr))', gap: 24, paddingTop: 20 }}>
+            <ResumeCard variant="A" shortlisted={shortlisted} />
+            <ResumeCard variant="B" shortlisted={shortlisted} />
+          </div>
+
+          <div style={{ textAlign: 'center', marginTop: 24 }}>
+            <button onClick={() => { setShortlisted(false); setTimeout(() => setShortlisted(true), 120); }}
+              style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--ink3)', background: 'none', border: 'none', cursor: 'pointer', padding: '6px 12px', transition: 'color 0.2s' }}
+              onMouseEnter={e => e.currentTarget.style.color = ORANGE}
+              onMouseLeave={e => e.currentTarget.style.color = 'var(--ink3)'}
+            >
+              ↺ Replay shortlist animation
+            </button>
+          </div>
+        </section>
+
+        {/* ════════ FRAMEWORK MATRIX ════════ */}
+        <section ref={fwRef} style={{ padding: '0 24px 96px', maxWidth: 960, margin: '0 auto' }}>
+
+          {/* Section label */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 52 }}>
+            <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+            <span style={{ fontFamily: 'var(--mono)', fontSize: 9, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--ink3)', whiteSpace: 'nowrap' }}>
+              What We Actually Teach
+            </span>
+            <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+          </div>
+
+          <div style={{ textAlign: 'center', marginBottom: 48 }}>
+            <h2 style={{ fontSize: 'clamp(1.6rem,3.5vw,2.6rem)', fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--ink)', lineHeight: 1.12, marginBottom: 14 }}>
+              Three skills no SQL course teaches.
+            </h2>
+            <p style={{ fontSize: 15, color: 'var(--ink2)', maxWidth: 460, margin: '0 auto', lineHeight: 1.65 }}>
+              Interviewers at top firms aren't testing syntax. They're testing how you think when you're 15 minutes into the wrong rabbit hole.
+            </p>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px,1fr))', gap: 16 }}>
+            <FrameworkCard
+              Icon={Zap} tag="Skill 01"
+              title="Ambiguity Triage"
+              desc="How to ask the right clarifying questions before writing a single line of SQL. Most analysts skip this. Senior analysts never do."
+              accent={ORANGE} delay={0} visible={fwInView}
+            />
+            <FrameworkCard
+              Icon={Eye} tag="Skill 02"
+              title="Data Skepticism"
+              desc="Why the first query result is almost always wrong, and the structured approach to validating data before presenting it to a VP."
+              accent={BLUE} delay={110} visible={fwInView}
+            />
+            <FrameworkCard
+              Icon={Users} tag="Skill 03"
+              title="Stakeholder Synthesis"
+              desc="Turning 'SELECT *' into a ₹2M business recommendation. How to translate rows and columns into decisions that actually get adopted."
+              accent={GREEN} delay={220} visible={fwInView}
+            />
+          </div>
+
+          {/* Framework vs syntax bar */}
+          <div style={{
+            marginTop: 36, padding: '18px 28px', borderRadius: 14,
+            background: 'rgba(255,255,255,0.02)',
+            border: '1px solid rgba(255,255,255,0.06)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            gap: 24, flexWrap: 'wrap',
+          }}>
+            {[
+              { text: 'SQL Syntax', sub: 'table stakes', color: 'var(--ink3)' },
+              { sep: '→' },
+              { text: 'Problem Framing', sub: 'differentiator', color: BLUE },
+              { sep: '+' },
+              { text: 'Business Impact', sub: 'why you get hired', color: ORANGE },
+            ].map((item, i) =>
+              item.sep ? (
+                <span key={i} style={{ fontFamily: 'var(--mono)', fontSize: 16, color: 'var(--border2)' }}>{item.sep}</span>
+              ) : (
+                <div key={i} style={{ textAlign: 'center' }}>
+                  <div style={{ fontFamily: 'var(--mono)', fontSize: 13, fontWeight: 700, color: item.color, letterSpacing: '-0.01em' }}>{item.text}</div>
+                  <div style={{ fontFamily: 'var(--mono)', fontSize: 9, color: 'var(--ink3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 2 }}>{item.sub}</div>
+                </div>
+              )
             )}
           </div>
+        </section>
 
-        </div>
-      </section>
-
-      {/* ── COMPANIES TICKER ── */}
-      <section className="hp-ticker-section">
-        <p className="ticker-caption">Analysts are getting hired right now at</p>
-        <Ticker />
-      </section>
-
-      {/* ── SALARY REALITY CHECK ── */}
-      <section className="hp-salary-section" ref={ctaRef}>
-        <div className="hp-section-inner">
-          <div className="section-eyebrow">THE SALARY GAP IS REAL</div>
-          <h2 className="hp-h2">Same job title. Very different offers.</h2>
-          <p className="hp-section-sub">What separates a ₹18L analyst from a ₹28L one has nothing to do with years of experience.</p>
-
-          <div className="salary-widget">
-            <SalaryBar label="Memorised frameworks" lpa={14} max={30} color="var(--ink3)" delay={200} />
-            <SalaryBar label="SQL fluency" lpa={17} max={30} color="var(--ink3)" delay={350} />
-            <SalaryBar label="Dashboard experience" lpa={18} max={30} color="var(--ink3)" delay={500} />
-            <div className="salary-divider" />
-            <SalaryBar label="Thinks through ambiguity fast" lpa={28} max={30} color="var(--accent)" delay={750} />
+        {/* ════════ FINAL CTA ════════ */}
+        <section style={{ padding: '0 24px 96px' }}>
+          <div style={{
+            maxWidth: 660, margin: '0 auto', textAlign: 'center',
+            padding: 'clamp(40px,8vw,72px) clamp(28px,6vw,60px)',
+            borderRadius: 24,
+            background: 'rgba(252,128,25,0.05)',
+            border: '1px solid rgba(252,128,25,0.15)',
+            backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+            position: 'relative', overflow: 'hidden',
+          }}>
+            <div style={{
+              position: 'absolute', top: -100, left: '50%', transform: 'translateX(-50%)',
+              width: 500, height: 300,
+              background: 'radial-gradient(circle, rgba(252,128,25,0.12) 0%, transparent 70%)',
+              filter: 'blur(40px)', pointerEvents: 'none',
+            }} />
+            <div style={{ position: 'relative' }}>
+              <p style={{ fontFamily: 'var(--mono)', fontSize: 10, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: ORANGE, marginBottom: 20 }}>
+                ⚡ Start Free · No Credit Card
+              </p>
+              <h2 style={{ fontSize: 'clamp(1.7rem,4vw,2.8rem)', fontWeight: 800, letterSpacing: '-0.035em', color: 'var(--ink)', lineHeight: 1.1, marginBottom: 16 }}>
+                Stop applying.{' '}
+                <span style={{ color: ORANGE }}>Start getting called.</span>
+              </h2>
+              <p style={{ fontSize: 15, color: 'var(--ink2)', maxWidth: 420, margin: '0 auto 36px', lineHeight: 1.7 }}>
+                One 45-minute investigation. A portfolio link for your next application. Results most analysts never learn in 3 years.
+              </p>
+              <a href="/case-study/swiggy"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 10,
+                  padding: '16px 38px', borderRadius: 12,
+                  background: ORANGE, color: '#fff',
+                  fontWeight: 800, fontSize: 16, letterSpacing: '-0.01em',
+                  textDecoration: 'none',
+                  boxShadow: `0 0 0 1px rgba(252,128,25,0.5), 0 8px 32px rgba(252,128,25,0.38), 0 0 60px rgba(252,128,25,0.15)`,
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.transform = 'translateY(-3px)';
+                  e.currentTarget.style.boxShadow = `0 0 0 1px rgba(252,128,25,0.7), 0 16px 48px rgba(252,128,25,0.55), 0 0 80px rgba(252,128,25,0.22)`;
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.transform = 'none';
+                  e.currentTarget.style.boxShadow = `0 0 0 1px rgba(252,128,25,0.5), 0 8px 32px rgba(252,128,25,0.38), 0 0 60px rgba(252,128,25,0.15)`;
+                }}
+              >
+                Begin the Investigation <ArrowRight size={18} />
+              </a>
+              <p style={{ marginTop: 16, fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--ink3)' }}>
+                Swiggy Case Study · Phase 1 free · ~45 minutes
+              </p>
+            </div>
           </div>
+        </section>
 
-          <div className="salary-insight">
-            <span className="insight-arrow">→</span>
-            <p>The ₹28L analyst doesn't just list reasons — they structure into categories, rank by probability × testability, and move fast without being told what to look at next.</p>
-          </div>
-        </div>
-      </section>
+      </div>
 
-      {/* ── 3 PHASES ── */}
-      <section className="hp-phases-section">
-        <div className="hp-section-inner">
-          <div className="section-eyebrow">HOW IT WORKS</div>
-          <h2 className="hp-h2">One case study. Three phases. Real skills.</h2>
-
-          <div className="phases-grid">
-            {PHASES.map((ph) => (
-              <div key={ph.num} className="phase-card" style={{ '--ph-color': ph.color, '--ph-bg': ph.bg, '--ph-border': ph.border }}>
-                <div className="phase-header">
-                  <span className="phase-num" style={{ color: ph.color }}>{ph.num}</span>
-                  <span className="phase-tag" style={{ color: ph.color, background: ph.bg, border: `1px solid ${ph.border}` }}>{ph.tag}</span>
-                  <span className="phase-time">{ph.time}</span>
-                </div>
-                <h3 className="phase-title">{ph.title}</h3>
-                <p className="phase-desc">{ph.desc}</p>
-                <div className="phase-bar" style={{ background: ph.color }} />
-              </div>
-            ))}
-          </div>
-
-          <div className="phases-cta">
-            <a href="/case-study/swiggy" className="hp-btn-primary large">
-              Start the Swiggy investigation — free
-              <ArrowRight size={16} />
-            </a>
-            <p className="hp-fine">~45 min · No account needed</p>
-          </div>
-        </div>
-      </section>
-
-      {/* ── COMING SOON ── */}
-      <section className="hp-coming-section">
-        <div className="hp-section-inner narrow">
-          <div className="coming-card">
-            <div className="section-eyebrow centered">COMING SOON</div>
-            <p className="coming-text">More investigations across Zomato, Razorpay, Meesho, PhonePe, Uber and others.</p>
-            <Link to="/case-studies" className="coming-link">
-              See all case studies <ArrowRight size={13} />
-            </Link>
-          </div>
-        </div>
-      </section>
-
+      {/* ── Keyframes ── */}
       <style>{`
-        /* ── Root ── */
-        .hp-root {
-          min-height: 100vh;
-          background: var(--bg);
-          font-family: var(--sans);
-        }
-
-        /* ── Hero ── */
-        .hp-hero {
-          padding: 64px 24px 48px;
-          max-width: 1200px;
-          margin: 0 auto;
-        }
-        .hp-hero-inner {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 56px;
-          align-items: start;
-        }
-        @media (max-width: 860px) {
-          .hp-hero-inner { grid-template-columns: 1fr; gap: 40px; }
-          .hp-hero { padding: 40px 20px 32px; }
-        }
-
-        /* Left */
-        .hp-eyebrow {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          font-family: var(--mono);
-          font-size: 10px;
-          font-weight: 700;
-          letter-spacing: 0.1em;
-          text-transform: uppercase;
-          color: var(--ink3);
-          margin-bottom: 20px;
-        }
-        .eyebrow-dot {
-          width: 6px; height: 6px;
-          border-radius: 50%;
-          background: var(--accent);
-          display: inline-block;
-          animation: pulse 2s ease-in-out infinite;
-        }
-        @keyframes pulse {
-          0%,100% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0.5; transform: scale(0.7); }
-        }
-        .hp-h1 {
-          font-family: var(--serif);
-          font-size: clamp(2.2rem, 5vw, 3.4rem);
-          color: var(--ink);
-          line-height: 1.05;
-          letter-spacing: -0.025em;
-          margin-bottom: 20px;
-        }
-        .hp-h1 em {
-          font-style: normal;
-          color: var(--accent);
-          position: relative;
-        }
-        .hp-sub {
-          font-size: 15px;
-          color: var(--ink2);
-          line-height: 1.65;
-          max-width: 420px;
-          margin-bottom: 28px;
-        }
-        .hp-stats {
-          display: flex;
-          gap: 20px;
-          margin-bottom: 32px;
-          flex-wrap: wrap;
-        }
-        .hp-stat {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          font-size: 12px;
-          color: var(--ink3);
-        }
-        .hp-stat strong { color: var(--ink); font-weight: 600; }
-        .stat-icon { color: var(--accent); flex-shrink: 0; }
-        .hp-cta-row {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          flex-wrap: wrap;
-          margin-bottom: 10px;
-        }
-        .hp-btn-primary {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          padding: 12px 22px;
-          background: var(--accent);
-          color: white;
-          font-size: 14px;
-          font-weight: 500;
-          border-radius: 10px;
-          text-decoration: none;
-          transition: all 0.15s;
-          box-shadow: 0 4px 20px rgba(200,75,12,0.25);
-        }
-        .hp-btn-primary:hover {
-          background: var(--accent-dark);
-          transform: translateY(-1px);
-          box-shadow: 0 6px 24px rgba(200,75,12,0.35);
-        }
-        .hp-btn-primary.large { padding: 14px 28px; font-size: 15px; }
-        .hp-btn-ghost {
-          display: inline-flex;
-          align-items: center;
-          gap: 4px;
-          font-size: 13px;
-          color: var(--ink2);
-          text-decoration: none;
-          padding: 12px 4px;
-          transition: color 0.15s;
-        }
-        .hp-btn-ghost:hover { color: var(--ink); }
-        .hp-fine {
-          font-size: 11px;
-          color: var(--ink3);
-          margin: 0;
-        }
-
-        /* Terminal / Right column */
-        .hp-hero-right {
-          position: relative;
-        }
-        .terminal-label-above {
-          font-family: var(--mono);
-          font-size: 9px;
-          font-weight: 700;
-          letter-spacing: 0.1em;
-          text-transform: uppercase;
-          color: var(--ink3);
-          margin-bottom: 8px;
-        }
-        .terminal-nudge {
-          font-family: var(--mono);
-          font-size: 11px;
-          color: var(--accent);
-          text-align: center;
-          margin-top: 12px;
-        }
-
-        /* Interview hero */
-        .interview-hero {
-          background: var(--surface);
-          border-radius: 14px;
-          overflow: hidden;
-          border: 1px solid var(--border);
-          box-shadow: 0 20px 60px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.04);
-        }
-        .terminal-bar {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          padding: 10px 14px;
-          background: var(--surface2);
-          border-bottom: 1px solid var(--border);
-        }
-        .dot {
-          width: 10px; height: 10px;
-          border-radius: 50%;
-        }
-        .dot.red { background: #FF5F57; }
-        .dot.yellow { background: #FEBC2E; }
-        .dot.green { background: #28C840; }
-        .terminal-label {
-          font-family: var(--mono);
-          font-size: 9px;
-          color: var(--ink3);
-          letter-spacing: 0.08em;
-          margin-left: 6px;
-        }
-        .message-row {
-          display: flex;
-          gap: 12px;
-          padding: 16px 16px 0;
-        }
-        .message-row.arjun { padding-top: 12px; padding-bottom: 16px; }
-        .avatar {
-          width: 32px; height: 32px;
-          border-radius: 8px;
-          font-family: var(--mono);
-          font-size: 10px;
-          font-weight: 700;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-shrink: 0;
-        }
-        .avatar.iv { background: var(--surface2); color: var(--ink2); }
-        .avatar.ar { background: rgba(200,75,12,0.2); color: var(--accent); }
-        .bubble { flex: 1; }
-        .bubble-meta {
-          font-family: var(--mono);
-          font-size: 10px;
-          font-weight: 700;
-          color: var(--ink3);
-          margin-bottom: 6px;
-        }
-        .bubble-meta span { font-weight: 400; opacity: 0.6; }
-        .bubble-text {
-          font-size: 13px;
-          color: var(--ink2);
-          line-height: 1.6;
-        }
-        .bubble-text strong { color: var(--amber); }
-        .arjun-bubble .bubble-text { color: var(--amber); }
-        .cursor {
-          display: inline-block;
-          color: var(--accent);
-          animation: blink 0.9s step-end infinite;
-        }
-        @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
-
-        /* Options */
-        .options-grid {
-          padding: 14px 16px 16px;
-          transition: opacity 0.4s;
-        }
-        .options-grid.faded { opacity: 0.35; }
-        .options-label {
-          font-family: var(--mono);
-          font-size: 9px;
-          color: var(--ink3);
-          letter-spacing: 0.06em;
-          margin-bottom: 10px;
-        }
-        .option-btn {
-          width: 100%;
-          display: flex;
-          align-items: flex-start;
-          gap: 10px;
-          padding: 10px 12px;
-          margin-bottom: 6px;
-          background: var(--surface2);
-          border: 1px solid var(--border);
-          border-radius: 8px;
-          text-align: left;
-          font-size: 12px;
-          color: var(--ink3);
-          cursor: pointer;
-          transition: all 0.15s;
-        }
-        .option-btn:last-child { margin-bottom: 0; }
-        .option-btn:hover:not(.locked) {
-          background: var(--surface);
-          border-color: var(--border2);
-          color: var(--ink2);
-        }
-        .option-btn.selected {
-          background: rgba(200,75,12,0.12);
-          border-color: rgba(200,75,12,0.35);
-          color: var(--accent);
-        }
-        .option-btn.locked { cursor: default; }
-        .opt-id {
-          font-family: var(--mono);
-          font-size: 9px;
-          font-weight: 700;
-          color: var(--ink3);
-          margin-top: 1px;
-          flex-shrink: 0;
-        }
-        .option-btn.selected .opt-id { color: var(--accent); }
-
-        /* Revealed anim */
-        .revealed-anim {
-          animation: slideIn 0.35s cubic-bezier(0.16,1,0.3,1) forwards;
-        }
-        @keyframes slideIn {
-          from { opacity: 0; transform: translateY(8px); }
+        @keyframes hp-up {
+          from { opacity: 0; transform: translateY(22px); }
           to   { opacity: 1; transform: translateY(0); }
         }
-
-        /* ── Ticker ── */
-        .hp-ticker-section {
-          padding: 0 0 40px;
-          overflow: hidden;
-        }
-        .ticker-caption {
-          font-family: var(--mono);
-          font-size: 10px;
-          font-weight: 500;
-          letter-spacing: 0.05em;
-          color: var(--ink3);
-          text-align: center;
-          margin-bottom: 16px;
-        }
-        .ticker-wrap {
-          position: relative;
-          overflow: hidden;
-        }
-        .ticker-wrap::before, .ticker-wrap::after {
-          content: '';
-          position: absolute;
-          top: 0; bottom: 0; width: 80px; z-index: 2; pointer-events: none;
-        }
-        .ticker-wrap::before { left: 0; background: linear-gradient(to right, var(--bg), transparent); }
-        .ticker-wrap::after  { right: 0; background: linear-gradient(to left, var(--bg), transparent); }
-        .ticker-inner {
-          display: flex;
-          gap: 10px;
-          width: max-content;
-          animation: ticker 30s linear infinite;
+        @keyframes hp-pulse {
+          0%,100% { opacity:1; transform:scale(1); }
+          50%      { opacity:0.45; transform:scale(0.65); }
         }
         @keyframes ticker {
           from { transform: translateX(0); }
           to   { transform: translateX(-50%); }
         }
-        .ticker-chip {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          padding: 6px 14px 6px 8px;
-          background: var(--surface);
-          border: 1px solid var(--border);
-          border-radius: 999px;
-          flex-shrink: 0;
+        @keyframes badge-pulse {
+          0%,100% { box-shadow: 0 0 20px rgba(252,128,25,0.55); }
+          50%      { box-shadow: 0 0 38px rgba(252,128,25,0.95); }
         }
-        .ticker-abbr {
-          width: 24px; height: 24px;
-          border-radius: 6px;
-          font-family: var(--mono);
-          font-size: 8px;
-          font-weight: 800;
-          color: white;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          letter-spacing: 0;
-        }
-        .ticker-name {
-          font-size: 12px;
-          font-weight: 500;
-          color: var(--ink2);
-        }
-
-        /* ── Salary section ── */
-        .hp-salary-section {
-          padding: 72px 24px;
-          background: var(--surface);
-          border-top: 1px solid var(--border);
-          border-bottom: 1px solid var(--border);
-        }
-        .hp-section-inner {
-          max-width: 760px;
-          margin: 0 auto;
-        }
-        .hp-section-inner.narrow { max-width: 520px; }
-        .section-eyebrow {
-          font-family: var(--mono);
-          font-size: 10px;
-          font-weight: 700;
-          letter-spacing: 0.1em;
-          text-transform: uppercase;
-          color: var(--ink3);
-          margin-bottom: 16px;
-        }
-        .section-eyebrow.centered { text-align: center; }
-        .hp-h2 {
-          font-family: var(--serif);
-          font-size: clamp(1.7rem, 4vw, 2.4rem);
-          color: var(--ink);
-          line-height: 1.15;
-          letter-spacing: -0.02em;
-          margin-bottom: 12px;
-        }
-        .hp-section-sub {
-          font-size: 14px;
-          color: var(--ink2);
-          line-height: 1.6;
-          margin-bottom: 36px;
-          max-width: 540px;
-        }
-
-        /* Salary widget */
-        .salary-widget {
-          background: var(--bg);
-          border: 1px solid var(--border);
-          border-radius: 16px;
-          padding: 24px;
-          margin-bottom: 24px;
-        }
-        .salary-row {
-          display: flex;
-          align-items: center;
-          gap: 14px;
-          margin-bottom: 14px;
-        }
-        .salary-row:last-child { margin-bottom: 0; }
-        .salary-label {
-          font-size: 12px;
-          color: var(--ink2);
-          width: 200px;
-          flex-shrink: 0;
-        }
-        @media (max-width: 560px) { .salary-label { width: 130px; font-size: 11px; } }
-        .salary-track {
-          flex: 1;
-          height: 8px;
-          background: var(--surface);
-          border-radius: 999px;
-          overflow: hidden;
-        }
-        .salary-fill {
-          height: 100%;
-          border-radius: 999px;
-        }
-        .salary-value {
-          font-family: var(--mono);
-          font-size: 12px;
-          font-weight: 700;
-          width: 40px;
-          text-align: right;
-          flex-shrink: 0;
-        }
-        .salary-divider {
-          height: 1px;
-          background: var(--border);
-          margin: 16px 0;
-        }
-        .salary-insight {
-          display: flex;
-          gap: 12px;
-          align-items: flex-start;
-          padding: 16px 20px;
-          background: rgba(200,75,12,0.06);
-          border: 1px solid rgba(200,75,12,0.18);
-          border-radius: 12px;
-        }
-        .insight-arrow {
-          font-size: 20px;
-          color: var(--accent);
-          flex-shrink: 0;
-          margin-top: 1px;
-        }
-        .salary-insight p {
-          font-size: 13px;
-          color: var(--ink);
-          line-height: 1.65;
-          margin: 0;
-        }
-
-        /* ── Phases ── */
-        .hp-phases-section {
-          padding: 72px 24px;
-        }
-        .phases-grid {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 16px;
-          margin-bottom: 40px;
-        }
-        @media (max-width: 760px) {
-          .phases-grid { grid-template-columns: 1fr; }
-        }
-        .phase-card {
-          background: var(--surface);
-          border: 1px solid var(--border);
-          border-radius: 14px;
-          padding: 20px;
-          position: relative;
-          overflow: hidden;
-          transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .phase-card:hover {
+        .hp-cta-primary:hover {
           transform: translateY(-2px);
-          box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+          box-shadow: 0 0 0 1px rgba(252,128,25,0.6), 0 12px 44px rgba(252,128,25,0.5) !important;
         }
-        .phase-bar {
-          position: absolute;
-          bottom: 0; left: 0; right: 0;
-          height: 3px;
-          opacity: 0.6;
+        @media (max-width: 600px) {
+          section { padding-left: 16px !important; padding-right: 16px !important; }
         }
-        .phase-header {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          margin-bottom: 14px;
-        }
-        .phase-num {
-          font-family: var(--mono);
-          font-size: 11px;
-          font-weight: 800;
-        }
-        .phase-tag {
-          font-family: var(--mono);
-          font-size: 9px;
-          font-weight: 700;
-          letter-spacing: 0.07em;
-          padding: 3px 8px;
-          border-radius: 999px;
-        }
-        .phase-time {
-          font-family: var(--mono);
-          font-size: 10px;
-          color: var(--ink3);
-          margin-left: auto;
-        }
-        .phase-title {
-          font-family: var(--serif);
-          font-size: 1.05rem;
-          color: var(--ink);
-          line-height: 1.3;
-          margin-bottom: 8px;
-        }
-        .phase-desc {
-          font-size: 12px;
-          color: var(--ink2);
-          line-height: 1.6;
-        }
-        .phases-cta {
-          text-align: center;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 10px;
-        }
-
-        /* ── Coming soon ── */
-        .hp-coming-section {
-          padding: 0 24px 80px;
-        }
-        .coming-card {
-          background: var(--surface);
-          border: 1px dashed var(--border2);
-          border-radius: 16px;
-          padding: 28px;
-          text-align: center;
-        }
-        .coming-text {
-          font-size: 14px;
-          color: var(--ink2);
-          margin-bottom: 16px;
-          line-height: 1.6;
-        }
-        .coming-link {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          font-size: 13px;
-          font-weight: 500;
-          color: var(--accent);
-          text-decoration: none;
-          transition: gap 0.15s;
-        }
-        .coming-link:hover { gap: 10px; }
       `}</style>
     </div>
   );
-};
-
-export default HomePage;
+}

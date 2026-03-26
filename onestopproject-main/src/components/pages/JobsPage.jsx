@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useDataFetching } from '../../hooks/useDataFetching.js';
-import { BookOpen, Sparkles, ArrowRight, X } from 'lucide-react';
+import { BookOpen, Sparkles, ArrowRight, X, Zap, Brain } from 'lucide-react';
 
 import SearchAndTabs from '../layout/SearchAndTabs';
 import JobCard from '../cards/JobCard.jsx';
@@ -28,6 +28,74 @@ const getItemsPerPage = () =>
   (typeof window !== 'undefined' && window.innerWidth < 768 ? 6 : 10);
 
 const shuffleOnce = (arr) => [...arr].sort(() => Math.random() - 0.5);
+
+// ── Flywheel Banner — pattern interrupt between search and job grid ───────────
+const FlywheelBanner = ({ onDismiss, dismissed }) => {
+  if (dismissed) return null;
+  return (
+    <div className="mb-5 rounded-2xl overflow-hidden" style={{
+      background: 'rgba(252,128,25,0.05)',
+      border: '1px solid rgba(252,128,25,0.18)',
+      position: 'relative',
+    }}>
+      {/* Orange top rule */}
+      <div style={{ height: 2, background: 'linear-gradient(90deg, var(--phase1), transparent)' }} />
+
+      <div className="flex items-start gap-4 p-4 md:p-5">
+        {/* Icon */}
+        <div className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center"
+          style={{ background: 'rgba(252,128,25,0.12)', border: '1px solid rgba(252,128,25,0.25)' }}>
+          <Zap size={18} style={{ color: 'var(--phase1)' }} />
+        </div>
+
+        {/* Text */}
+        <div className="flex-1 min-w-0">
+          <p className="font-mono text-[9px] font-bold tracking-widest uppercase mb-1" style={{ color: 'var(--phase1)' }}>
+            Most analysts here won't get a callback
+          </p>
+          <p className="text-sm font-semibold text-ink mb-1 leading-snug">
+            SQL skills got you to the job page. Problem-solving skills get you the interview.
+          </p>
+          <p className="text-xs text-ink2 leading-relaxed mb-3">
+            Top firms like Swiggy, Uber, and Razorpay hire for{' '}
+            <strong className="text-ink font-medium">structured thinking</strong>,{' '}
+            not just query speed. See what separates the top 1% — free, 45 minutes.
+          </p>
+          <div className="flex items-center gap-3 flex-wrap">
+            <a href="/"
+              className="inline-flex items-center gap-1.5 text-xs font-bold transition-all"
+              style={{ color: 'var(--phase1)', textDecoration: 'none' }}
+              onMouseEnter={e => e.currentTarget.style.gap = '8px'}
+              onMouseLeave={e => e.currentTarget.style.gap = '6px'}
+            >
+              See why you're getting rejected
+              <ArrowRight size={12} />
+            </a>
+            <span style={{ color: 'var(--ink3)', fontSize: 11 }}>·</span>
+            <a href="/case-study/swiggy"
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-ink2 hover:text-ink transition-colors"
+              style={{ textDecoration: 'none' }}
+            >
+              <Brain size={11} />
+              Try the Swiggy case study
+            </a>
+          </div>
+        </div>
+
+        {/* Dismiss */}
+        <button onClick={onDismiss}
+          className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center transition-colors"
+          style={{ background: 'rgba(255,255,255,0.06)' }}
+          aria-label="Dismiss"
+          onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.12)'}
+          onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
+        >
+          <X size={11} style={{ color: 'var(--ink3)' }} />
+        </button>
+      </div>
+    </div>
+  );
+};
 
 // ── Completion Banner — shown to users who finished a case study ───────────────
 const CompletionBanner = ({ onDismiss }) => (
@@ -91,6 +159,9 @@ const JobsPage = () => {
   const [isJobFilterModalOpen, setIsJobFilterModalOpen]         = useState(false);
   const [isReferralFilterModalOpen, setIsReferralFilterModalOpen] = useState(false);
   const [showCompletionBanner, setShowCompletionBanner]         = useState(false);
+  const [flywheelDismissed, setFlywheelDismissed]               = useState(() => {
+    try { return !!sessionStorage.getItem('osc_flywheel_dismissed'); } catch { return false; }
+  });
 
   const [activeJobFilters, setActiveJobFilters]           = useState({ titles: [] });
   const [activeReferralFilters, setActiveReferralFilters] = useState({ roles: [] });
@@ -111,6 +182,11 @@ const JobsPage = () => {
   const handleDismissBanner = () => {
     setShowCompletionBanner(false);
     try { sessionStorage.setItem('osc_banner_dismissed', '1'); } catch (_) {}
+  };
+
+  const handleDismissFlywheelBanner = () => {
+    setFlywheelDismissed(true);
+    try { sessionStorage.setItem('osc_flywheel_dismissed', '1'); } catch (_) {}
   };
 
   useEffect(() => {
@@ -273,6 +349,16 @@ const JobsPage = () => {
           onSearchChange={(e) => setSearchQuery(e.target.value)}
           onFilterClick={handleFilterClick}
         />
+
+        {/* Flywheel nudge — only show on jobs tab, dismissible per session */}
+        {activeTab === 'jobs' && (
+          <div className="mt-4">
+            <FlywheelBanner
+              dismissed={flywheelDismissed}
+              onDismiss={handleDismissFlywheelBanner}
+            />
+          </div>
+        )}
 
         <WhatsAppCalloutBar />
 
