@@ -30,35 +30,51 @@ function SchemaTable({ name }) {
   );
 }
 
-export default function SchemaPanel({ tables, compact = false }) {
+export default function SchemaPanel({ tables, compact = false, dark = false }) {
   const [open, setOpen] = useState(false);
   const names = tables || Object.keys(SCHEMAS);
   return (
-    <div className="border border-border rounded-lg overflow-hidden mb-2">
+    <div className="rounded-lg overflow-hidden mb-3" style={{
+      border: `1px solid ${dark ? '#1E2330' : 'var(--border)'}`,
+    }}>
       <button
         onClick={() => setOpen(v => !v)}
-        className="w-full flex items-center justify-between px-3 py-2 bg-surface2 hover:bg-border text-left transition-colors"
+        className="w-full flex items-center justify-between px-3 py-2 text-left transition-colors"
+        style={{ background: dark ? '#13161D' : 'var(--surface2)' }}
+        onMouseEnter={e => e.currentTarget.style.background = dark ? '#191C24' : 'var(--border)'}
+        onMouseLeave={e => e.currentTarget.style.background = dark ? '#13161D' : 'var(--surface2)'}
       >
-        <span className="font-mono text-[10px] font-semibold text-ink2 tracking-widest uppercase">
+        <span className="font-mono text-[10px] font-semibold tracking-widest uppercase"
+          style={{ color: dark ? '#4A5568' : 'var(--ink2)' }}>
           Schema &amp; Tables · prod.swiggy · BigQuery
         </span>
-        <span className="text-ink3 text-xs">{open ? '▲' : '▶'}</span>
+        <span className="text-xs" style={{ color: dark ? '#4A5568' : 'var(--ink3)' }}>
+          {open ? '▲' : '▶'}
+        </span>
       </button>
       {open && (
-        <div className={`p-3 ${compact ? 'bg-sql-bg' : 'bg-surface'}`}>
+        <div className={`p-3 ${compact ? '' : ''}`} style={{
+          background: dark ? '#0C0E13' : 'var(--surface)',
+        }}>
           {compact ? (
-            <div className="font-mono text-[10px] text-sql-text leading-loose">
-              {names.slice(0, 4).map(n => (
+            <div className="font-mono text-[10px] leading-loose" style={{ color: dark ? '#C8D0E8' : 'var(--ink2)' }}>
+              {names.slice(0, 5).map(n => (
                 <div key={n}>
-                  <span className="text-sql-str font-semibold">{n}</span>
-                  <span className="text-sql-comment ml-2">{SCHEMAS[n]?.cols.map(c => c.n).join(', ')}</span>
+                  <span className="font-semibold" style={{ color: dark ? '#A6E3A1' : 'var(--accent)' }}>{n}</span>
+                  <span className="ml-2" style={{ color: dark ? '#4A5568' : 'var(--ink3)' }}>
+                    {SCHEMAS[n]?.cols.map(c => c.n).join(' · ')}
+                  </span>
                 </div>
               ))}
-              <div className="text-sql-comment mt-1">+ more explore tables available</div>
+              {names.length > 5 && (
+                <div style={{ color: dark ? '#4A5568' : 'var(--ink3)' }}>
+                  + {names.length - 5} more tables
+                </div>
+              )}
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {names.map(n => <SchemaTable key={n} name={n} />)}
+              {names.map(n => <SchemaTable key={n} name={n} dark={dark} />)}
             </div>
           )}
         </div>

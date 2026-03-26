@@ -49,35 +49,57 @@ export default function Phase3Section({ onDone }) {
   };
 
   return (
-    <div className="px-5 pb-6">
-      <div className="flex items-center gap-3 py-6">
-        <span className="font-mono text-[10px] font-semibold tracking-widest text-phase3 uppercase">Phase 3 · Execute</span>
-        <div className="flex-1 h-px bg-border" />
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full font-mono text-[9px] font-semibold border bg-phase3-bg text-phase3 border-phase3-border">Open workbench</span>
+    <div>
+      {/* ── Open workbench header ── */}
+      <div className="border-b px-6 py-6 mb-6"
+        style={{ background: 'rgba(61,214,140,0.04)', borderColor: 'rgba(61,214,140,0.15)' }}>
+        <div className="max-w-3xl mx-auto">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="flex items-center gap-2 px-3 py-1 rounded-full"
+              style={{ background: 'rgba(61,214,140,0.1)', border: '1px solid rgba(61,214,140,0.25)' }}>
+              <span className="font-mono text-[10px] font-bold uppercase tracking-widest" style={{ color: '#3DD68C' }}>
+                Phase 3 · Execute
+              </span>
+            </div>
+            <span className="font-mono text-[10px]" style={{ color: 'var(--ink3)' }}>Open workbench · No hints</span>
+          </div>
+          <h2 className="font-serif text-2xl font-semibold mb-2" style={{ color: 'var(--ink)' }}>
+            New restaurants are getting top visibility.
+            <span className="ml-2 font-mono text-lg font-bold" style={{ color: '#3DD68C' }}>Users are churning.</span>
+          </h2>
+          <p className="text-sm" style={{ color: 'var(--ink2)' }}>
+            Quantify it. Model the fix. Design the health score. Write the recommendation. All 9 tables available.
+          </p>
+        </div>
       </div>
 
-      <ArjunVoice label="Phase 3 — No step structure" phase={3}>
-        No guided steps. No hints unless you ask for them. This is the open workbench — closest to a real BigQuery session. Four tasks. All 9 tables available. You design the analysis.
-      </ArjunVoice>
+      <div className="px-5 pb-6">
+        <ArjunVoice label="Phase 3 — No step structure" variant="p3">
+          No guided steps. No hints unless you ask for them. This is the open workbench — closest to a real BigQuery session. Four tasks. You design the analysis.
+        </ArjunVoice>
 
-      <SchemaPanel compact={true} />
+        <SchemaPanel compact={true} />
 
-      {P3_TASKS.map((task) => (
-        <Task
-          key={task.id}
-          task={task}
-          onDone={(val) => handleTaskDone(task.id, val)}
-        />
-      ))}
+        {P3_TASKS.map((task) => (
+          <Task
+            key={task.id}
+            task={task}
+            onDone={(val) => handleTaskDone(task.id, val)}
+          />
+        ))}
 
-      {completedCount >= P3_TASKS.length && (
-        <button
-          onClick={() => onDone(answers)}
-          className="w-full py-3.5 bg-phase3 text-white font-medium rounded-xl text-sm hover:bg-green-800 hover:-translate-y-px transition-all"
-        >
-          Get your full debrief + portfolio →
-        </button>
-      )}
+        {completedCount >= P3_TASKS.length && (
+          <button
+            onClick={() => onDone(answers)}
+            className="w-full py-4 text-white font-semibold rounded-xl text-sm btn-depress transition-all hover:-translate-y-px"
+            style={{ background: '#1A6B45', boxShadow: '0 4px 20px rgba(61,214,140,0.2)' }}
+            onMouseEnter={e => e.currentTarget.style.background = '#135435'}
+            onMouseLeave={e => e.currentTarget.style.background = '#1A6B45'}
+          >
+            Get your full debrief + portfolio →
+          </button>
+        )}
+      </div>
     </div>
   );
 }

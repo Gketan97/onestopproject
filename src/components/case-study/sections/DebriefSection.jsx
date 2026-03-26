@@ -84,32 +84,55 @@ export default function DebriefSection({ state }) {
 
   return (
     <div className="px-5 pb-10">
-      <div className="flex items-center gap-3 py-6">
-        <span className="font-mono text-[10px] font-semibold tracking-widest text-green uppercase">Debrief</span>
-        <div className="flex-1 h-px bg-border" />
-      </div>
 
-      {/* Complete badge */}
-      <div className="flex items-center gap-3 p-4 bg-green-bg border border-green-border rounded-xl mb-5">
-        <div className="w-9 h-9 rounded-full bg-green flex items-center justify-center text-white font-bold text-sm flex-shrink-0">✓</div>
-        <div>
-          <p className="text-[14px] font-semibold text-green">Case 01 complete</p>
-          <p className="text-[12px] text-ink2">{completedPhases.includes(3) ? 'All 3 phases' : 'Phases 1 & 2'} · {behavioursDone}/8 analytical behaviours</p>
-        </div>
-      </div>
-
-      {/* Stats grid */}
-      <div className="grid grid-cols-3 gap-2.5 mb-5">
-        {[
-          { label: 'Score', val: score, color: score >= 75 ? 'text-green' : score >= 50 ? 'text-amber' : 'text-red' },
-          { label: 'Queries', val: p2QueryCount || 0, color: 'text-ink' },
-          { label: 'Phase 2', val: fmt(p2ElapsedSeconds || 0), color: 'text-ink' },
-        ].map(({ label, val, color }) => (
-          <div key={label} className="text-center p-3 bg-surface border border-border rounded-xl">
-            <p className={`font-mono text-xl font-bold ${color}`}>{val}</p>
-            <p className="text-[10px] text-ink3 mt-0.5">{label}</p>
+      {/* ── Analyst Stats Splash ── */}
+      <div className="splash-in rounded-2xl overflow-hidden mb-6 mt-4"
+        style={{ background: 'linear-gradient(135deg, #0D1120 0%, #111820 100%)', border: '1px solid rgba(79,128,255,0.2)' }}>
+        <div className="px-6 pt-6 pb-4 border-b" style={{ borderColor: 'rgba(79,128,255,0.15)' }}>
+          <div className="flex items-center gap-2 mb-4">
+            <span className="font-mono text-[10px] font-bold tracking-widest uppercase" style={{ color: '#4F80FF' }}>
+              Case 01 · Swiggy Orders Investigation
+            </span>
+            <span className="font-mono text-[10px]" style={{ color: '#4A5068' }}>· Complete</span>
           </div>
-        ))}
+          <div className="flex items-end gap-4">
+            <div>
+              <div className="font-serif text-5xl font-semibold mb-1"
+                style={{ color: score >= 75 ? '#3DD68C' : score >= 50 ? '#F5A623' : '#FF5A65' }}>
+                {score}
+              </div>
+              <p className="font-mono text-[11px]" style={{ color: '#4A5068' }}>/ 100 analyst score</p>
+            </div>
+            <div className="flex-1 pb-1">
+              <div className="h-2 rounded-full mb-1" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                <div className="h-2 rounded-full transition-all duration-1000"
+                  style={{
+                    width: `${score}%`,
+                    background: score >= 75 ? '#3DD68C' : score >= 50 ? '#F5A623' : '#FF5A65',
+                    boxShadow: `0 0 12px ${score >= 75 ? '#3DD68C' : score >= 50 ? '#F5A623' : '#FF5A65'}60`
+                  }} />
+              </div>
+              <p className="font-mono text-[10px]" style={{ color: '#4A5068' }}>
+                {score >= 75 ? 'Strong performance — top 25%' : score >= 50 ? 'Solid — keep practising' : 'Good start — try again'}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-4 divide-x" style={{ borderColor: 'rgba(79,128,255,0.1)' }}>
+          {[
+            { label: 'Behaviours', val: `${behavioursDone}/8`,   sub: 'demonstrated',  color: behavioursDone >= 6 ? '#3DD68C' : '#F5A623' },
+            { label: 'Queries',    val: p2QueryCount || 0,        sub: 'SQL written',    color: '#E8EAF0' },
+            { label: 'Time',       val: fmt(p2ElapsedSeconds||0), sub: 'Phase 2',        color: '#E8EAF0' },
+            { label: 'Phases',     val: completedPhases.length,   sub: 'completed',      color: completedPhases.length >= 3 ? '#3DD68C' : '#4F80FF' },
+          ].map(({ label, val, sub, color }, idx) => (
+            <div key={label} className="stat-counter text-center px-4 py-4" style={{ borderColor: 'rgba(79,128,255,0.1)', animationDelay: `${idx * 150}ms` }}>
+              <div className="font-mono text-xl font-bold mb-0.5" style={{ color }}>{val}</div>
+              <div className="font-mono text-[9px] uppercase tracking-widest" style={{ color: '#4A5068' }}>{label}</div>
+              <div className="text-[10px] mt-0.5" style={{ color: '#4A5068' }}>{sub}</div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Behaviours */}

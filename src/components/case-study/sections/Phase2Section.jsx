@@ -283,32 +283,52 @@ export default function Phase2Section({
   }
 
   return(
-    <div>
+    <div style={{ background: '#0D0F14', minHeight: '100vh' }}>
 
-      <div className="bg-phase2-bg border-b border-phase2-border px-6 py-8 mb-6">
+      {/* ── War-room incident banner ── */}
+      <div className="incident-banner px-6 py-5 mb-6">
         <div className="max-w-3xl mx-auto">
 
-          <div className="flex items-center gap-3 mb-3">
-            <span className="inline-flex px-2.5 py-1 rounded-full font-mono text-[10px] bg-white text-phase2 border border-phase2-border">
-              Phase 2 · Practice
-            </span>
-
-            <span className="font-mono text-[10px] text-ink3">~25 min</span>
-
-            <div className="ml-auto flex items-center gap-3">
-              <span className="font-mono text-[11px] text-ink3">{fmtElapsed}</span>
-              <span className="font-mono text-[11px] text-ink3">
-                {queryCount} {queryCount===1?'query':'queries'}
+          <div className="flex items-center gap-3 mb-4 flex-wrap">
+            {/* Live incident badge */}
+            <div className="flex items-center gap-2 px-3 py-1 rounded-full"
+              style={{ background: 'rgba(255,90,101,0.12)', border: '1px solid rgba(255,90,101,0.3)' }}>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#FF5A65] alert-pulse" />
+              <span className="font-mono text-[10px] font-bold text-[#FF5A65] uppercase tracking-widest">
+                Incident · Active
               </span>
+            </div>
+            <span className="font-mono text-[10px]" style={{ color: '#4A5568' }}>
+              Opened Mon 4:47 PM · Severity: High · Assigned to you
+            </span>
+            <div className="ml-auto flex items-center gap-5">
+              <div className="text-right">
+                <span className="font-mono text-[9px] uppercase tracking-widest block mb-0.5" style={{ color: '#4A5568' }}>elapsed</span>
+                <span className="font-mono text-[16px] font-bold tabular-nums"
+                  style={{ color: parseInt(fmtElapsed) >= 20 ? '#FF5A65' : '#E2E8F0' }}>
+                  {fmtElapsed}
+                </span>
+              </div>
+              <div className="text-right">
+                <span className="font-mono text-[9px] uppercase tracking-widest block mb-0.5" style={{ color: '#4A5568' }}>queries</span>
+                <span className="font-mono text-[16px] font-bold tabular-nums" style={{ color: '#E2E8F0' }}>
+                  {queryCount}
+                </span>
+              </div>
             </div>
           </div>
 
-          <h2 className="text-ink text-2xl font-semibold mb-2">
-            Your investigation — same company, different problem
-          </h2>
+          {/* Metric headline */}
+          <div className="flex items-baseline gap-3 mb-2">
+            <h2 className="font-serif text-2xl font-semibold" style={{ color: '#E2E8F0' }}>
+              North Bangalore · Biryani orders
+            </h2>
+            <span className="font-mono text-2xl font-bold text-[#FF5A65]">−34% WoW</span>
+          </div>
 
-          <p className="text-ink2 text-sm max-w-xl">
-            North Bangalore Biryani orders are 34% below last Monday.
+          <p className="text-sm" style={{ color: '#64748B' }}>
+            Leadership review in 2 days. Priya needs root cause by EOD.
+            Find the cause. Write the VP message.
           </p>
 
         </div>
@@ -316,9 +336,9 @@ export default function Phase2Section({
 
       <div className="px-6 pb-10 max-w-3xl mx-auto">
 
-        <StepProgress currentIdx={stepIdx}/>
-        <MissionBrief priyaMessages={priyaMessages}/>
-        <SchemaPanel compact={true} />
+        <StepProgress currentIdx={stepIdx} dark={true}/>
+        <MissionBrief priyaMessages={priyaMessages} dark={true}/>
+        <SchemaPanel compact={true} dark={true} />
 
         {P2_STEP_IDS.slice(0,stepIdx+1).map((id,i)=>(
           <Step

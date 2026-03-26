@@ -6,6 +6,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "ship": "git add -A && git commit -m 'ship: $(date +%Y-%m-%d\\ %H:%M)' && git push origin main"
   },
   "dependencies": {
     "@duckdb/duckdb-wasm": "^1.29.0",

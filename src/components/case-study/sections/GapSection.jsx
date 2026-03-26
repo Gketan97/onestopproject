@@ -64,55 +64,89 @@ export default function GapSection({ onDone }) {
       )}
 
       {stage === 'loading' && (
-        <div className="flex items-center justify-center gap-3 py-8">
-          {[0, 1, 2].map(i => <span key={i} className="w-1.5 h-1.5 rounded-full bg-ink3 animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />)}
-          <span className="text-sm text-ink3 ml-1">Evaluating...</span>
+        <div className="rounded-xl p-6 text-center" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+          <div className="flex items-center justify-center gap-2 mb-3">
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center font-mono text-[9px] font-bold"
+              style={{ background: 'var(--phase1-bg)', color: 'var(--phase1)', border: '1px solid var(--phase1-border)' }}>
+              AJ
+            </div>
+            <span className="text-[13px] font-medium" style={{ color: 'var(--ink)' }}>Arjun is reading your answer</span>
+          </div>
+          <div className="flex items-center justify-center gap-1.5">
+            {[0,1,2].map(i => (
+              <span key={i} className="w-2 h-2 rounded-full animate-bounce"
+                style={{ background: 'var(--phase1)', animationDelay: `${i * 0.15}s` }} />
+            ))}
+          </div>
         </div>
       )}
 
       {stage === 'revealed' && result && (
         <div className="space-y-3">
-          {/* Your answer */}
-          <div className="border border-border rounded-xl overflow-hidden">
-            <div className="bg-surface2 px-4 py-2.5 flex items-center justify-between">
-              <p className="font-mono text-[9px] font-semibold text-ink3 tracking-widest uppercase">Your answer</p>
-              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full font-mono text-[9px] font-semibold border ${result.isStrong ? 'bg-green-bg text-green border-green-border' : 'bg-amber-bg text-amber border-amber-border'}`}>
-                {result.isStrong ? 'Strong' : 'Partial'}
-              </span>
+          {/* Score card */}
+          <div className="splash-in rounded-xl overflow-hidden" style={{ background: 'var(--ink)', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <div className="px-4 py-4 flex items-center justify-between">
+              <div>
+                <p className="font-mono text-[9px] uppercase tracking-widest mb-1" style={{ color: 'rgba(255,255,255,0.3)' }}>Your warm-up result</p>
+                <p className="font-serif text-2xl font-semibold"
+                  style={{ color: result.isStrong ? '#3DD68C' : '#F5A623' }}>
+                  {result.isStrong ? 'Strong answer' : 'Partial coverage'}
+                </p>
+              </div>
+              <div className="w-14 h-14 rounded-full flex items-center justify-center text-2xl border-2"
+                style={{
+                  borderColor: result.isStrong ? '#3DD68C' : '#F5A623',
+                  background: result.isStrong ? 'rgba(61,214,140,0.1)' : 'rgba(245,166,35,0.1)',
+                }}>
+                {result.isStrong ? '✓' : '◑'}
+              </div>
             </div>
-            <div className="px-4 py-3 text-sm text-ink italic leading-relaxed">{value}</div>
+            <div className="px-4 py-3 border-t" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+              <p className="text-sm italic leading-relaxed" style={{ color: 'rgba(255,255,255,0.6)' }}>{value}</p>
+            </div>
           </div>
 
-          {/* What's missing */}
-          <div className="bg-amber-bg border border-amber-border rounded-xl overflow-hidden">
-            <div className="px-4 py-2.5 border-b border-amber-border">
-              <p className="font-mono text-[9px] font-semibold text-amber tracking-widest uppercase mb-2">What's missing</p>
-              <p className="text-[12px] text-ink leading-relaxed italic">{result.isStrong ? MOCK.gap_strong.missed : MOCK.gap_weak.missed}</p>
-            </div>
-            {result.missing.length > 0 ? (
-              <div className="px-4 py-3 space-y-2">
-                {result.missing.map(c => (
-                  <div key={c.label}>
-                    <p className="text-[12px] font-semibold text-ink mb-0.5">{c.label}</p>
-                    <p className="text-[12px] text-ink2 leading-relaxed">{c.text}</p>
+          {/* Categories covered */}
+          <div className="grid grid-cols-2 gap-2">
+            {Object.entries(GAP_CATEGORIES).map(([key, cat]) => {
+              const covered = result.covered?.[key];
+              return (
+                <div key={key} className="rounded-xl p-3 block-enter"
+                  style={{
+                    background: covered ? 'rgba(61,214,140,0.06)' : 'rgba(255,90,101,0.06)',
+                    border: `1px solid ${covered ? 'rgba(61,214,140,0.2)' : 'rgba(255,90,101,0.2)'}`,
+                  }}>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span style={{ color: covered ? '#3DD68C' : '#FF5A65', fontSize: 14 }}>{covered ? '✓' : '×'}</span>
+                    <p className="font-mono text-[10px] font-bold" style={{ color: covered ? '#3DD68C' : '#FF5A65' }}>
+                      {cat.label}
+                    </p>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="px-4 py-3"><p className="text-[12px] text-green font-medium">You covered all categories — excellent.</p></div>
-            )}
+                  {!covered && <p className="text-[11px] leading-relaxed" style={{ color: 'var(--ink2)' }}>{cat.text}</p>}
+                </div>
+              );
+            })}
           </div>
 
           {/* Framework card */}
-          <div className="bg-phase1-bg border-2 border-phase1-border rounded-xl p-4">
-            <p className="font-mono text-[9px] font-semibold text-phase1 tracking-widest uppercase mb-2">The structure that separates ₹18L from ₹28L</p>
-            <p className="text-[13px] text-ink leading-relaxed">A senior analyst doesn't just list reasons — they structure into 4 categories, then rank by <strong>probability × testability</strong>. Platform friction is fastest to verify. Supply-side next. Demand-side last.</p>
+          <div className="rounded-xl p-4" style={{ background: 'var(--phase1-bg)', border: '2px solid var(--phase1-border)' }}>
+            <p className="font-mono text-[9px] font-semibold tracking-widest uppercase mb-2" style={{ color: 'var(--phase1)' }}>
+              The structure that separates ₹18L from ₹28L
+            </p>
+            <p className="text-[13px] leading-relaxed" style={{ color: 'var(--ink)' }}>
+              A senior analyst doesn't just list reasons — they structure into 4 categories, then rank by{' '}
+              <strong>probability × testability</strong>. Platform friction is fastest to verify. Supply-side next. Demand-side last.
+            </p>
           </div>
 
-          <button onClick={onDone} className="w-full py-3.5 bg-accent text-white font-medium rounded-xl text-sm hover:bg-accent-dark hover:-translate-y-px hover:shadow-accent transition-all">
+          <button onClick={onDone}
+            className="w-full py-3.5 text-white font-semibold rounded-xl text-sm btn-depress transition-all hover:-translate-y-px"
+            style={{ background: 'var(--accent)', boxShadow: '0 4px 20px rgba(200,75,12,0.28)' }}
+            onMouseEnter={e => e.currentTarget.style.background = 'var(--accent-dark)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'var(--accent)'}>
             Start the investigation →
           </button>
-          <p className="text-center text-ink3 text-xs">Free · No account · ~45 min</p>
+          <p className="text-center text-[11px]" style={{ color: 'var(--ink3)' }}>Free · No account · ~45 min</p>
         </div>
       )}
     </div>
