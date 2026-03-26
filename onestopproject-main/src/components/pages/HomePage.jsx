@@ -330,14 +330,14 @@ export default function HomePage() {
             marginBottom: 24,
             animation: 'hp-up 0.7s 0.08s both',
           }}>
-            SQL is the{' '}
+            The AI will pull the data.{' '}
             <span style={{ background: `linear-gradient(135deg, ${ORANGE}, #FF9E50)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-              entry requirement.
+              Can you make the decision?
             </span>
             <br />
-            Problem solving is the{' '}
+            In 2026, syntax is free.{' '}
             <span style={{ background: `linear-gradient(135deg, ${BLUE}, #A0C0FF)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-              competitive edge.
+              Strategy is expensive.
             </span>
           </h1>
 
@@ -358,7 +358,7 @@ export default function HomePage() {
 
           {/* CTAs */}
           <div style={{ display: 'flex', justifyContent: 'center', gap: 12, flexWrap: 'wrap', animation: 'hp-up 0.7s 0.24s both' }}>
-            <a href="/case-study/swiggy"
+            <a href="/strategy/swiggy"
               className="hp-cta-primary"
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: 8,
@@ -544,7 +544,7 @@ export default function HomePage() {
               <p style={{ fontSize: 15, color: 'var(--ink2)', maxWidth: 420, margin: '0 auto 36px', lineHeight: 1.7 }}>
                 One 45-minute investigation. A portfolio link for your next application. Results most analysts never learn in 3 years.
               </p>
-              <a href="/case-study/swiggy"
+              <a href="/strategy/swiggy"
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: 10,
                   padding: '16px 38px', borderRadius: 12,

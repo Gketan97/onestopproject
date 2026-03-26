@@ -62,7 +62,7 @@ const FlywheelBanner = ({ onDismiss, dismissed }) => {
             not just query speed. See what separates the top 1% — free, 45 minutes.
           </p>
           <div className="flex items-center gap-3 flex-wrap">
-            <a href="/"
+            <a href="/strategy/swiggy"
               className="inline-flex items-center gap-1.5 text-xs font-bold transition-all"
               style={{ color: 'var(--phase1)', textDecoration: 'none' }}
               onMouseEnter={e => e.currentTarget.style.gap = '8px'}

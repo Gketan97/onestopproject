@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, Briefcase, BookOpen } from 'lucide-react';
+import { Home, Briefcase, Zap } from 'lucide-react';
 
 const MobileNav = () => {
   const base = 'flex flex-col items-center justify-center flex-1 py-1 text-[10px] font-medium transition-colors duration-200';
@@ -25,13 +25,13 @@ const MobileNav = () => {
       </NavLink>
 
       <NavLink
-        to="/case-studies"
+        to="/strategy/swiggy"
         className={({ isActive }) =>
           `${base} ${isActive ? 'text-accent' : 'text-ink3 hover:text-ink2'}`
         }
       >
-        <BookOpen className="w-5 h-5 mb-0.5" />
-        <span>Cases</span>
+        <Zap className="w-5 h-5 mb-0.5" />
+        <span>Simulate</span>
       </NavLink>
     </nav>
   );

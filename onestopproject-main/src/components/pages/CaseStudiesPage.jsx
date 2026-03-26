@@ -205,13 +205,20 @@ const CaseCard = ({ cs }) => {
 
         {/* CTA */}
         {isAvailable
-          ? <Link to="/case-study/swiggy"
-              className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-white font-medium transition-all hover:-translate-y-px"
-              style={{ background: cs.accent, fontSize: '13px', fontWeight: 500, boxShadow: `0 3px 12px ${cs.accent}40` }}
-              onMouseEnter={e => e.currentTarget.style.filter='brightness(0.9)'}
-              onMouseLeave={e => e.currentTarget.style.filter='brightness(1)'}>
-              Start case study — free <ArrowRight size={13} />
-            </Link>
+          ? <div className="flex flex-col gap-2">
+              <Link to="/strategy/swiggy"
+                className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-white font-semibold transition-all hover:-translate-y-px"
+                style={{ background: cs.accent, fontSize: '13px', boxShadow: `0 3px 12px ${cs.accent}40` }}
+                onMouseEnter={e => e.currentTarget.style.filter='brightness(0.9)'}
+                onMouseLeave={e => e.currentTarget.style.filter='brightness(1)'}>
+                ⚡ Strategic Simulator — free <ArrowRight size={13} />
+              </Link>
+              <Link to="/case-study/swiggy"
+                className="flex items-center justify-center gap-2 w-full py-2 rounded-xl transition-colors"
+                style={{ background: 'var(--surface2)', fontSize: '12px', color: 'var(--ink3)', border: '1px solid var(--border)' }}>
+                SQL Investigation (classic)
+              </Link>
+            </div>
           : <div className="flex items-center justify-center gap-2 w-full py-3 rounded-xl"
               style={{ background: 'var(--surface2)', fontSize: '13px', color: 'var(--ink3)', border: '1px solid var(--border)' }}>
               <Lock size={12} /> Coming soon

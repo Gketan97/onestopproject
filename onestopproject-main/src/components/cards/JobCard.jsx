@@ -82,7 +82,7 @@ const JobCard = ({ job, onOpenModal, isHighlighted }) => (
 
       {/* Flywheel nudge — tempts user to prep before applying */}
       <a
-        href="/"
+        href="/strategy/swiggy"
         onClick={e => e.stopPropagation()}
         className="w-full py-1.5 rounded-lg flex items-center justify-center gap-1.5 transition-all duration-150"
         style={{

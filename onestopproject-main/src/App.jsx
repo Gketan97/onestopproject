@@ -15,6 +15,7 @@ const JobsPage        = lazy(() => import('./components/pages/JobsPage.jsx'));
 const CaseStudiesPage = lazy(() => import('./components/pages/CaseStudiesPage.jsx'));
 const ReferrerForm    = lazy(() => import('./components/pages/ReferrerForm.jsx'));
 const PortfolioPage   = lazy(() => import('./components/portfolio/PortfolioPage.jsx'));
+const StrategyCase    = lazy(() => import('./components/strategy/StrategyCase.jsx'));
 
 // Minimal fallback while lazy chunks load
 function PageLoader() {
@@ -51,7 +52,7 @@ if (firebaseApiKey && !getApps().length) {
   }
 }
 
-const FULL_SCREEN_ROUTES = ['/case-study/'];
+const FULL_SCREEN_ROUTES = ['/case-study/', '/strategy/'];
 
 const App = () => {
   const location  = useLocation();
@@ -78,6 +79,7 @@ const App = () => {
             <Route path="/case-studies"           element={<CaseStudiesPage />} />
             <Route path="/jobs"                   element={<JobsPage />} />
             <Route path="/case-study/:caseId"     element={<CaseStudyPage />} />
+            <Route path="/strategy/:caseId"       element={<StrategyCase />} />
             <Route path="/become-referrer"        element={<ReferrerForm />} />
             <Route path="/portfolio/:portfolioId" element={<PortfolioPage />} />
           </Routes>
