@@ -6,6 +6,8 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCaseState } from './hooks/useCaseState.js';
 import ProgressStrip from './shared/ProgressStrip.jsx';
+import PremiumShell from '../ui/shell/PremiumShell.jsx';
+import DataPill from '../ui/shell/DataPill.jsx';
 
 import LandingSection    from './sections/LandingSection.jsx';
 import GapSection        from './sections/GapSection.jsx';
@@ -250,9 +252,29 @@ export default function SwiggyCase() {
     }
   };
 
+  // Pill label for current section
+  const sectionPillLabel =
+    state.section === 'landing' || state.section === 'gap' ? 'Case 01 · Free'
+    : state.section === 'phase1' || state.section === 'p1summary' ? 'Phase 1 · Watch'
+    : state.section === 'phase2' || state.section === 'paywall' ? 'Phase 2 · Practice'
+    : state.section === 'phase3' ? 'Phase 3 · Execute'
+    : 'Complete';
+
+  const sectionPillVariant =
+    state.section === 'phase2' || state.section === 'paywall' ? 'running'
+    : state.section === 'phase3' ? 'complete'
+    : state.section === 'debrief' ? 'complete'
+    : 'neutral';
+
+  const shellProps = isDark
+    ? { showOrbs: true, showGrid: true }
+    : { showOrbs: false, showGrid: false, style: { background: 'var(--bg)' } };
+
   return (
-    <div className={`min-h-screen font-sans phase-bg-transition ${isDark ? 'investigation-mode' : ''}`}
-      style={{ background: isDark ? '#0D0F14' : 'var(--bg)' }}>
+    <PremiumShell
+      className={`font-sans phase-bg-transition ${isDark ? 'investigation-mode' : ''}`}
+      {...shellProps}
+    >
 
       {/* Phase transition splash */}
       {splash && (
@@ -286,18 +308,7 @@ export default function SwiggyCase() {
               Incident open
             </span>
           )}
-          <span className="inline-flex items-center px-2.5 py-1 rounded-full font-mono text-[10px] font-semibold border"
-            style={{
-              background: isDark ? 'rgba(255,255,255,0.05)' : 'var(--surface)',
-              color: 'var(--ink2)',
-              borderColor: 'var(--border)',
-            }}>
-            {state.section === 'landing' || state.section === 'gap' ? 'Case 01 · Free'
-              : state.section === 'phase1' || state.section === 'p1summary' ? 'Phase 1 · Watch'
-              : state.section === 'phase2' || state.section === 'paywall' ? 'Phase 2 · Practice'
-              : state.section === 'phase3' ? 'Phase 3 · Execute'
-              : 'Complete'}
-          </span>
+          <DataPill label={sectionPillLabel} variant={sectionPillVariant} />
         </div>
       </div>
 
@@ -342,6 +353,6 @@ export default function SwiggyCase() {
           }
         </motion.div>
       </AnimatePresence>
-    </div>
+    </PremiumShell>
   );
 }

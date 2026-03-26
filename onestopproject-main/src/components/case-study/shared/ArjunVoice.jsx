@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import ArjunAvatar from '../../ui/shell/ArjunAvatar.jsx';
 
 const PHASE_STYLES = {
   p1:      'border-phase1 bg-phase1-bg',
@@ -31,10 +32,15 @@ export default function ArjunVoice({ children, label = 'ARJUN', variant, phase, 
         transition: `opacity 0.35s cubic-bezier(0.16,1,0.3,1) ${delay}ms, transform 0.35s cubic-bezier(0.16,1,0.3,1) ${delay}ms`,
       }}
     >
-      <p className={`font-mono text-[9px] font-bold tracking-widest uppercase mb-1.5 ${LABEL_STYLES[resolvedVariant] || LABEL_STYLES.p1}`}>
-        {label}
-      </p>
-      <p className="text-sm leading-relaxed italic" style={{ color: 'var(--ink)' }}>{children}</p>
+      <div className="flex items-start gap-3">
+        <ArjunAvatar mode="idle" size={28} showLabel={false} />
+        <div className="flex-1">
+          <p className={`font-mono text-[9px] font-bold tracking-widest uppercase mb-1.5 ${LABEL_STYLES[resolvedVariant] || LABEL_STYLES.p1}`}>
+            {label}
+          </p>
+          <p className="text-sm leading-relaxed italic" style={{ color: 'var(--ink)' }}>{children}</p>
+        </div>
+      </div>
     </div>
   );
 }

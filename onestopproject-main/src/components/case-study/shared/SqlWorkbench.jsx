@@ -4,6 +4,8 @@ import { SQL_RES, MOCK } from '../data/swiggyData.js';
 import { useArjun } from '../hooks/useArjun.js';
 import { useDuckDB } from '../hooks/useDuckDB.js';
 import Workbook from './Workbook.jsx';
+import GlassWorkbench from '../../ui/shell/GlassWorkbench.jsx';
+import ArjunAvatar from '../../ui/shell/ArjunAvatar.jsx';
 
 function guessKey(query) {
   const q = (query || '').toLowerCase();
@@ -180,18 +182,16 @@ export default function SqlWorkbench({
 
   const statusClass = status.type === 'ok' ? 'text-sql-str' : status.type === 'err' ? 'text-[#F38BA8]' : status.type === 'running' ? 'text-sql-num' : 'text-sql-comment';
 
+  const avatarMode = evaluating ? 'thinking' : evalResult && !evalResult.loading && !evalResult.isIssue ? 'insight' : 'idle';
+
   return (
     <>
-      <div className={`bg-sql-bg border border-sql-border rounded-xl overflow-hidden my-3 transition-all duration-250 ${focused ? 'sql-workbench-focused' : ''}`}>
-
-        {/* ── Header ── */}
-        <div className="flex items-center justify-between px-3.5 py-2 bg-sql-surface border-b border-sql-border">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-red/60" />
-            <span className="w-2 h-2 rounded-full bg-amber/60" />
-            <span className="w-2 h-2 rounded-full bg-green/60" />
-            <span className="font-mono text-[10px] text-sql-kw font-semibold tracking-wide ml-1">{title}</span>
-          </div>
+      <GlassWorkbench
+        title={title}
+        isActive={focused}
+        isLoading={running}
+        className="my-3"
+        headerRight={
           <div className="flex items-center gap-2">
             <RealModeToggle status={dbStatus} progress={dbProgress} loadPct={loadPct} onInit={initDB} />
             <div className="w-px h-3 bg-sql-border mx-1" />
@@ -212,7 +212,8 @@ export default function SqlWorkbench({
               </button>
             )}
           </div>
-        </div>
+        }
+      >
 
         {/* ── Editor ── */}
         <textarea
@@ -263,21 +264,24 @@ export default function SqlWorkbench({
         {evalResult && (
           <div className="px-3.5 py-3 border-t border-sql-border bg-sql-surface block-enter">
             {evalResult.loading ? (
-              <div className="flex gap-1.5 items-center">
-                {[0,1,2].map(i => <span key={i} className="w-1.5 h-1.5 rounded-full bg-sql-comment animate-bounce" style={{ animationDelay:`${i*0.2}s` }} />)}
-                <span className="font-mono text-[10px] text-sql-comment ml-1">Arjun is evaluating…</span>
+              <div className="flex gap-3 items-center">
+                <ArjunAvatar mode="thinking" size={36} showLabel={false} />
+                <span className="font-mono text-[10px] text-sql-comment">Arjun is evaluating…</span>
               </div>
             ) : (
-              <>
-                <p className={`font-mono text-[9px] font-bold tracking-widest uppercase mb-1.5 ${evalResult.isIssue ? 'text-[#F38BA8]' : 'text-sql-str'}`}>
-                  {evalResult.isIssue ? '⚠ Arjun flagged an issue' : "✓ Arjun's evaluation"}
-                </p>
-                <p className="text-[12px] text-sql-text leading-relaxed">{evalResult.text}</p>
-              </>
+              <div className="flex gap-3 items-start">
+                <ArjunAvatar mode={evalResult.isIssue ? 'idle' : 'insight'} size={36} showLabel={false} />
+                <div>
+                  <p className={`font-mono text-[9px] font-bold tracking-widest uppercase mb-1.5 ${evalResult.isIssue ? 'text-[#F38BA8]' : 'text-sql-str'}`}>
+                    {evalResult.isIssue ? '⚠ Arjun flagged an issue' : "✓ Arjun's evaluation"}
+                  </p>
+                  <p className="text-[12px] text-sql-text leading-relaxed">{evalResult.text}</p>
+                </div>
+              </div>
             )}
           </div>
         )}
-      </div>
+      </GlassWorkbench>
 
       {showWb && results && (
         <Workbook initialCols={results.cols} initialRows={results.rows} queryTitle={title} onClose={() => setShowWb(false)} />
