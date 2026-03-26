@@ -252,7 +252,6 @@ export default function SwiggyCase() {
     }
   };
 
-  // Pill label for current section
   const sectionPillLabel =
     state.section === 'landing' || state.section === 'gap' ? 'Case 01 · Free'
     : state.section === 'phase1' || state.section === 'p1summary' ? 'Phase 1 · Watch'
@@ -266,14 +265,11 @@ export default function SwiggyCase() {
     : state.section === 'debrief' ? 'complete'
     : 'neutral';
 
-  const shellProps = isDark
-    ? { showOrbs: true, showGrid: true }
-    : { showOrbs: false, showGrid: false, style: { background: 'var(--bg)' } };
-
   return (
     <PremiumShell
-      className={`font-sans phase-bg-transition ${isDark ? 'investigation-mode' : ''}`}
-      {...shellProps}
+      showOrbs={false}
+      showGrid={false}
+      className={`font-sans phase-bg-transition ${isInvestigation ? 'investigation-mode' : ''}`}
     >
 
       {/* Phase transition splash */}
@@ -292,12 +288,16 @@ export default function SwiggyCase() {
       {showConfetti && <Confetti />}
 
       {/* ── Header ── */}
-      <div className={`sticky top-0 z-50 backdrop-blur-sm border-b flex items-center justify-between px-5 py-3 transition-colors duration-700 ${
-        isDark
-          ? 'bg-[#0D0F14]/95 border-[#1E2330]'
-          : 'bg-[var(--bg)]/95 border-[var(--border)]'
-      }`}>
-        <a href="/" className="font-serif text-xl" style={{ color: 'var(--ink)' }}>
+      <div
+        className="sticky top-0 z-50 flex items-center justify-between px-5 py-3"
+        style={{
+          background: 'rgba(8,8,16,0.85)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          borderBottom: '1px solid rgba(255,255,255,0.07)',
+        }}
+      >
+        <a href="/" className="font-sans text-xl font-semibold" style={{ color: 'var(--ink)', letterSpacing: '-0.02em' }}>
           one<em className="not-italic" style={{ color: 'var(--accent)' }}>stop</em>careers
         </a>
 

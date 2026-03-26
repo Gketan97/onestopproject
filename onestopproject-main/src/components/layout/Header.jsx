@@ -15,12 +15,20 @@ const navItems = [
 ];
 
 const Header = () => (
-  <header className="bg-bg sticky top-0 z-50 border-b border-border hidden md:block">
+  <header
+    className="sticky top-0 z-50 hidden md:block"
+    style={{
+      background: 'rgba(8,8,16,0.85)',
+      backdropFilter: 'blur(16px)',
+      WebkitBackdropFilter: 'blur(16px)',
+      borderBottom: '1px solid rgba(255,255,255,0.07)',
+    }}
+  >
     <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
       <NavLink to="/" className="flex items-center gap-2.5 group">
         <Logo />
-        <span className="font-serif text-xl text-ink">
-          one<em className="text-accent not-italic">stop</em>careers
+        <span className="font-sans text-xl font-semibold" style={{ color: 'var(--ink)', letterSpacing: '-0.02em' }}>
+          one<em className="not-italic" style={{ color: 'var(--accent)' }}>stop</em>careers
         </span>
       </NavLink>
 
@@ -30,8 +38,10 @@ const Header = () => (
             key={item.label}
             to={item.to}
             className={({ isActive }) =>
-              `px-3 py-2 text-sm transition-colors rounded-md ${
-                isActive ? 'text-accent font-medium bg-accent-light' : 'text-ink2 hover:text-ink hover:bg-surface'
+              `px-3 py-2 text-sm transition-colors rounded-md font-medium ${
+                isActive
+                  ? 'text-accent bg-accent-light'
+                  : 'text-ink2 hover:text-ink hover:bg-surface'
               }`
             }
           >
@@ -42,7 +52,13 @@ const Header = () => (
 
       <NavLink
         to="/case-study/swiggy"
-        className="px-4 py-2 bg-accent text-white text-sm font-medium rounded-lg hover:bg-accent-dark transition-all hover:-translate-y-px hover:shadow-accent"
+        className="px-4 py-2 text-white text-sm font-semibold rounded-lg transition-all hover:-translate-y-px"
+        style={{
+          background: 'var(--accent)',
+          boxShadow: '0 0 0 1px rgba(252,128,25,0.3)',
+        }}
+        onMouseEnter={e => e.currentTarget.style.boxShadow = '0 4px 20px rgba(252,128,25,0.4)'}
+        onMouseLeave={e => e.currentTarget.style.boxShadow = '0 0 0 1px rgba(252,128,25,0.3)'}
       >
         Start free →
       </NavLink>

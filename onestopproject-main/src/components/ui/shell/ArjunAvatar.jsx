@@ -35,7 +35,7 @@
  */
 
 import React, { useEffect, useState, useCallback } from 'react';
-import { motion, AnimatePresence, useAnimation } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // ── Colours ───────────────────────────────────────────────────────────────────
 const ORANGE      = '#FC8019';
