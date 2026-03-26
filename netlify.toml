@@ -1,0 +1,23 @@
+[build]
+  base    = "onestopproject-main"
+  command = "npm install && npm run build"
+  publish = "onestopproject-main/dist"
+
+[functions]
+  directory = "onestopproject-main/netlify/functions"
+
+[[headers]]
+  for = "/case-study/*"
+  [headers.values]
+    Cross-Origin-Opener-Policy  = "same-origin"
+    Cross-Origin-Embedder-Policy = "require-corp"
+
+[[redirects]]
+  from   = "/case-study/*"
+  to     = "/index.html"
+  status = 200
+
+[[redirects]]
+  from   = "/*"
+  to     = "/index.html"
+  status = 200
