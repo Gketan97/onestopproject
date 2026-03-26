@@ -43,7 +43,7 @@ function EditCell({ value, onChange, isHeader }) {
 
   const baseHdr = 'px-2.5 py-1.5 text-left font-mono text-[10px] font-semibold ' +
     'text-ink2 bg-surface2 border-r border-border min-w-[80px] outline-none ' +
-    'cursor-text focus:bg-accent-light focus:text-accent';
+    'cursor-text focus:bg-phase2-bg focus:text-phase2';
   const baseCell = 'px-2.5 py-1.5 border-r border-border text-[12px] font-mono ' +
     'min-w-[80px] whitespace-nowrap cursor-pointer text-ink2';
 
@@ -158,9 +158,9 @@ export default function Workbook({ initialCols, initialRows, queryTitle, onClose
             <button key={t} onClick={() => setTab(t)}
               className="px-3 py-1 rounded text-[11px] font-mono font-medium transition-colors"
               style={{
-                background: tab === t ? 'var(--ink)' : 'transparent',
-                color: tab === t ? 'white' : 'var(--ink2)',
-                border: '1px solid ' + (tab === t ? 'var(--ink)' : 'var(--border)'),
+                background: tab === t ? 'var(--phase2-bg)' : 'transparent',
+                color: tab === t ? 'var(--phase2)' : 'var(--ink2)',
+                border: '1px solid ' + (tab === t ? 'var(--phase2-border)' : 'var(--border)'),
               }}>
               {t === 'table' ? '⊞ Table' : '⊟ Pivot'}
             </button>

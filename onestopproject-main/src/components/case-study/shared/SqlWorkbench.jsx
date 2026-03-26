@@ -198,7 +198,7 @@ export default function SqlWorkbench({
             <button
               onClick={execQuery}
               disabled={running}
-              className="sql-run-btn btn-depress bg-phase2 hover:bg-[#163BB0] disabled:opacity-50 text-white text-[11px] font-semibold font-sans px-3 py-1 rounded cursor-pointer transition-all"
+              className="sql-run-btn btn-depress bg-phase2 hover:opacity-90 disabled:opacity-50 text-white text-[11px] font-semibold font-sans px-3 py-1 rounded cursor-pointer transition-all"
             >
               {running ? '…' : '▶ Run'}
             </button>

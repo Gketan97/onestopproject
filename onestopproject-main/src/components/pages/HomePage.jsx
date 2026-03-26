@@ -176,19 +176,19 @@ const STATS = [
 // ── Phase preview cards ────────────────────────────────────────────────────────
 const PHASES = [
   {
-    num: '01', tag: 'WATCH', color: '#C84B0C', bg: 'rgba(200,75,12,0.08)', border: 'rgba(200,75,12,0.2)',
+    num: '01', tag: 'WATCH', color: 'var(--phase1)', bg: 'rgba(252,128,25,0.08)', border: 'rgba(200,75,12,0.2)',
     title: 'Investigate alongside a pro',
     desc: 'Arjun — 10 years at Swiggy — works a real incident live. Predict his next move before every step.',
     time: '~20 min',
   },
   {
-    num: '02', tag: 'PRACTICE', color: '#1E4FCC', bg: 'rgba(30,79,204,0.08)', border: 'rgba(30,79,204,0.2)',
+    num: '02', tag: 'PRACTICE', color: 'var(--phase2)', bg: 'rgba(79,128,255,0.08)', border: 'rgba(30,79,204,0.2)',
     title: 'Same company, your SQL',
     desc: 'Blank editor. New problem. Write the queries. Arjun evaluates your actual logic in real-time.',
     time: '~25 min',
   },
   {
-    num: '03', tag: 'EXECUTE', color: '#1A6B45', bg: 'rgba(26,107,69,0.08)', border: 'rgba(26,107,69,0.2)',
+    num: '03', tag: 'EXECUTE', color: 'var(--phase3)', bg: 'rgba(61,214,140,0.08)', border: 'rgba(26,107,69,0.2)',
     title: 'Write the VP message',
     desc: 'Open questions, no hints. Structure your findings into a message for the VP of Product.',
     time: '~10 min',
@@ -280,11 +280,11 @@ const HomePage = () => {
           <p className="hp-section-sub">What separates a ₹18L analyst from a ₹28L one has nothing to do with years of experience.</p>
 
           <div className="salary-widget">
-            <SalaryBar label="Memorised frameworks" lpa={14} max={30} color="#9B9B8F" delay={200} />
-            <SalaryBar label="SQL fluency" lpa={17} max={30} color="#9B9B8F" delay={350} />
-            <SalaryBar label="Dashboard experience" lpa={18} max={30} color="#9B9B8F" delay={500} />
+            <SalaryBar label="Memorised frameworks" lpa={14} max={30} color="var(--ink3)" delay={200} />
+            <SalaryBar label="SQL fluency" lpa={17} max={30} color="var(--ink3)" delay={350} />
+            <SalaryBar label="Dashboard experience" lpa={18} max={30} color="var(--ink3)" delay={500} />
             <div className="salary-divider" />
-            <SalaryBar label="Thinks through ambiguity fast" lpa={28} max={30} color="#C84B0C" delay={750} />
+            <SalaryBar label="Thinks through ambiguity fast" lpa={28} max={30} color="var(--accent)" delay={750} />
           </div>
 
           <div className="salary-insight">
@@ -489,10 +489,10 @@ const HomePage = () => {
 
         /* Interview hero */
         .interview-hero {
-          background: #14150F;
+          background: var(--surface);
           border-radius: 14px;
           overflow: hidden;
-          border: 1px solid #2A2B22;
+          border: 1px solid var(--border);
           box-shadow: 0 20px 60px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.04);
         }
         .terminal-bar {
@@ -500,8 +500,8 @@ const HomePage = () => {
           align-items: center;
           gap: 6px;
           padding: 10px 14px;
-          background: #0D0E09;
-          border-bottom: 1px solid #1E1F17;
+          background: var(--surface2);
+          border-bottom: 1px solid var(--border);
         }
         .dot {
           width: 10px; height: 10px;
@@ -513,7 +513,7 @@ const HomePage = () => {
         .terminal-label {
           font-family: var(--mono);
           font-size: 9px;
-          color: #4A4B3F;
+          color: var(--ink3);
           letter-spacing: 0.08em;
           margin-left: 6px;
         }
@@ -534,24 +534,24 @@ const HomePage = () => {
           justify-content: center;
           flex-shrink: 0;
         }
-        .avatar.iv { background: #2A2B22; color: #C8C9B0; }
-        .avatar.ar { background: rgba(200,75,12,0.2); color: #C84B0C; }
+        .avatar.iv { background: var(--surface2); color: var(--ink2); }
+        .avatar.ar { background: rgba(200,75,12,0.2); color: var(--accent); }
         .bubble { flex: 1; }
         .bubble-meta {
           font-family: var(--mono);
           font-size: 10px;
           font-weight: 700;
-          color: #8A8B78;
+          color: var(--ink3);
           margin-bottom: 6px;
         }
         .bubble-meta span { font-weight: 400; opacity: 0.6; }
         .bubble-text {
           font-size: 13px;
-          color: #C8C9B0;
+          color: var(--ink2);
           line-height: 1.6;
         }
-        .bubble-text strong { color: #E8C88A; }
-        .arjun-bubble .bubble-text { color: #E8C88A; }
+        .bubble-text strong { color: var(--amber); }
+        .arjun-bubble .bubble-text { color: var(--amber); }
         .cursor {
           display: inline-block;
           color: var(--accent);
@@ -568,7 +568,7 @@ const HomePage = () => {
         .options-label {
           font-family: var(--mono);
           font-size: 9px;
-          color: #4A4B3F;
+          color: var(--ink3);
           letter-spacing: 0.06em;
           margin-bottom: 10px;
         }
@@ -579,36 +579,36 @@ const HomePage = () => {
           gap: 10px;
           padding: 10px 12px;
           margin-bottom: 6px;
-          background: #1A1B13;
-          border: 1px solid #252620;
+          background: var(--surface2);
+          border: 1px solid var(--border);
           border-radius: 8px;
           text-align: left;
           font-size: 12px;
-          color: #8A8B78;
+          color: var(--ink3);
           cursor: pointer;
           transition: all 0.15s;
         }
         .option-btn:last-child { margin-bottom: 0; }
         .option-btn:hover:not(.locked) {
-          background: #1E1F17;
-          border-color: #3A3B2E;
-          color: #C8C9B0;
+          background: var(--surface);
+          border-color: var(--border2);
+          color: var(--ink2);
         }
         .option-btn.selected {
           background: rgba(200,75,12,0.12);
           border-color: rgba(200,75,12,0.35);
-          color: #C84B0C;
+          color: var(--accent);
         }
         .option-btn.locked { cursor: default; }
         .opt-id {
           font-family: var(--mono);
           font-size: 9px;
           font-weight: 700;
-          color: #4A4B3F;
+          color: var(--ink3);
           margin-top: 1px;
           flex-shrink: 0;
         }
-        .option-btn.selected .opt-id { color: #C84B0C; }
+        .option-btn.selected .opt-id { color: var(--accent); }
 
         /* Revealed anim */
         .revealed-anim {
@@ -812,7 +812,7 @@ const HomePage = () => {
         }
         .phase-card:hover {
           transform: translateY(-2px);
-          box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+          box-shadow: 0 8px 32px rgba(0,0,0,0.4);
         }
         .phase-bar {
           position: absolute;

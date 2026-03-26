@@ -51,12 +51,12 @@ setIsOpen(true); // keep open while typing
 }}
 onFocus={() => setIsOpen(true)}
 placeholder={placeholder}
-className="mt-2 block w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition"
+className="mt-2 block w-full px-4 py-3 bg-surface border border-border rounded-lg text-white placeholder-ink3 focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition"
 required
 autoComplete="off"
 />
 {isOpen && (
-<ul className="absolute z-10 w-full bg-gray-800 border border-gray-600 rounded-lg mt-1 max-h-60 overflow-y-auto">
+<ul className="absolute z-10 w-full bg-surface border border-border rounded-lg mt-1 max-h-60 overflow-y-auto">
 {filteredOptions.length > 0 ? (
 filteredOptions.map((option) => (
 <li
@@ -66,13 +66,13 @@ onMouseDown={(e) => {
 e.preventDefault();
 handleSelect(option);
 }}
-className="px-4 py-2 text-white hover:bg-orange-600 cursor-pointer"
+className="px-4 py-2 text-white hover:bg-accent-dark cursor-pointer"
 >
 {option}
 </li>
 ))
 ) : (
-<li className="px-4 py-2 text-gray-500">No results found</li>
+<li className="px-4 py-2 text-ink3">No results found</li>
 )}
 </ul>
 )}
@@ -217,19 +217,19 @@ console.error('Failed to copy text: ', err);
 if (isSubmitted) {
 return (
 <PageContainer isVisible={isVisible}>
-<div className="bg-[#2a2a2a] border border-gray-700 w-full max-w-3xl p-8 rounded-2xl text-center">
-<div className="p-6 bg-green-900 bg-opacity-50 border border-green-700 text-green-300 rounded-lg">
+<div className="bg-surface border border-border w-full max-w-3xl p-8 rounded-2xl text-center">
+<div className="p-6 rounded-lg" style={{ background: 'var(--green-bg)', border: '1px solid var(--green-border)', color: 'var(--green)' }}>
 <h3 className="text-xl font-semibold">Thank You for Joining!</h3>
 <p className="mt-2">
 Your LinkedIn profile will now be listed on our referrals page for visitors to connect with you.
 </p>
 </div>
-<div className="mt-8 p-6 bg-gray-800/50 border border-gray-700 rounded-lg">
+<div className="mt-8 p-6 bg-surface/50 border border-border rounded-lg">
 <h4 className="text-lg font-semibold text-white">Spread the Word!</h4>
-<p className="text-gray-400 mt-2">Know someone else who would be a great referrer? Share this page.</p>
+<p className="text-ink2 mt-2">Know someone else who would be a great referrer? Share this page.</p>
 <button
 onClick={handleCopyLink}
-className="mt-4 inline-flex items-center justify-center py-2 px-6 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-orange-500"
+className="mt-4 inline-flex items-center justify-center py-2 px-6 border border-transparent text-sm font-medium rounded-md text-white bg-accent hover:bg-accent-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-surface focus:ring-accent"
 >
 {copyButtonText}
 </button>
@@ -237,13 +237,13 @@ className="mt-4 inline-flex items-center justify-center py-2 px-6 border border-
 <div className="mt-8 text-center space-y-4">
 <a
 href="/#referrals"
-className="inline-block w-full md:w-auto px-6 py-2 brand-button text-sm font-bold rounded-lg bg-gray-700 hover:bg-gray-600 text-white"
+className="inline-block w-full md:w-auto px-6 py-2 brand-button text-sm font-bold rounded-lg bg-surface2 hover:bg-surface text-white"
 >
 &larr; Go back to Referrals
 </a>
-<p className="text-xs text-gray-500">
+<p className="text-xs text-ink3">
 If you wish to drop out of this program, please email us at{' '}
-<a href="mailto:info.careerclub99@gmail.com" className="underline hover:text-orange-500">
+<a href="mailto:info.careerclub99@gmail.com" className="underline hover:text-accent">
 info.careerclub99@gmail.com
 </a>
 .
@@ -256,11 +256,11 @@ info.careerclub99@gmail.com
 
 return (
 <PageContainer isVisible={isVisible}>
-<div className="bg-[#2a2a2a] border border-gray-700 w-full max-w-4xl p-6 sm:p-8 rounded-2xl">
+<div className="bg-surface border border-border w-full max-w-4xl p-6 sm:p-8 rounded-2xl">
 <div className="w-full mb-6">
 <a
 href="/#referrals"
-className="inline-flex items-center gap-2 text-sm text-orange-500 hover:text-orange-400 font-semibold transition-colors"
+className="inline-flex items-center gap-2 text-sm text-accent hover:text-accent font-semibold transition-colors"
 >
 <svg
 xmlns="http://www.w3.org/2000/svg"
@@ -281,13 +281,13 @@ Back to Referrals
 </div>
 <div className="text-center mb-10">
 <h1 className="text-3xl md:text-4xl font-bold text-white">Become a Referrer</h1>
-<p className="text-gray-400 mt-3">Help others, build your network, and create an impact by referring relevant profiles.</p>
+<p className="text-ink2 mt-3">Help others, build your network, and create an impact by referring relevant profiles.</p>
 </div>
 
 <form onSubmit={handleSubmit} className="space-y-6">
 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
 <div>
-<label htmlFor="referrerName" className="block text-sm font-medium text-gray-300">
+<label htmlFor="referrerName" className="block text-sm font-medium text-ink">
 Name
 </label>
 <input
@@ -297,12 +297,12 @@ name="referrerName"
 value={formData.referrerName}
 onChange={handleInputChange}
 required
-className="mt-2 block w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition"
+className="mt-2 block w-full px-4 py-3 bg-surface border border-border rounded-lg text-white placeholder-ink3 focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition"
 />
 </div>
 
 <div>
-<label htmlFor="referrerEmail" className="block text-sm font-medium text-gray-300">
+<label htmlFor="referrerEmail" className="block text-sm font-medium text-ink">
 Email ID (Company email preferred)
 </label>
 <input
@@ -313,18 +313,18 @@ value={formData.referrerEmail}
 onChange={handleInputChange}
 onBlur={validateEmail}
 required
-className={`mt-2 block w-full px-4 py-3 bg-gray-800 border rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 transition ${
-isFreeEmail ? 'border-yellow-500' : 'border-gray-600'
+className={`mt-2 block w-full px-4 py-3 bg-surface border rounded-lg text-white placeholder-ink3 focus:outline-none focus:ring-2 focus:ring-accent transition ${
+isFreeEmail ? 'border-amber' : 'border-border'
 }`}
 />
 {isFreeEmail && (
-<p className="mt-1 text-xs text-yellow-500">Please consider using your company email for faster validation.</p>
+<p className="mt-1 text-xs text-amber">Please consider using your company email for faster validation.</p>
 )}
-<p className="mt-1 text-xs text-gray-500">Your email will never be shared publicly.</p>
+<p className="mt-1 text-xs text-ink3">Your email will never be shared publicly.</p>
 </div>
 
 <div>
-<label htmlFor="contactNumber" className="block text-sm font-medium text-gray-300">
+<label htmlFor="contactNumber" className="block text-sm font-medium text-ink">
 Contact Number
 </label>
 <input
@@ -336,13 +336,13 @@ onChange={handleInputChange}
 required
 pattern="[0-9]{10}"
 title="Please enter a 10-digit contact number"
-className="mt-2 block w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition"
+className="mt-2 block w-full px-4 py-3 bg-surface border border-border rounded-lg text-white placeholder-ink3 focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition"
 />
-<p className="mt-1 text-xs text-gray-500">Your contact number is kept confidential.</p>
+<p className="mt-1 text-xs text-ink3">Your contact number is kept confidential.</p>
 </div>
 
 <div>
-<label htmlFor="linkedinUrl" className="block text-sm font-medium text-gray-300">
+<label htmlFor="linkedinUrl" className="block text-sm font-medium text-ink">
 LinkedIn Profile URL
 </label>
 <input
@@ -353,12 +353,12 @@ value={formData.linkedinUrl}
 onChange={handleInputChange}
 required
 placeholder="https://linkedin.com/in/your-profile"
-className="mt-2 block w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition"
+className="mt-2 block w-full px-4 py-3 bg-surface border border-border rounded-lg text-white placeholder-ink3 focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition"
 />
 </div>
 
 <div>
-<label htmlFor="currentCompany" className="block text-sm font-medium text-gray-300">
+<label htmlFor="currentCompany" className="block text-sm font-medium text-ink">
 Current Company Name
 </label>
 <SearchableDropdown
@@ -371,7 +371,7 @@ placeholder="Search or type company..."
 </div>
 
 <div>
-<label htmlFor="designation" className="block text-sm font-medium text-gray-300">
+<label htmlFor="designation" className="block text-sm font-medium text-ink">
 Designation
 </label>
 <SearchableDropdown
@@ -384,7 +384,7 @@ placeholder="Search or type role..."
 </div>
 
 <div className="md:col-span-2">
-<label htmlFor="experience" className="block text-sm font-medium text-gray-300">
+<label htmlFor="experience" className="block text-sm font-medium text-ink">
 Years of Experience
 </label>
 <select
@@ -393,7 +393,7 @@ name="experience"
 value={formData.experience}
 onChange={handleInputChange}
 required
-className="mt-2 block w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition"
+className="mt-2 block w-full px-4 py-3 bg-surface border border-border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition"
 >
 <option value="" disabled>
 Select your experience level
@@ -413,7 +413,7 @@ Select your experience level
 <div className="pt-4 text-center">
 <button
 type="submit"
-className="w-full md:w-1/2 inline-flex justify-center py-3 px-8 border border-transparent shadow-lg text-base font-semibold rounded-lg text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-orange-500 transition-transform transform hover:scale-105"
+className="w-full md:w-1/2 inline-flex justify-center py-3 px-8 border border-transparent shadow-lg text-base font-semibold rounded-lg text-white bg-accent hover:bg-accent-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-accent transition-transform transform hover:scale-105"
 >
 Become a Referrer
 </button>

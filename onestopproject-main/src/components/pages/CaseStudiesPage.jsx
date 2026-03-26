@@ -43,9 +43,9 @@ const CASE_STUDIES = [
     phases: ['Watch', 'Practice', 'Execute'],
     status: 'available',
     free: true,
-    accent: '#C84B0C',
-    accentBg: '#FDF2EC',
-    accentBorder: '#F2C4A5',
+    accent: '#FC8019',
+    accentBg: 'rgba(252,128,25,0.10)',
+    accentBorder: 'rgba(252,128,25,0.25)',
   },
   {
     id: 'zomato',
@@ -60,8 +60,8 @@ const CASE_STUDIES = [
     status: 'coming_soon',
     free: false,
     accent: '#E23744',
-    accentBg: '#FDF2F2',
-    accentBorder: '#E8AAAA',
+    accentBg: 'rgba(226,55,68,0.10)',
+    accentBorder: 'rgba(226,55,68,0.25)',
   },
   {
     id: 'razorpay',
@@ -76,8 +76,8 @@ const CASE_STUDIES = [
     status: 'coming_soon',
     free: false,
     accent: '#2B64F5',
-    accentBg: '#EDF1FD',
-    accentBorder: '#A8B8F0',
+    accentBg: 'rgba(43,100,245,0.10)',
+    accentBorder: 'rgba(43,100,245,0.25)',
   },
   {
     id: 'meesho',
@@ -91,9 +91,9 @@ const CASE_STUDIES = [
     phases: ['Watch', 'Practice', 'Execute'],
     status: 'coming_soon',
     free: false,
-    accent: '#7B3F8C',
-    accentBg: '#F5F0FA',
-    accentBorder: '#D4AAEE',
+    accent: '#9B59B6',
+    accentBg: 'rgba(155,89,182,0.10)',
+    accentBorder: 'rgba(155,89,182,0.25)',
   },
   {
     id: 'phonepe',
@@ -108,8 +108,8 @@ const CASE_STUDIES = [
     status: 'coming_soon',
     free: false,
     accent: '#5F259F',
-    accentBg: '#F3EEF9',
-    accentBorder: '#C9AAEE',
+    accentBg: 'rgba(95,37,159,0.10)',
+    accentBorder: 'rgba(95,37,159,0.25)',
   },
   {
     id: 'uber',
@@ -123,16 +123,16 @@ const CASE_STUDIES = [
     phases: ['Watch', 'Practice', 'Execute'],
     status: 'coming_soon',
     free: false,
-    accent: '#000000',
-    accentBg: '#F2F2F2',
-    accentBorder: '#CCCCCC',
+    accent: 'rgba(232,234,242,0.7)',
+    accentBg: 'rgba(232,234,242,0.08)',
+    accentBorder: 'rgba(232,234,242,0.18)',
   },
 ];
 
 const diffColor = {
-  Beginner:     { color: '#1A6B45', bg: '#EDF6F1', border: '#A8D9BC' },
-  Intermediate: { color: '#9B5200', bg: '#FEF7EE', border: '#F0C98A' },
-  Advanced:     { color: '#B03030', bg: '#FDF2F2', border: '#E8AAAA' },
+  Beginner:     { color: '#3DD68C', bg: 'rgba(61,214,140,0.10)',  border: 'rgba(61,214,140,0.25)' },
+  Intermediate: { color: '#F9E2AF', bg: 'rgba(249,226,175,0.10)', border: 'rgba(249,226,175,0.25)' },
+  Advanced:     { color: '#F38BA8', bg: 'rgba(243,139,168,0.10)', border: 'rgba(243,139,168,0.25)' },
 };
 
 const CaseCard = ({ cs }) => {

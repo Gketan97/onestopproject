@@ -1,208 +1,26 @@
-/* ═══════════════════════════════════════════════════════════════════
-   SaaS-Noir / Mission Control — Design Tokens
-   Add this file AFTER your existing index.css imports.
-   All variables are scoped to [data-theme="noir"] so they don't
-   clobber your existing light-mode palette.
-   ═══════════════════════════════════════════════════════════════════ */
+/**
+ * noir-tokens.css
+ * All design tokens are defined in src/index.css :root.
+ * This file is kept for backward compatibility with the shell/index.js import comment.
+ * No variables are declared here to avoid duplication.
+ *
+ * Animations used by shell components:
+ */
 
-/* ── Geist font (Vercel CDN) ──────────────────────────────────────── */
-@font-face {
-  font-family: 'Geist';
-  src: url('https://cdn.vercel-insights.com/v1/speed-insights/fonts/geist/Geist-Regular.woff2') format('woff2');
-  font-weight: 400;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Geist';
-  src: url('https://cdn.vercel-insights.com/v1/speed-insights/fonts/geist/Geist-Medium.woff2') format('woff2');
-  font-weight: 500;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Geist';
-  src: url('https://cdn.vercel-insights.com/v1/speed-insights/fonts/geist/Geist-SemiBold.woff2') format('woff2');
-  font-weight: 600;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Geist';
-  src: url('https://cdn.vercel-insights.com/v1/speed-insights/fonts/geist/Geist-Bold.woff2') format('woff2');
-  font-weight: 700;
-  font-display: swap;
-}
-
-/* ── Noir token layer ──────────────────────────────────────────────── */
-:root {
-  /* Core palette */
-  --noir-bg:          #050505;
-  --noir-surface:     rgba(255, 255, 255, 0.04);
-  --noir-surface-2:   rgba(255, 255, 255, 0.07);
-  --noir-border:      rgba(255, 255, 255, 0.10);
-  --noir-border-glow: rgba(78, 128, 255, 0.55);
-
-  /* Brand accents */
-  --noir-orange:       #FC8019;
-  --noir-orange-dim:   rgba(252, 128, 25, 0.18);
-  --noir-orange-glow:  rgba(252, 128, 25, 0.35);
-  --noir-blue:         #1E4FCC;
-  --noir-blue-bright:  #4F80FF;
-  --noir-blue-dim:     rgba(30, 79, 204, 0.18);
-  --noir-blue-glow:    rgba(79, 128, 255, 0.40);
-
-  /* Text */
-  --noir-ink:     #E8EAF0;
-  --noir-ink-2:   #9AA0B4;
-  --noir-ink-3:   #555B72;
-
-  /* Status */
-  --noir-green:   #3DD68C;
-  --noir-red:     #F38BA8;
-  --noir-amber:   #F9E2AF;
-
-  /* Glass */
-  --glass-blur:   12px;
-  --glass-bg:     rgba(255, 255, 255, 0.04);
-  --glass-border: rgba(255, 255, 255, 0.10);
-
-  /* Fonts */
-  --noir-display: 'Geist', 'Inter', system-ui, sans-serif;
-  --noir-ui:      'Inter', system-ui, sans-serif;
-  --noir-mono:    'JetBrains Mono', monospace;
-
-  /* Orb sizes */
-  --orb-size: 600px;
-}
-
-/* ── Glass utility classes ─────────────────────────────────────────── */
-.glass {
-  background: var(--glass-bg);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
-  border: 1px solid var(--glass-border);
-}
-
-.glass-strong {
-  background: rgba(255, 255, 255, 0.07);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-}
-
-.glass-glow-blue {
-  border-color: var(--noir-border-glow);
-  box-shadow: 0 0 0 1px var(--noir-blue-glow),
-              inset 0 0 40px rgba(79, 128, 255, 0.04);
-}
-
-.glass-glow-orange {
-  border-color: rgba(252, 128, 25, 0.55);
-  box-shadow: 0 0 0 1px var(--noir-orange-glow),
-              inset 0 0 40px rgba(252, 128, 25, 0.04);
-}
-
-/* ── Dotted grid overlay ──────────────────────────────────────────── */
-.noir-grid {
-  position: absolute;
-  inset: 0;
-  background-image: radial-gradient(circle, rgba(255,255,255,0.05) 1px, transparent 1px);
-  background-size: 20px 20px;
-  pointer-events: none;
-}
-
-/* ── Ambient orb ──────────────────────────────────────────────────── */
-.noir-orb {
-  position: absolute;
-  width: var(--orb-size);
-  height: var(--orb-size);
-  border-radius: 50%;
-  filter: blur(120px);
-  pointer-events: none;
-  will-change: transform, opacity;
-}
-.noir-orb-orange {
-  background: radial-gradient(circle, rgba(252,128,25,0.22) 0%, transparent 70%);
-}
-.noir-orb-blue {
-  background: radial-gradient(circle, rgba(30,79,204,0.28) 0%, transparent 70%);
-}
-
-/* ── Workbench shimmer ────────────────────────────────────────────── */
 @keyframes noir-shimmer {
   0%   { transform: translateX(-100%); }
   100% { transform: translateX(200%); }
 }
-
 .noir-shimmer-bar {
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 2px;
   overflow: hidden;
-  border-radius: 1px;
 }
 .noir-shimmer-bar::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    var(--noir-blue-bright) 40%,
-    var(--noir-orange) 60%,
-    transparent 100%
-  );
+  background: linear-gradient(90deg, transparent 0%, var(--noir-blue-bright, #4F80FF) 40%, var(--noir-orange, #FC8019) 60%, transparent 100%);
   animation: noir-shimmer 1.4s ease-in-out infinite;
 }
-
-/* ── Avatar pulse ring ────────────────────────────────────────────── */
-@keyframes avatar-pulse {
-  0%, 100% { transform: scale(1);    opacity: 0.7; }
-  50%       { transform: scale(1.12); opacity: 0.3; }
-}
-@keyframes avatar-insight {
-  0%   { transform: scale(1);   opacity: 0.9; }
-  100% { transform: scale(1.8); opacity: 0;   }
-}
-@keyframes avatar-breathe {
-  0%, 100% { transform: scale(1); }
-  50%       { transform: scale(1.025); }
-}
-
-.avatar-ring-pulse    { animation: avatar-pulse   1.5s ease-in-out infinite; }
-.avatar-ring-insight  { animation: avatar-insight 0.8s ease-out forwards; }
-.avatar-body-breathe  { animation: avatar-breathe 3.5s ease-in-out infinite; }
-
-/* ── DataPill dot blink ───────────────────────────────────────────── */
-@keyframes pill-dot-blink {
-  0%, 100% { opacity: 1;   }
-  50%       { opacity: 0.3; }
-}
-.pill-dot-running { animation: pill-dot-blink 1.1s ease-in-out infinite; }
-
-/* ── Stagger entrance utility ─────────────────────────────────────── */
-@keyframes noir-enter {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0);    }
-}
-.noir-enter {
-  animation: noir-enter 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-/* ── Noir typography overrides (inside .noir-shell) ──────────────── */
-.noir-shell {
-  font-family: var(--noir-ui);
-  color: var(--noir-ink);
-  background: var(--noir-bg);
-}
-.noir-shell h1, .noir-shell h2, .noir-shell h3 {
-  font-family: var(--noir-display);
-  letter-spacing: -0.02em;
-}
-.noir-shell code, .noir-shell pre, .noir-shell .font-mono {
-  font-family: var(--noir-mono);
-}
-
-/* ── Scrollbar (noir) ─────────────────────────────────────────────── */
-.noir-shell ::-webkit-scrollbar        { width: 4px; height: 4px; }
-.noir-shell ::-webkit-scrollbar-track  { background: transparent; }
-.noir-shell ::-webkit-scrollbar-thumb  { background: rgba(255,255,255,0.12); border-radius: 4px; }
-.noir-shell ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.22); }

@@ -111,13 +111,21 @@ function AskArjunBar({onAsk}) {
           onChange={e=>setQ(e.target.value)}
           onKeyDown={e=>{ if(e.key==='Enter') ask() }}
           placeholder="Stuck? Ask Arjun — he'll answer Socratically..."
-          className="flex-1 bg-bg border border-border rounded-lg px-3 py-2 text-[13px] outline-none focus:border-border2"
+          className="flex-1 rounded-lg px-3 py-2 text-[13px] outline-none font-sans"
+          style={{
+            background: 'var(--surface)',
+            border: '1px solid var(--border)',
+            color: 'var(--ink)',
+          }}
+          onFocus={e => e.target.style.borderColor = 'rgba(79,128,255,0.5)'}
+          onBlur={e => e.target.style.borderColor = 'var(--border)'}
         />
 
         <button
           disabled={loading}
           onClick={ask}
-          className="px-3 py-2 bg-phase2 text-white text-xs rounded-lg hover:bg-blue-700 disabled:opacity-50"
+          className="px-3 py-2 text-white text-xs rounded-lg disabled:opacity-50 transition-opacity hover:opacity-80"
+          style={{ background: 'var(--phase2)' }}
         >
           Ask →
         </button>
@@ -283,7 +291,7 @@ export default function Phase2Section({
   }
 
   return(
-    <div style={{ background: '#0D0F14', minHeight: '100vh' }}>
+    <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
 
       {/* ── War-room incident banner ── */}
       <div className="incident-banner px-6 py-5 mb-6">
@@ -298,20 +306,20 @@ export default function Phase2Section({
                 Incident · Active
               </span>
             </div>
-            <span className="font-mono text-[10px]" style={{ color: '#4A5568' }}>
+            <span className="font-mono text-[10px]" style={{ color: 'var(--ink3)' }}>
               Opened Mon 4:47 PM · Severity: High · Assigned to you
             </span>
             <div className="ml-auto flex items-center gap-5">
               <div className="text-right">
-                <span className="font-mono text-[9px] uppercase tracking-widest block mb-0.5" style={{ color: '#4A5568' }}>elapsed</span>
+                <span className="font-mono text-[9px] uppercase tracking-widest block mb-0.5" style={{ color: 'var(--ink3)' }}>elapsed</span>
                 <span className="font-mono text-[16px] font-bold tabular-nums"
-                  style={{ color: parseInt(fmtElapsed) >= 20 ? '#FF5A65' : '#E2E8F0' }}>
+                  style={{ color: parseInt(fmtElapsed) >= 20 ? '#FF5A65' : 'var(--ink)' }}>
                   {fmtElapsed}
                 </span>
               </div>
               <div className="text-right">
-                <span className="font-mono text-[9px] uppercase tracking-widest block mb-0.5" style={{ color: '#4A5568' }}>queries</span>
-                <span className="font-mono text-[16px] font-bold tabular-nums" style={{ color: '#E2E8F0' }}>
+                <span className="font-mono text-[9px] uppercase tracking-widest block mb-0.5" style={{ color: 'var(--ink3)' }}>queries</span>
+                <span className="font-mono text-[16px] font-bold tabular-nums" style={{ color: 'var(--ink)' }}>
                   {queryCount}
                 </span>
               </div>
@@ -320,13 +328,13 @@ export default function Phase2Section({
 
           {/* Metric headline */}
           <div className="flex items-baseline gap-3 mb-2">
-            <h2 className="font-serif text-2xl font-semibold" style={{ color: '#E2E8F0' }}>
+            <h2 className="font-serif text-2xl font-semibold" style={{ color: 'var(--ink)' }}>
               North Bangalore · Biryani orders
             </h2>
             <span className="font-mono text-2xl font-bold text-[#FF5A65]">−34% WoW</span>
           </div>
 
-          <p className="text-sm" style={{ color: '#64748B' }}>
+          <p className="text-sm" style={{ color: 'var(--ink3)' }}>
             Leadership review in 2 days. Priya needs root cause by EOD.
             Find the cause. Write the VP message.
           </p>
@@ -336,9 +344,9 @@ export default function Phase2Section({
 
       <div className="px-6 pb-10 max-w-3xl mx-auto">
 
-        <StepProgress currentIdx={stepIdx} dark={true}/>
-        <MissionBrief priyaMessages={priyaMessages} dark={true}/>
-        <SchemaPanel compact={true} dark={true} />
+        <StepProgress currentIdx={stepIdx}/>
+        <MissionBrief priyaMessages={priyaMessages}/>
+        <SchemaPanel compact={true} />
 
         {P2_STEP_IDS.slice(0,stepIdx+1).map((id,i)=>(
           <Step
@@ -350,7 +358,7 @@ export default function Phase2Section({
           />
         ))}
 
-        {showAskBar && <AskArjunBar/>}
+        {showAskBar && <AskArjunBar onAsk={onQueryCount} />}
 
       </div>
     </div>

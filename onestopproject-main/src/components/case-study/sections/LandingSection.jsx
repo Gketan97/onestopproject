@@ -49,7 +49,7 @@ export default function LandingSection({ onStart }) {
 
       {/* Myth-busting dark card */}
       <div className="rounded-2xl p-5 mb-5 block-enter block-enter-1"
-        style={{ background: 'var(--ink)', border: '1px solid rgba(255,255,255,0.06)' }}>
+        style={{ background: 'var(--surface2)', border: '1px solid var(--border2)' }}>
         <p className="font-mono text-[10px] uppercase tracking-widest mb-3"
           style={{ color: 'rgba(255,255,255,0.3)' }}>The answer is not:</p>
         <div className="space-y-2.5 mb-4">
@@ -81,7 +81,7 @@ export default function LandingSection({ onStart }) {
             num: '01', phase: 'Watch', time: '~20 min',
             title: 'Investigate alongside a pro',
             desc: 'A 10-year Swiggy analyst works a live incident. Predict his moves before every step.',
-            color: '#C84B0C', bg: 'rgba(200,75,12,0.06)', border: 'rgba(200,75,12,0.18)',
+            color: 'var(--phase1)', bg: 'rgba(200,75,12,0.06)', border: 'rgba(200,75,12,0.18)',
           },
           {
             num: '02', phase: 'Practice', time: '~25 min',

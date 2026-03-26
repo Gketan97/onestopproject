@@ -1,11 +1,11 @@
 // src/components/case-study/hooks/useArjun.js
 // Calls the server-side /.netlify/functions/evaluate endpoint.
-// In DEV mode, returns mock responses instantly from swiggyData.js.
+// In DEV mode (npm run dev), returns mock responses instantly from swiggyData.js.
 
 import { useCallback } from 'react';
 import { MOCK, ARJUN_SYS } from '../data/swiggyData.js';
 
-const IS_DEV = true; // flip to false for production
+const IS_DEV = import.meta.env.DEV; // automatically true in dev, false in production build
 
 const delay = (ms) => new Promise((r) => setTimeout(r, ms));
 

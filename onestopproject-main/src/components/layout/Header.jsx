@@ -3,9 +3,9 @@ import { NavLink } from 'react-router-dom';
 
 const Logo = () => (
   <svg width="30" height="30" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="50" cy="50" r="40" stroke="#C84B0C" strokeWidth="8" strokeOpacity="0.3"/>
-    <path d="M50 70 L 50 30" stroke="#C84B0C" strokeWidth="8" strokeLinecap="round"/>
-    <path d="M35 45 L 50 30 L 65 45" stroke="#C84B0C" strokeWidth="8" strokeLinecap="round"/>
+    <circle cx="50" cy="50" r="40" stroke="var(--accent)" strokeWidth="8" strokeOpacity="0.3"/>
+    <path d="M50 70 L 50 30" stroke="var(--accent)" strokeWidth="8" strokeLinecap="round"/>
+    <path d="M35 45 L 50 30 L 65 45" stroke="var(--accent)" strokeWidth="8" strokeLinecap="round"/>
   </svg>
 );
 

@@ -231,7 +231,7 @@ function ConfidenceSelector({ onChange }) {
           className={`px-3 py-1 text-xs rounded border ${
             value === o
               ? 'bg-phase1 text-white'
-              : 'bg-white text-ink'
+              : 'bg-surface2 text-ink2'
           }`}
         >
           {o}
@@ -296,7 +296,7 @@ function Step({ step, onNext, onSavePrediction }) {
           />
 
           <ConfidenceSelector
-            onChange={(c) => console.log('confidence', c)}
+            onChange={(c) => onSavePrediction?.(step.idx, `${answers[step.idx] || ''} [confidence: ${c}]`)}
           />
 
         </>

@@ -57,7 +57,7 @@ const JobDetailModal = ({ job, onClose }) => {
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-ink/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+        className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
         onClick={onClose}
       >
         <div
@@ -70,7 +70,7 @@ const JobDetailModal = ({ job, onClose }) => {
               <img
                 src={job['Company Logo URL']}
                 alt={`${job.Company} logo`}
-                className="w-14 h-14 rounded-xl object-contain bg-white border border-border p-1 flex-shrink-0"
+                className="w-14 h-14 rounded-xl object-contain bg-surface2 border border-border p-1 flex-shrink-0"
                 onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/56x56/F3F2ED/9B9B8F?text=Co'; }}
               />
               <div>

@@ -31,7 +31,7 @@ const shuffleOnce = (arr) => [...arr].sort(() => Math.random() - 0.5);
 
 // ── Completion Banner — shown to users who finished a case study ───────────────
 const CompletionBanner = ({ onDismiss }) => (
-  <div className="mb-6 bg-ink rounded-2xl p-5 md:p-6 relative overflow-hidden">
+  <div className="mb-6 rounded-2xl p-5 md:p-6 relative overflow-hidden glass">
     {/* decorative accent */}
     <div className="absolute top-0 left-0 right-0 h-0.5 bg-accent" />
     <button

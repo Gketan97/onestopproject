@@ -92,9 +92,9 @@ export default function Phase3Section({ onDone }) {
           <button
             onClick={() => onDone(answers)}
             className="w-full py-4 text-white font-semibold rounded-xl text-sm btn-depress transition-all hover:-translate-y-px"
-            style={{ background: '#1A6B45', boxShadow: '0 4px 20px rgba(61,214,140,0.2)' }}
-            onMouseEnter={e => e.currentTarget.style.background = '#135435'}
-            onMouseLeave={e => e.currentTarget.style.background = '#1A6B45'}
+            style={{ background: 'var(--phase3)', boxShadow: '0 4px 20px rgba(61,214,140,0.2)' }}
+            onMouseEnter={e => e.currentTarget.style.background = 'var(--phase3)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'var(--phase3)'}
           >
             Get your full debrief + portfolio →
           </button>

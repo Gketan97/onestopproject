@@ -4,11 +4,11 @@ import { MapPin, ArrowRight } from 'lucide-react';
 // Consistent color from company name
 const companyColor = (name = '') => {
   const colors = [
-    { bg: '#FDF2EC', text: '#C84B0C' },
-    { bg: '#EDF1FD', text: '#1E4FCC' },
-    { bg: '#EDF6F1', text: '#1A6B45' },
-    { bg: '#FDF2F2', text: '#B03030' },
-    { bg: '#FEF7EE', text: '#9B5200' },
+    { bg: 'var(--phase1-bg)', text: 'var(--phase1)' },
+    { bg: 'var(--phase2-bg)', text: 'var(--phase2)' },
+    { bg: 'var(--phase3-bg)', text: 'var(--phase3)' },
+    { bg: 'var(--red-bg)', text: 'var(--red)' },
+    { bg: 'var(--amber-bg)', text: 'var(--amber)' },
   ];
   let hash = 0;
   for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
@@ -22,7 +22,7 @@ const CompanyLogo = ({ src, company }) => {
 
   return (
     <div className="w-10 h-10 rounded-lg flex-shrink-0 flex items-center justify-center font-mono font-bold text-sm border border-border relative overflow-hidden"
-      style={{ background: loaded ? 'white' : bg, color: text }}>
+      style={{ background: loaded ? 'rgba(255,255,255,0.92)' : bg, color: text }}>
       {!loaded && <span>{initials}</span>}
       {src && (
         <img

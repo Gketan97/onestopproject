@@ -23,7 +23,7 @@ export default function P1SummarySection({ predictions = {}, onDone }) {
 
       {/* Phase complete splash card */}
       <div className="rounded-2xl overflow-hidden mb-5 mt-4"
-        style={{ background: 'linear-gradient(135deg, #0D150F 0%, #101A12 100%)', border: '1px solid rgba(61,214,140,0.2)' }}>
+        style={{ background: 'linear-gradient(135deg, var(--bg) 0%, var(--surface))', border: '1px solid rgba(61,214,140,0.2)' }}>
         <div className="px-6 py-5 flex items-center gap-4">
           <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"
             style={{ background: 'rgba(61,214,140,0.12)', border: '1px solid rgba(61,214,140,0.25)' }}>
@@ -93,7 +93,7 @@ export default function P1SummarySection({ predictions = {}, onDone }) {
       <button onClick={proceed}
         className="w-full py-3.5 text-white font-semibold rounded-xl text-sm btn-depress transition-all hover:-translate-y-px"
         style={{ background: 'var(--phase2)', boxShadow: '0 4px 20px rgba(79,128,255,0.25)' }}
-        onMouseEnter={e => e.currentTarget.style.background = '#163BB0'}
+        onMouseEnter={e => e.currentTarget.style.background = 'var(--phase2)'}
         onMouseLeave={e => e.currentTarget.style.background = 'var(--phase2)'}>
         Enter the investigation →
       </button>

@@ -20,18 +20,17 @@ import Phase3Section     from './sections/Phase3Section.jsx';
 import DebriefSection    from './sections/DebriefSection.jsx';
 
 const PROGRESS = {
-  landing:   { pct: 2,   label: 'Getting started',             color: '#C84B0C' },
-  gap:       { pct: 6,   label: 'Warm-up exercise',            color: '#C84B0C', time: '~2 min' },
-  context:   { pct: 12,  label: 'Business briefing',           color: '#C84B0C', time: '~5 min' },
-  phase1:    { pct: 20,  label: 'Phase 1 · Watching Arjun',    color: '#C84B0C', time: '~20 min' },
-  p1summary: { pct: 48,  label: 'Phase 1 complete',            color: '#1A6B45' },
-  phase2:    { pct: 52,  label: 'Phase 2 · Your investigation',color: '#4F80FF', time: '~25 min' },
-  paywall:   { pct: 88,  label: 'Phase 2 complete',            color: '#3DD68C' },
-  phase3:    { pct: 92,  label: 'Phase 3 · Open workbench',    color: '#3DD68C', time: '~10 min' },
-  debrief:   { pct: 100, label: 'Case complete',               color: '#3DD68C' },
+  landing:   { pct: 2,   label: 'Getting started',             color: 'var(--phase1)' },
+  gap:       { pct: 6,   label: 'Warm-up exercise',            color: 'var(--phase1)', time: '~2 min' },
+  context:   { pct: 12,  label: 'Business briefing',           color: 'var(--phase1)', time: '~5 min' },
+  phase1:    { pct: 20,  label: 'Phase 1 · Watching Arjun',    color: 'var(--phase1)', time: '~20 min' },
+  p1summary: { pct: 48,  label: 'Phase 1 complete',            color: 'var(--phase3)' },
+  phase2:    { pct: 52,  label: 'Phase 2 · Your investigation',color: 'var(--phase2)', time: '~25 min' },
+  paywall:   { pct: 88,  label: 'Phase 2 complete',            color: 'var(--green)' },
+  phase3:    { pct: 92,  label: 'Phase 3 · Open workbench',    color: 'var(--green)', time: '~10 min' },
+  debrief:   { pct: 100, label: 'Case complete',               color: 'var(--green)' },
 };
 
-const DARK_SECTIONS = new Set(['phase2', 'phase3', 'paywall']);
 const FULL_WIDTH_SECTIONS = new Set(['phase1', 'phase2', 'phase3']);
 
 // ── Phase Transition Splash ───────────────────────────────────────────────────
@@ -47,16 +46,16 @@ function PhaseSplash({ phase, onDone }) {
       title: 'Phase 1 Complete',
       subtitle: 'You watched a senior analyst work live.',
       stat: 'Now it\'s your turn.',
-      color: '#3DD68C',
-      bg: 'from-[#0D0F14] to-[#111820]',
+      color: 'var(--green)',
+      bg: 'from-bg to-surface',
     },
     p2complete: {
       icon: '⚡',
       title: 'Root Cause Found',
       subtitle: 'Two causes. Quantified. Confirmed.',
       stat: 'That\'s the ₹28L move.',
-      color: '#4F80FF',
-      bg: 'from-[#0D0F14] to-[#0D1120]',
+      color: 'var(--phase2)',
+      bg: 'from-bg to-surface',
     },
   }[phase] || {};
 
@@ -67,7 +66,7 @@ function PhaseSplash({ phase, onDone }) {
         <h2 className="font-serif text-4xl mb-3 font-semibold" style={{ color: config.color }}>
           {config.title}
         </h2>
-        <p className="text-[#9BA3B8] text-lg mb-2">{config.subtitle}</p>
+        <p className="text-ink2 text-lg mb-2">{config.subtitle}</p>
         <p className="font-mono text-[13px]" style={{ color: config.color }}>{config.stat}</p>
         <div className="mt-8 flex justify-center gap-1.5">
           {[0,1,2].map(i => (
@@ -87,7 +86,7 @@ function Confetti() {
     x: Math.random() * 100,
     delay: Math.random() * 2,
     duration: 2.5 + Math.random() * 2,
-    color: ['#FF6B2B','#4F80FF','#3DD68C','#F5A623','#FF5A65','#A78BFA'][Math.floor(Math.random()*6)],
+    color: ['var(--phase1)','var(--phase2)','var(--phase3)','var(--amber)','var(--red)','#A78BFA'][Math.floor(Math.random()*6)],
     size: 6 + Math.random() * 6,
     rotate: Math.random() * 360,
   }));
@@ -119,7 +118,6 @@ export default function SwiggyCase() {
   const [splash, setSplash]       = useState(null); // 'p1complete' | 'p2complete'
   const [showConfetti, setConfetti] = useState(false);
 
-  const isDark = DARK_SECTIONS.has(state.section);
   const isFullWidth = FULL_WIDTH_SECTIONS.has(state.section);
   const isInvestigation = state.section === 'phase2';
   const progress = PROGRESS[state.section] || PROGRESS.landing;
@@ -267,8 +265,6 @@ export default function SwiggyCase() {
 
   return (
     <PremiumShell
-      showOrbs={false}
-      showGrid={false}
       className={`font-sans phase-bg-transition ${isInvestigation ? 'investigation-mode' : ''}`}
     >
 
@@ -313,23 +309,22 @@ export default function SwiggyCase() {
       </div>
 
       {/* ── Progress strip ── */}
-      <ProgressStrip pct={progress.pct} label={progress.label} color={progress.color} time={progress.time} dark={isDark} />
+      <ProgressStrip pct={progress.pct} label={progress.label} color={progress.color} time={progress.time} />
 
       {/* ── Resume banner ── */}
       {showResume && !['debrief','paywall'].includes(state.section) && (
         <div className="px-5 mt-4">
-          <div className="max-w-4xl mx-auto px-4 py-3 rounded-xl flex items-center justify-between gap-3"
-            style={{ background: 'var(--phase2-bg)', border: '1px solid var(--phase2-border)' }}>
-            <p className="text-[13px]" style={{ color: 'var(--ink)' }}>You were partway through this case study.</p>
+          <div className="max-w-4xl mx-auto px-4 py-3 rounded-xl flex items-center justify-between gap-3 glass">
+            <p className="text-[13px] text-ink2">You were partway through this case study.</p>
             <div className="flex gap-2">
               <button onClick={reset}
-                className="px-3 py-1.5 text-[12px] rounded-lg transition-colors"
-                style={{ border: '1px solid var(--border)', color: 'var(--ink2)', background: 'var(--bg)' }}>
+                className="px-3 py-1.5 text-[12px] rounded-lg transition-colors text-ink3 hover:text-ink"
+                style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
                 Start over
               </button>
               <button onClick={() => goTo(state.section)}
-                className="px-3 py-1.5 text-[12px] rounded-lg transition-colors"
-                style={{ background: 'var(--phase2)', color: 'white' }}>
+                className="px-3 py-1.5 text-[12px] rounded-lg font-medium text-white transition-all hover:opacity-90"
+                style={{ background: 'var(--phase2)' }}>
                 Continue →
               </button>
             </div>

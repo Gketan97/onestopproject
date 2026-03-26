@@ -84,10 +84,10 @@ export default function GapSection({ onDone }) {
       {stage === 'revealed' && result && (
         <div className="space-y-3">
           {/* Score card */}
-          <div className="splash-in rounded-xl overflow-hidden" style={{ background: 'var(--ink)', border: '1px solid rgba(255,255,255,0.06)' }}>
+          <div className="splash-in rounded-xl overflow-hidden" style={{ background: 'var(--surface2)', border: '1px solid var(--border2)' }}>
             <div className="px-4 py-4 flex items-center justify-between">
               <div>
-                <p className="font-mono text-[9px] uppercase tracking-widest mb-1" style={{ color: 'rgba(255,255,255,0.3)' }}>Your warm-up result</p>
+                <p className="font-mono text-[9px] uppercase tracking-widest mb-1" style={{ color: 'var(--ink3)' }}>Your warm-up result</p>
                 <p className="font-serif text-2xl font-semibold"
                   style={{ color: result.isStrong ? '#3DD68C' : '#F5A623' }}>
                   {result.isStrong ? 'Strong answer' : 'Partial coverage'}
@@ -101,8 +101,8 @@ export default function GapSection({ onDone }) {
                 {result.isStrong ? '✓' : '◑'}
               </div>
             </div>
-            <div className="px-4 py-3 border-t" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-              <p className="text-sm italic leading-relaxed" style={{ color: 'rgba(255,255,255,0.6)' }}>{value}</p>
+            <div className="px-4 py-3 border-t" style={{ borderColor: 'var(--border)' }}>
+              <p className="text-sm italic leading-relaxed" style={{ color: 'var(--ink2)' }}>{value}</p>
             </div>
           </div>
 

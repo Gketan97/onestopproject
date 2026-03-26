@@ -134,9 +134,9 @@ const PortfolioPage = () => {
 
   // Estimated dimension scores from overall
   const dims = score != null ? [
-    { label: 'Hypothesis quality', value: Math.round(score * 0.33), max: 33, color: '#C84B0C' },
-    { label: 'SQL correctness', value: Math.round(score * 0.34), max: 34, color: '#1E4FCC' },
-    { label: 'Communication clarity', value: Math.round(score * 0.33), max: 33, color: '#1A6B45' },
+    { label: 'Hypothesis quality', value: Math.round(score * 0.33), max: 33, color: 'var(--phase1)' },
+    { label: 'SQL correctness', value: Math.round(score * 0.34), max: 34, color: 'var(--phase2)' },
+    { label: 'Communication clarity', value: Math.round(score * 0.33), max: 33, color: 'var(--phase3)' },
   ] : [];
 
   return (

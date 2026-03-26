@@ -19,7 +19,7 @@ export default function PaywallSection({ vpText = '', onUnlock, onSkip }) {
           order_id: order.orderId,
           name: 'onestopcareers',
           description: 'Phase 3 — Swiggy Advanced Analytics',
-          theme: { color: '#C84B0C' },
+          theme: { color: 'var(--phase1)' },
           handler: () => onUnlock(),
           modal: { ondismiss: () => { if (btn) { btn.textContent = 'Unlock Phase 3 — ₹499 →'; btn.disabled = false; } } },
         };
@@ -54,9 +54,9 @@ export default function PaywallSection({ vpText = '', onUnlock, onSkip }) {
       </div>
 
       {vpText && (
-        <div className="bg-ink rounded-xl p-4 mb-4">
-          <p className="font-mono text-[9px] text-white/40 tracking-widest uppercase mb-2">Your VP message</p>
-          <p className="text-[12px] text-white leading-relaxed italic">{vpText.slice(0, 300)}{vpText.length > 300 ? '...' : ''}</p>
+        <div className="rounded-xl p-4 mb-4 glass">
+          <p className="font-mono text-[9px] text-ink3 tracking-widest uppercase mb-2">Your VP message</p>
+          <p className="text-[12px] text-ink2 leading-relaxed italic">{vpText.slice(0, 300)}{vpText.length > 300 ? '...' : ''}</p>
         </div>
       )}
 
@@ -91,14 +91,14 @@ export default function PaywallSection({ vpText = '', onUnlock, onSkip }) {
       </div>
 
       {/* CTA card */}
-      <div className="bg-ink rounded-xl p-4">
+      <div className="rounded-xl p-4 glass">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <p className="text-white font-mono text-2xl font-bold">₹499</p>
-            <p className="text-white/40 text-[11px] mt-0.5">One-time · Instant access · No account</p>
+            <p className="text-ink font-mono text-2xl font-bold">₹499</p>
+            <p className="text-ink3 text-[11px] mt-0.5">One-time · Instant access · No account</p>
           </div>
           <div className="text-right">
-            <p className="text-white/40 text-[11px]">vs ₹18–35L roles</p>
+            <p className="text-ink3 text-[11px]">vs ₹18–35L roles</p>
             <p className="text-green text-[11px] font-semibold mt-0.5">you're targeting</p>
           </div>
         </div>
@@ -112,7 +112,7 @@ export default function PaywallSection({ vpText = '', onUnlock, onSkip }) {
         {IS_DEV && (
           <div className="mt-3 p-3 bg-green/10 border border-green/20 rounded-lg">
             <p className="font-mono text-[10px] text-green mb-2">⚡ DEV MODE</p>
-            <button onClick={onUnlock} className="w-full py-2 bg-phase2 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+            <button onClick={onUnlock} className="w-full py-2 bg-phase2 text-white text-sm font-medium rounded-lg hover:opacity-90 transition-colors">
               Continue to Phase 3 (dev) →
             </button>
           </div>

@@ -87,13 +87,13 @@ export default function DebriefSection({ state }) {
 
       {/* ── Analyst Stats Splash ── */}
       <div className="splash-in rounded-2xl overflow-hidden mb-6 mt-4"
-        style={{ background: 'linear-gradient(135deg, #0D1120 0%, #111820 100%)', border: '1px solid rgba(79,128,255,0.2)' }}>
+        style={{ background: 'var(--surface)', border: '1px solid rgba(79,128,255,0.2)' }}>
         <div className="px-6 pt-6 pb-4 border-b" style={{ borderColor: 'rgba(79,128,255,0.15)' }}>
           <div className="flex items-center gap-2 mb-4">
-            <span className="font-mono text-[10px] font-bold tracking-widest uppercase" style={{ color: '#4F80FF' }}>
+            <span className="font-mono text-[10px] font-bold tracking-widest uppercase" style={{ color: 'var(--phase2)' }}>
               Case 01 · Swiggy Orders Investigation
             </span>
-            <span className="font-mono text-[10px]" style={{ color: '#4A5068' }}>· Complete</span>
+            <span className="font-mono text-[10px]" style={{ color: 'var(--ink3)' }}>· Complete</span>
           </div>
           <div className="flex items-end gap-4">
             <div>
@@ -101,7 +101,7 @@ export default function DebriefSection({ state }) {
                 style={{ color: score >= 75 ? '#3DD68C' : score >= 50 ? '#F5A623' : '#FF5A65' }}>
                 {score}
               </div>
-              <p className="font-mono text-[11px]" style={{ color: '#4A5068' }}>/ 100 analyst score</p>
+              <p className="font-mono text-[11px]" style={{ color: 'var(--ink3)' }}>/ 100 analyst score</p>
             </div>
             <div className="flex-1 pb-1">
               <div className="h-2 rounded-full mb-1" style={{ background: 'rgba(255,255,255,0.06)' }}>
@@ -112,7 +112,7 @@ export default function DebriefSection({ state }) {
                     boxShadow: `0 0 12px ${score >= 75 ? '#3DD68C' : score >= 50 ? '#F5A623' : '#FF5A65'}60`
                   }} />
               </div>
-              <p className="font-mono text-[10px]" style={{ color: '#4A5068' }}>
+              <p className="font-mono text-[10px]" style={{ color: 'var(--ink3)' }}>
                 {score >= 75 ? 'Strong performance — top 25%' : score >= 50 ? 'Solid — keep practising' : 'Good start — try again'}
               </p>
             </div>
@@ -122,14 +122,14 @@ export default function DebriefSection({ state }) {
         <div className="grid grid-cols-4 divide-x" style={{ borderColor: 'rgba(79,128,255,0.1)' }}>
           {[
             { label: 'Behaviours', val: `${behavioursDone}/8`,   sub: 'demonstrated',  color: behavioursDone >= 6 ? '#3DD68C' : '#F5A623' },
-            { label: 'Queries',    val: p2QueryCount || 0,        sub: 'SQL written',    color: '#E8EAF0' },
-            { label: 'Time',       val: fmt(p2ElapsedSeconds||0), sub: 'Phase 2',        color: '#E8EAF0' },
+            { label: 'Queries',    val: p2QueryCount || 0,        sub: 'SQL written',    color: 'var(--ink)' },
+            { label: 'Time',       val: fmt(p2ElapsedSeconds||0), sub: 'Phase 2',        color: 'var(--ink)' },
             { label: 'Phases',     val: completedPhases.length,   sub: 'completed',      color: completedPhases.length >= 3 ? '#3DD68C' : '#4F80FF' },
           ].map(({ label, val, sub, color }, idx) => (
             <div key={label} className="stat-counter text-center px-4 py-4" style={{ borderColor: 'rgba(79,128,255,0.1)', animationDelay: `${idx * 150}ms` }}>
               <div className="font-mono text-xl font-bold mb-0.5" style={{ color }}>{val}</div>
-              <div className="font-mono text-[9px] uppercase tracking-widest" style={{ color: '#4A5068' }}>{label}</div>
-              <div className="text-[10px] mt-0.5" style={{ color: '#4A5068' }}>{sub}</div>
+              <div className="font-mono text-[9px] uppercase tracking-widest" style={{ color: 'var(--ink3)' }}>{label}</div>
+              <div className="text-[10px] mt-0.5" style={{ color: 'var(--ink3)' }}>{sub}</div>
             </div>
           ))}
         </div>
@@ -184,15 +184,15 @@ export default function DebriefSection({ state }) {
           <div className="bg-surface border border-border rounded-xl p-4 mb-4">
             <p className="text-[13px] text-ink2 leading-relaxed">{profile}</p>
           </div>
-          <div className="bg-ink rounded-xl p-4 mb-5">
-            <p className="font-mono text-[9px] text-white/40 tracking-widest uppercase mb-2">What your interviewer would write</p>
-            <p className="text-[13px] text-white/80 leading-relaxed italic">{interviewer}</p>
+          <div className="glass rounded-xl p-4 mb-5" style={{ border: '1px solid rgba(79,128,255,0.2)' }}>
+            <p className="font-mono text-[9px] text-ink3 tracking-widest uppercase mb-2">What your interviewer would write</p>
+            <p className="text-[13px] text-ink2 leading-relaxed italic">{interviewer}</p>
           </div>
 
           {/* Portfolio share */}
-          <div className="bg-ink rounded-xl p-4 mb-4">
-            <p className="text-white text-[14px] font-semibold mb-2">Your portfolio link</p>
-            <div className="bg-white/5 rounded-lg px-3 py-2 font-mono text-[11px] text-white/50 mb-3 break-all">{portfolioUrl}</div>
+          <div className="glass rounded-xl p-4 mb-4" style={{ border: '1px solid var(--border2)' }}>
+            <p className="text-ink text-[14px] font-semibold mb-2">Your portfolio link</p>
+            <div className="bg-surface2 rounded-lg px-3 py-2 font-mono text-[11px] text-ink3 mb-3 break-all">{portfolioUrl}</div>
             <div className="flex gap-2">
               <button onClick={copyUrl} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 border border-border rounded-lg text-[13px] font-medium text-ink2 bg-bg hover:bg-surface transition-colors">
                 {copied ? <Check size={13} className="text-green" /> : <Copy size={13} />}
