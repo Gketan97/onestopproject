@@ -183,11 +183,11 @@ body: new URLSearchParams(formData)
 if (response.ok) {
 setIsSubmitted(true);
 } else {
-alert('Failed to submit. Please try again.');
+setSubmitError('Failed to submit. Please try again.');
 }
 } catch (error) {
 console.error('Error submitting form:', error);
-alert('Something went wrong. Please try again later.');
+setSubmitError('Something went wrong. Please try again later.');
 }
 },
 [formData]

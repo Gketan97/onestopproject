@@ -4,15 +4,21 @@ import { GAP_CATEGORIES, MOCK } from '../data/swiggyData.js';
 import { useArjun } from '../hooks/useArjun.js';
 
 export default function GapSection({ onDone }) {
-  const [value, setValue] = useState('');
-  const [stage, setStage] = useState('input'); // input | loading | revealed
-  const [result, setResult] = useState(null);
+  const [value,   setValue]   = useState('');
+  const [stage,   setStage]   = useState('input'); // input | loading | revealed
+  const [result,  setResult]  = useState(null);
+  const [error,   setError]   = useState('');
   const { callArjun: call } = useArjun();
 
   const wc = value.trim().split(/\s+/).filter(Boolean).length;
+  const MIN_WORDS = 8;
 
   const submit = async () => {
-    if (wc < 10) { alert('Please write at least a few sentences.'); return; }
+    if (wc < MIN_WORDS) {
+      setError(`Please write at least ${MIN_WORDS} words — even a rough answer is fine.`);
+      return;
+    }
+    setError('');
     setStage('loading');
     const v = value.toLowerCase();
     const covered = {
@@ -38,27 +44,59 @@ export default function GapSection({ onDone }) {
       </div>
 
       <p className="font-mono text-[10px] font-semibold text-ink3 tracking-widest uppercase mb-3">Let's see how you think right now</p>
-      <h2 className="font-serif text-2xl text-ink mb-2">You're in an interview at Swiggy.</h2>
+      <h2 className="text-2xl text-ink font-semibold mb-2" style={{ letterSpacing: '-0.02em' }}>You're in an interview at Swiggy.</h2>
       <p className="text-sm text-ink2 mb-4">The interviewer says:</p>
 
       <SlackThread channel="interview · Swiggy analytics l2" className="mb-4">
-        <SlackMessage initials="IV" name="Interviewer" time="Product Analytics · Swiggy">
+        <SlackMessage initials="IV" name="Interviewer" meta="Product Analytics · Swiggy">
           A user opens the Swiggy app, browses restaurants for 3–5 minutes, then closes without ordering. What are all the reasons that might happen?
         </SlackMessage>
       </SlackThread>
 
       {stage === 'input' && (
-        <div className="bg-surface border border-border rounded-xl p-4">
+        <div className="rounded-xl p-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
           <p className="text-sm text-ink2 leading-relaxed mb-3">Answer as you would in the interview. Don't overthink — just write what comes to mind.</p>
           <textarea
             value={value}
-            onChange={e => setValue(e.target.value)}
+            onChange={e => { setValue(e.target.value); if (error) setError(''); }}
             placeholder="Write your answer here..."
-            className="w-full min-h-[110px] bg-bg border border-border rounded-lg px-3 py-2.5 text-sm text-ink leading-relaxed resize-y outline-none focus:border-border2 font-sans"
+            className="w-full min-h-[110px] rounded-lg px-3 py-2.5 text-sm text-ink leading-relaxed resize-y outline-none font-sans custom-scrollbar"
+            style={{
+              background: 'var(--surface2)',
+              border: `1px solid ${error ? 'var(--red)' : 'var(--border)'}`,
+              transition: 'border-color 0.2s',
+            }}
+            onFocus={e => { if (!error) e.target.style.borderColor = 'rgba(79,128,255,0.5)'; }}
+            onBlur={e => { if (!error) e.target.style.borderColor = 'var(--border)'; }}
           />
-          <div className="flex items-center justify-between mt-2">
-            <span className="text-[11px] text-ink3">{wc} words</span>
-            <button onClick={submit} className="px-4 py-1.5 bg-accent text-white text-xs font-medium rounded-lg hover:bg-accent-dark transition-colors">See how you did →</button>
+
+          {/* Inline error — replaces alert() */}
+          {error && (
+            <div className="flex items-center gap-2 mt-2 px-3 py-2 rounded-lg"
+              style={{ background: 'var(--red-bg)', border: '1px solid var(--red-border)' }}>
+              <span style={{ color: 'var(--red)', fontSize: 13 }}>⚠</span>
+              <p className="text-[12px]" style={{ color: 'var(--red)' }}>{error}</p>
+            </div>
+          )}
+
+          <div className="flex items-center justify-between mt-3">
+            <span className="font-mono text-[11px]" style={{
+              color: wc >= MIN_WORDS ? 'var(--green)' : 'var(--ink3)'
+            }}>
+              {wc} / {MIN_WORDS} words min
+            </span>
+            <button
+              onClick={submit}
+              className="px-4 py-1.5 text-white text-xs font-semibold rounded-lg transition-all btn-depress"
+              style={{
+                background: wc >= MIN_WORDS ? 'var(--accent)' : 'var(--surface2)',
+                color: wc >= MIN_WORDS ? 'white' : 'var(--ink3)',
+                border: `1px solid ${wc >= MIN_WORDS ? 'transparent' : 'var(--border)'}`,
+                cursor: wc >= MIN_WORDS ? 'pointer' : 'default',
+              }}
+            >
+              See how you did →
+            </button>
           </div>
         </div>
       )}
@@ -70,7 +108,7 @@ export default function GapSection({ onDone }) {
               style={{ background: 'var(--phase1-bg)', color: 'var(--phase1)', border: '1px solid var(--phase1-border)' }}>
               AJ
             </div>
-            <span className="text-[13px] font-medium" style={{ color: 'var(--ink)' }}>Arjun is reading your answer</span>
+            <span className="text-[13px] font-medium text-ink">Arjun is reading your answer</span>
           </div>
           <div className="flex items-center justify-center gap-1.5">
             {[0,1,2].map(i => (
@@ -87,9 +125,8 @@ export default function GapSection({ onDone }) {
           <div className="splash-in rounded-xl overflow-hidden" style={{ background: 'var(--surface2)', border: '1px solid var(--border2)' }}>
             <div className="px-4 py-4 flex items-center justify-between">
               <div>
-                <p className="font-mono text-[9px] uppercase tracking-widest mb-1" style={{ color: 'var(--ink3)' }}>Your warm-up result</p>
-                <p className="font-serif text-2xl font-semibold"
-                  style={{ color: result.isStrong ? '#3DD68C' : '#F5A623' }}>
+                <p className="font-mono text-[9px] uppercase tracking-widest mb-1 text-ink3">Your warm-up result</p>
+                <p className="text-2xl font-semibold" style={{ color: result.isStrong ? '#3DD68C' : '#F5A623' }}>
                   {result.isStrong ? 'Strong answer' : 'Partial coverage'}
                 </p>
               </div>
@@ -102,7 +139,7 @@ export default function GapSection({ onDone }) {
               </div>
             </div>
             <div className="px-4 py-3 border-t" style={{ borderColor: 'var(--border)' }}>
-              <p className="text-sm italic leading-relaxed" style={{ color: 'var(--ink2)' }}>{value}</p>
+              <p className="text-sm italic leading-relaxed text-ink2">{value}</p>
             </div>
           </div>
 
@@ -122,7 +159,7 @@ export default function GapSection({ onDone }) {
                       {cat.label}
                     </p>
                   </div>
-                  {!covered && <p className="text-[11px] leading-relaxed" style={{ color: 'var(--ink2)' }}>{cat.text}</p>}
+                  {!covered && <p className="text-[11px] leading-relaxed text-ink2">{cat.text}</p>}
                 </div>
               );
             })}
@@ -133,7 +170,7 @@ export default function GapSection({ onDone }) {
             <p className="font-mono text-[9px] font-semibold tracking-widest uppercase mb-2" style={{ color: 'var(--phase1)' }}>
               The structure that separates ₹18L from ₹28L
             </p>
-            <p className="text-[13px] leading-relaxed" style={{ color: 'var(--ink)' }}>
+            <p className="text-[13px] leading-relaxed text-ink">
               A senior analyst doesn't just list reasons — they structure into 4 categories, then rank by{' '}
               <strong>probability × testability</strong>. Platform friction is fastest to verify. Supply-side next. Demand-side last.
             </p>
@@ -141,12 +178,12 @@ export default function GapSection({ onDone }) {
 
           <button onClick={onDone}
             className="w-full py-3.5 text-white font-semibold rounded-xl text-sm btn-depress transition-all hover:-translate-y-px"
-            style={{ background: 'var(--accent)', boxShadow: '0 4px 20px rgba(200,75,12,0.28)' }}
+            style={{ background: 'var(--accent)', boxShadow: '0 4px 20px rgba(252,128,25,0.28)' }}
             onMouseEnter={e => e.currentTarget.style.background = 'var(--accent-dark)'}
             onMouseLeave={e => e.currentTarget.style.background = 'var(--accent)'}>
             Start the investigation →
           </button>
-          <p className="text-center text-[11px]" style={{ color: 'var(--ink3)' }}>Free · No account · ~45 min</p>
+          <p className="text-center text-[11px] text-ink3">Free · No account · ~45 min</p>
         </div>
       )}
     </div>

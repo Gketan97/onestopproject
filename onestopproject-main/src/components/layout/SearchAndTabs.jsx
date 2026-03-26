@@ -16,9 +16,14 @@ const TabButton = ({ tabName, activeTab, label, onClick }) => (
 );
 
 const SearchAndTabs = ({ activeTab, onTabClick, searchQuery, onSearchChange, onFilterClick }) => (
-  // BUG FIX #7: Replaced hardcoded md:top-[53px] with md:top-[var(--header-h)]
-  // Header height is declared as --header-h in index.css so both stay in sync.
-  <div className="sticky top-0 md:top-[var(--header-h)] bg-bg/95 backdrop-blur-md py-3 z-20 -mx-4 px-4 border-b border-border">
+  <div
+    className="sticky top-0 md:top-[var(--header-h)] py-3 z-20 -mx-4 px-4 border-b border-border"
+    style={{
+      background: 'rgba(8,8,16,0.88)',
+      backdropFilter: 'blur(16px)',
+      WebkitBackdropFilter: 'blur(16px)',
+    }}
+  >
     <div className="relative max-w-7xl mx-auto">
       {/* Search input */}
       <div className="relative mb-3">

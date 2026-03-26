@@ -5,13 +5,21 @@ import { Home, Briefcase, BookOpen } from 'lucide-react';
 const MobileNav = () => {
   const base = 'flex flex-col items-center justify-center flex-1 py-1 text-[10px] font-medium transition-colors duration-200';
   return (
-    <nav className="fixed bottom-0 left-0 w-full bg-bg/95 backdrop-blur-md z-50 border-t border-border flex h-14 md:hidden">
-      <NavLink to="/" className={({ isActive }) => `${base} ${isActive ? 'text-accent' : 'text-ink3'}`}>
+    <nav
+      className="fixed bottom-0 left-0 w-full z-50 flex h-14 md:hidden"
+      style={{
+        background: 'rgba(8,8,16,0.92)',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
+        borderTop: '1px solid var(--border)',
+      }}
+    >
+      <NavLink to="/" className={({ isActive }) => `${base} ${isActive ? 'text-accent' : 'text-ink3 hover:text-ink2'}`}>
         <Home className="w-5 h-5 mb-0.5" />
         <span>Home</span>
       </NavLink>
 
-      <NavLink to="/jobs" className={({ isActive }) => `${base} ${isActive ? 'text-accent' : 'text-ink3'}`}>
+      <NavLink to="/jobs" className={({ isActive }) => `${base} ${isActive ? 'text-accent' : 'text-ink3 hover:text-ink2'}`}>
         <Briefcase className="w-5 h-5 mb-0.5" />
         <span>Jobs</span>
       </NavLink>
@@ -19,7 +27,7 @@ const MobileNav = () => {
       <NavLink
         to="/case-studies"
         className={({ isActive }) =>
-          `${base} ${isActive ? 'text-accent bg-accent-light border-x border-accent-border' : 'text-ink2 hover:text-accent'}`
+          `${base} ${isActive ? 'text-accent' : 'text-ink3 hover:text-ink2'}`
         }
       >
         <BookOpen className="w-5 h-5 mb-0.5" />

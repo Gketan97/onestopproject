@@ -170,7 +170,7 @@ export default function SqlWorkbench({
 
   const evaluate = useCallback(async () => {
     const q = query.trim();
-    if (!q) { alert('Write a query first.'); return; }
+    if (!q) { setStatus({ text: 'Write a query first.', type: 'err' }); return; }
     await execQuery();
     setEvaluating(true);
     setEvalResult({ loading: true });

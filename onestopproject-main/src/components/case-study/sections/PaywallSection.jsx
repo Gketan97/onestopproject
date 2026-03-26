@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 export default function PaywallSection({ vpText = '', onUnlock, onSkip }) {
+  const [payError, setPayError] = useState('');
   const handlePayment = () => {
     const btn = document.getElementById('pay-btn');
     if (btn) { btn.textContent = 'Processing...'; btn.disabled = true; }
@@ -32,7 +33,10 @@ export default function PaywallSection({ vpText = '', onUnlock, onSkip }) {
         };
         load(() => new window.Razorpay(opts).open());
       })
-      .catch(() => { alert('Payment could not be initialised. Please try again.'); if (btn) { btn.textContent = 'Unlock Phase 3 — ₹499 →'; btn.disabled = false; } });
+      .catch(() => {
+        setPayError('Payment could not be initialised. Please try again.');
+        if (btn) { btn.textContent = 'Unlock Phase 3 — ₹499 →'; btn.disabled = false; }
+      });
   };
 
   const IS_DEV = import.meta.env.DEV;
@@ -109,6 +113,13 @@ export default function PaywallSection({ vpText = '', onUnlock, onSkip }) {
         >
           Unlock Phase 3 — ₹499 →
         </button>
+        {payError && (
+          <div className="flex items-center gap-2 mt-2 px-3 py-2 rounded-lg"
+            style={{ background: 'var(--red-bg)', border: '1px solid var(--red-border)' }}>
+            <span style={{ color: 'var(--red)', fontSize: 12 }}>⚠</span>
+            <p className="text-[12px]" style={{ color: 'var(--red)' }}>{payError}</p>
+          </div>
+        )}
         {IS_DEV && (
           <div className="mt-3 p-3 bg-green/10 border border-green/20 rounded-lg">
             <p className="font-mono text-[10px] text-green mb-2">⚡ DEV MODE</p>

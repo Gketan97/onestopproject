@@ -3,12 +3,14 @@ import { P1_STEPS } from '../data/swiggyData.js';
 
 export default function P1SummarySection({ predictions = {}, onDone }) {
   const [framework, setFramework] = useState('');
+  const [fwError,   setFwError]   = useState('');
   const [visible, setVisible] = useState(false);
 
   useEffect(() => { setTimeout(() => setVisible(true), 80); }, []);
 
   const proceed = () => {
-    if (framework.length < 10) { alert('Please write at least a sentence.'); return; }
+    if (framework.length < 10) { setFwError('Please write at least a sentence before continuing.'); return; }
+    setFwError('');
     onDone(framework);
   };
 
@@ -79,15 +81,22 @@ export default function P1SummarySection({ predictions = {}, onDone }) {
         </p>
         <textarea
           value={framework}
-          onChange={e => setFramework(e.target.value)}
+          onChange={e => { setFramework(e.target.value); if (fwError) setFwError(''); }}
           placeholder="I would first..."
           className="w-full min-h-[70px] rounded-lg px-3 py-2 text-sm resize-y outline-none font-sans"
           style={{
             background: 'var(--bg)',
-            border: '1px solid var(--border)',
+            border: `1px solid ${fwError ? 'var(--red)' : 'var(--border)'}`,
             color: 'var(--ink)',
           }}
         />
+        {fwError && (
+          <div className="flex items-center gap-1.5 mt-1.5 px-2.5 py-1.5 rounded-lg"
+            style={{ background: 'var(--red-bg)', border: '1px solid var(--red-border)' }}>
+            <span style={{ color: 'var(--red)', fontSize: 11 }}>⚠</span>
+            <p className="text-[11px]" style={{ color: 'var(--red)' }}>{fwError}</p>
+          </div>
+        )}
       </div>
 
       <button onClick={proceed}

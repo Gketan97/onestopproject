@@ -14,6 +14,7 @@ export default function ProduceFirst({
   const [phase,    setPhase]    = useState('input'); // input | loading | compare
   const [feedback, setFeedback] = useState('');
   const [showHint, setShowHint] = useState(false);
+  const [error,    setError]    = useState('');
   const { callArjun } = useArjun();
 
   const wc = wordCount(answer);
@@ -26,7 +27,11 @@ export default function ProduceFirst({
   const variantBg    = variant === 'p1' ? 'var(--phase1-bg)' : variant === 'p3' ? 'var(--phase3-bg)' : 'var(--phase2-bg)';
 
   const submit = async () => {
-    if (wc < minWords) { alert(`Please write at least ${minWords} words.`); return; }
+    if (wc < minWords) {
+      setError(`Write at least ${minWords} words — even a rough answer helps.`);
+      return;
+    }
+    setError('');
     setPhase('loading');
     const fb = await callArjun(`Step: ${id}\nUser answer: ${answer}\nEvaluate concisely.`, mockKey);
     setFeedback(fb);
@@ -50,17 +55,24 @@ export default function ProduceFirst({
         <div className="px-4 py-3" style={{ background: 'var(--bg)' }}>
           <textarea
             value={answer}
-            onChange={e => setAnswer(e.target.value)}
+            onChange={e => { setAnswer(e.target.value); if (error) setError(''); }}
             placeholder="Write your answer..."
-            className="w-full rounded-lg px-3 py-2.5 text-sm leading-relaxed resize-y min-h-[80px] outline-none font-sans transition-colors"
+            className="w-full rounded-lg px-3 py-2.5 text-sm leading-relaxed resize-y min-h-[80px] outline-none font-sans transition-colors custom-scrollbar"
             style={{
               background: 'var(--surface)',
-              border: '1px solid var(--border)',
+              border: `1px solid ${error ? 'var(--red)' : 'var(--border)'}`,
               color: 'var(--ink)',
             }}
-            onFocus={e => e.target.style.borderColor = variantColor}
-            onBlur={e => e.target.style.borderColor = 'var(--border)'}
+            onFocus={e => { if (!error) e.target.style.borderColor = variantColor; }}
+            onBlur={e => { if (!error) e.target.style.borderColor = 'var(--border)'; }}
           />
+          {error && (
+            <div className="flex items-center gap-1.5 mt-1.5 px-2.5 py-1.5 rounded-lg"
+              style={{ background: 'var(--red-bg)', border: '1px solid var(--red-border)' }}>
+              <span style={{ color: 'var(--red)', fontSize: 11 }}>⚠</span>
+              <p className="text-[11px]" style={{ color: 'var(--red)' }}>{error}</p>
+            </div>
+          )}
           <div className="flex items-center justify-between mt-2 flex-wrap gap-2">
             <span className="font-mono text-[10px]" style={{ color: 'var(--ink3)' }}>
               {wc} words {wc < minWords && <span style={{ color: 'var(--amber)' }}>(min {minWords})</span>}

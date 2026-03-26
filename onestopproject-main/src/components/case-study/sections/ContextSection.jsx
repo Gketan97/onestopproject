@@ -13,7 +13,7 @@ export default function ContextSection({ onDone }) {
   useEffect(() => { setTimeout(() => setVisible(true), 80); }, []);
 
   const check = async () => {
-    if (q1.length < 5 || q2.length < 5) { alert('Please answer both questions.'); return; }
+    if (q1.length < 5 || q2.length < 5) { return; } // fields bordered on focus; short answers silently blocked
     setStage('loading');
     await new Promise(r => setTimeout(r, 700));
     const v1 = q1.toLowerCase();
@@ -46,17 +46,35 @@ export default function ContextSection({ onDone }) {
 
       {stage === 'input' && (
         <div className="space-y-3 mt-3">
-          <div className="bg-surface border border-border rounded-xl p-4">
+          <div className="rounded-xl p-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
             <p className="text-[13px] font-semibold text-ink mb-2">Q1. "Completed orders only." — What does this tell you about where to look for the drop?</p>
             <textarea value={q1} onChange={e => setQ1(e.target.value)} placeholder="Your answer..."
-              className="w-full min-h-[60px] bg-bg border border-border rounded-lg px-3 py-2 text-sm text-ink resize-y outline-none focus:border-border2 font-sans" />
+              className="w-full min-h-[60px] rounded-lg px-3 py-2 text-sm text-ink resize-y outline-none font-sans custom-scrollbar"
+              style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}
+              onFocus={e => e.target.style.borderColor = 'rgba(79,128,255,0.5)'}
+              onBlur={e => e.target.style.borderColor = 'var(--border)'}
+            />
           </div>
-          <div className="bg-surface border border-border rounded-xl p-4">
+          <div className="rounded-xl p-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
             <p className="text-[13px] font-semibold text-ink mb-2">Q2. "We compare Tuesday to Tuesday." — Why does Swiggy always use same-day comparison?</p>
             <textarea value={q2} onChange={e => setQ2(e.target.value)} placeholder="Your answer..."
-              className="w-full min-h-[60px] bg-bg border border-border rounded-lg px-3 py-2 text-sm text-ink resize-y outline-none focus:border-border2 font-sans" />
+              className="w-full min-h-[60px] rounded-lg px-3 py-2 text-sm text-ink resize-y outline-none font-sans custom-scrollbar"
+              style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}
+              onFocus={e => e.target.style.borderColor = 'rgba(79,128,255,0.5)'}
+              onBlur={e => e.target.style.borderColor = 'var(--border)'}
+            />
           </div>
-          <button onClick={check} className="w-full py-3 bg-phase1 text-white font-medium rounded-xl text-sm hover:bg-accent-dark transition-colors">Check my answers →</button>
+          <button
+            onClick={check}
+            disabled={q1.length < 5 || q2.length < 5}
+            className="w-full py-3 text-white font-medium rounded-xl text-sm transition-all btn-depress disabled:opacity-40 disabled:cursor-not-allowed"
+            style={{ background: 'var(--phase1)' }}
+          >
+            Check my answers →
+          </button>
+          {(q1.length < 5 || q2.length < 5) && (
+            <p className="text-center text-[11px] text-ink3">Answer both questions to continue</p>
+          )}
         </div>
       )}
 
