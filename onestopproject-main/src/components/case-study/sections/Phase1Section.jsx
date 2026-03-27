@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import SlackThread, { SlackMessage } from '../shared/SlackThread.jsx';
 import ProduceFirst from '../shared/ProduceFirst.jsx';
-import { P1_STEPS, SQL_RES } from '../data/swiggyData.js';
+import { P1_STEPS, SQL_RES, SQL_RES_P1 } from '../data/swiggyData.js';
 
 
 // ── Typewriter hook ─────────────────────────────────────────
@@ -255,7 +255,7 @@ function Step({ step, onNext, onSavePrediction }) {
   const stepRef = useRef(null);
 
   const sqlData = useMemo(
-    () => step.reveal.sqlKey ? SQL_RES[step.reveal.sqlKey] : null,
+    () => step.reveal.sqlKey ? (SQL_RES[step.reveal.sqlKey] || SQL_RES_P1[step.reveal.sqlKey]) : null,
     [step.reveal.sqlKey]
   );
 

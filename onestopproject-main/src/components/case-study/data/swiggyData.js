@@ -381,3 +381,134 @@ export const SCHEMAS = {
     ],
   },
 };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// P1_STEPS  (Phase 1 investigation steps — used by Phase1Section cinematic rewrite)
+// ─────────────────────────────────────────────────────────────────────────────
+export const P1_STEPS = [
+  {
+    num: 1, title: 'Scope the metric',
+    arjun: "Before I touch any data — I need to confirm exactly what 'orders down 8.3%' means. Which metric? Completed orders only? Including cancellations? Platform-wide or a specific vertical? A wrong metric definition can send you down a 3-hour rabbit hole. I always clarify first.",
+    prediction: "Arjun is about to define which exact metric to use. What do you think he'll choose — and why does this choice matter?",
+    reveal: {
+      sqlTitle: 'metric_definition_check.sql', sqlKey: 'p1_metric_scope',
+      arjunAfter: "Confirmed: completed orders only, platform-wide, Tuesday-to-Tuesday comparison to control for day-of-week effects. The 8.3% is real — not a metric artefact. This is the baseline we'll work from. Note: same-day comparison eliminates weekend/weekday noise. Most analysts skip this step and build on a shaky foundation.",
+    },
+  },
+  {
+    num: 2, title: 'Establish the baseline',
+    arjun: "Now I have a clean metric. Before decomposing into segments, I need to confirm the magnitude and establish a 4-week rolling baseline. One week is noise. Four weeks tells me if this is an aberration or a trend. I also need to check: is this a platform-wide issue or is it concentrated?",
+    prediction: "Arjun is going to run a query to build the baseline. What pattern do you expect to see in the data — and what would confirm this is a real signal vs. noise?",
+    reveal: {
+      sqlTitle: 'baseline_tuesday_wow.sql', sqlKey: 'p1_baseline',
+      arjunAfter: "The 4-week baseline is clear: orders were stable at ~2.18M/Tue, then dropped -3.0% last week and -8.3% this week. This is accelerating, not a one-off. Two consecutive drops means there's a structural cause — not weather, not a one-day anomaly. I need to decompose by user segment now.",
+    },
+  },
+  {
+    num: 3, title: 'Segment decomposition',
+    arjun: "With an accelerating drop confirmed, I decompose by user segment. My hypothesis: returning users and new users will behave differently. A drop in returning users suggests platform retention failure. A drop in new users suggests acquisition or first-experience failure. These have completely different fixes.",
+    prediction: "Which user segment do you think is driving the drop — new users, returning users, or resurrected users? And what would each answer imply about the root cause?",
+    reveal: {
+      sqlTitle: 'segment_decomposition.sql', sqlKey: 'p1_segments',
+      arjunAfter: "There it is. Returning users dropped -13.8% WoW. New users are flat. Resurrected users actually UP +24.8%. This is not an acquisition problem — it's a retention problem. Specifically: users who ordered before are not coming back this week. The question now is: why aren't returning users ordering?",
+    },
+  },
+  {
+    num: 4, title: 'Funnel drop identification',
+    arjun: "Returning users aren't ordering. The next question: where in the funnel are they dropping? Are they not opening the app (notification/re-engagement failure)? Opening but not browsing? Browsing but not adding to cart? Each drop point has a different cause.",
+    prediction: "In the user funnel (app open → browse → add to cart → payment → order), where do you think returning users are dropping off? Name the step and your reasoning.",
+    reveal: {
+      sqlTitle: 'returning_user_funnel.sql', sqlKey: 'p1_funnel',
+      arjunAfter: "The drop happens at the very top: app opens for returning users are down 18% WoW. They're not even opening the app — which means this is a CRM/notification problem, not a product or payment problem. If they opened and browsed but didn't order, I'd look at restaurant quality or pricing. But the problem is upstream.",
+    },
+  },
+  {
+    num: 5, title: 'Identify the CRM signal',
+    arjun: "App opens down 18% for returning users. My immediate hypothesis: CRM notification suppression. Either a campaign was turned off, a segment was accidentally excluded, or there's a delivery failure in our push/email pipeline. This is the most testable hypothesis — I can check notification delivery logs directly.",
+    prediction: "Arjun suspects a CRM notification issue. What data would you pull to confirm or rule this out? Name the table/query you'd run.",
+    reveal: {
+      sqlTitle: 'crm_notification_audit.sql', sqlKey: 'p1_crm',
+      arjunAfter: "Confirmed. Returning user notification delivery rate dropped to 0 starting Monday. A segment configuration change suppressed the entire returning-user re-engagement campaign. 181,000 users received nothing this week. This is Cause 1. Now I need to check if there's a second, independent cause — or if this explains the full drop.",
+    },
+  },
+  {
+    num: 6, title: 'Residual analysis + second cause',
+    arjun: "The CRM suppression explains most of the returning user drop. But there's a residual: the North Bangalore Biryani segment is down 32.9% — far more than the platform average and more than CRM alone can explain. Something else is happening in this specific geography/cuisine combination.",
+    prediction: "There's a second cause hiding in North Bangalore's Biryani segment. What's your hypothesis — restaurant quality, competitor promotion, delivery capacity, or something else?",
+    reveal: {
+      sqlTitle: 'nb_biryani_investigation.sql', sqlKey: 'p1_biryani',
+      arjunAfter: "Two causes found. In North Bangalore's Biryani segment: (1) Restaurant quality degraded — Biryani Palace NB and Royal Biryani both dropped below 3.5★ after a series of complaints. (2) Zomato ran a 40% discount promo on the same restaurants this week, pulling price-sensitive users. Total impact: ~₹28L/month in lost GMV.",
+    },
+  },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Additional SQL_RES entries for P1_STEPS (merged with existing SQL_RES above)
+// ─────────────────────────────────────────────────────────────────────────────
+// Note: extend the existing SQL_RES object with these new keys
+export const SQL_RES_P1 = {
+  p1_metric_scope: {
+    status: '1 row · 42ms',
+    cols: ['metric_definition', 'scope', 'comparison_method', 'baseline_period'],
+    rows: [['completed_orders', 'platform_wide', 'same_day_wow', 'Mon Oct 14 – Mon Oct 21']],
+    hl: [], hlg: [0],
+  },
+  p1_segments: {
+    status: '4 rows · 210ms',
+    cols: ['user_segment', 'orders_this_week', 'orders_last_week', 'wow_change', 'pct_of_total'],
+    rows: [
+      ['New users (first order)',        '186,000',   '184,000',   '+1.1%',   '9.3%'],
+      ['Returning users (2–10 orders)',   '891,000', '1,034,000', '-13.8% ⚠', '44.6%'],
+      ['Resurrected (>30d gap)',          '430,000',   '344,000',  '+24.8%',  '21.5%'],
+      ['Power users (>20 orders/month)',  '492,000',   '488,000',   '+0.8%',  '24.6%'],
+    ],
+    hl: [1], hlg: [2],
+  },
+  p1_funnel: {
+    status: '5 rows · 290ms',
+    cols: ['funnel_step', 'returning_users_this_wk', 'returning_users_last_wk', 'wow_change'],
+    rows: [
+      ['App opens',          '1,240,000', '1,512,000', '-18.0% ⚠'],
+      ['Restaurant browse',   '890,000',   '981,000',  '-9.3%'],
+      ['Menu views',          '622,000',   '687,000',  '-9.5%'],
+      ['Add to cart',         '334,000',   '370,000',  '-9.7%'],
+      ['Order completed',     '891,000', '1,034,000',  '-13.8%'],
+    ],
+    hl: [0], hlg: [],
+  },
+  p1_biryani: {
+    status: '6 rows · 340ms',
+    cols: ['factor', 'metric', 'value', 'vs_prev_week', 'impact'],
+    rows: [
+      ['Restaurant quality', 'Biryani Palace NB avg_rating',  '3.2★', 'was 4.1★ (-0.9)', 'HIGH ⚠'],
+      ['Restaurant quality', 'Royal Biryani avg_rating',      '3.4★', 'was 4.3★ (-0.9)', 'HIGH ⚠'],
+      ['Restaurant quality', 'complaint_rate',               '+290%', 'vs prior 4-week avg', 'HIGH ⚠'],
+      ['Competitor promo',   'Zomato NB Biryani discount',    '40%',  'started Mon Oct 21', 'HIGH ⚠'],
+      ['Competitor promo',   'Swiggy NB Biryani orders',    '-32.9%', 'WoW', 'CONFIRMED'],
+      ['Combined GMV impact','monthly_loss_estimate',        '₹8.8L', '/month unresolved', 'CONFIRMED'],
+    ],
+    hl: [0, 1, 2, 3], hlg: [4, 5],
+  },
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// P2_PRODUCE_FIRST  (produce-before-consume prompts for Phase 2)
+// ─────────────────────────────────────────────────────────────────────────────
+export const P2_PRODUCE_FIRST = {
+  clarify: {
+    prompt: "What clarification do you ask Priya before pulling any data?",
+    mock: "Priya, to confirm: we're looking at North Bangalore specifically, Biryani category, completed orders only — right? And is the -34% against last Monday or the 4-week Tuesday average?",
+  },
+  decompose: {
+    prompt: "Based on the baseline, what are your top 3 hypotheses for the Biryani drop?",
+    mock: "Hypothesis 1: Restaurant quality degradation in specific Biryani outlets (supply-side). Hypothesis 2: Competitor promotional pricing pulling price-sensitive users (external). Hypothesis 3: Delivery time increase making the segment uncompetitive (supply-side).",
+  },
+  causation: {
+    prompt: "State your root cause conclusion with supporting evidence from the data.",
+    mock: "Root cause 1 (primary): Two key Biryani restaurants dropped below 3.5★ following a complaint spike (+290%), causing organic abandonment. Root cause 2 (amplifier): Zomato ran a 40% promo on the same geography starting Monday, pulling price-sensitive users. Combined effect: -32.9% WoW, -₹8.8L/month.",
+  },
+  vp: {
+    prompt: "Write your executive message to Priya (VP Growth) — max 5 sentences.",
+    mock: "Priya — North Bangalore Biryani is down 32.9% WoW, equivalent to ₹8.8L/month lost GMV. Root cause: restaurant quality degradation at Biryani Palace NB and Royal Biryani (both below 3.5★), amplified by a Zomato 40% promo in the same geography starting Monday. Immediate action: (1) quality intervention at both restaurants by Wednesday, (2) targeted counter-promo for NB Biryani users. Expected recovery: 60–70% of drop within 2 weeks.",
+  },
+};

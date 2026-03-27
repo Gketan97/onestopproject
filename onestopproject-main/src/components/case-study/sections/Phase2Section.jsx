@@ -4,6 +4,8 @@ import ArjunVoice from '../shared/ArjunVoice.jsx';
 import ProduceFirst from '../shared/ProduceFirst.jsx';
 import SqlWorkbench from '../shared/SqlWorkbench.jsx';
 import SchemaPanel from '../shared/SchemaPanel.jsx';
+import ArjunMentor from '../ArjunMentor.jsx';
+import StrategicWorkbench from '../StrategicWorkbench.jsx';
 import { useP2Timer } from '../hooks/useP2Timer.js';
 import { useArjun } from '../hooks/useArjun.js';
 
@@ -359,6 +361,43 @@ export default function Phase2Section({
         ))}
 
         {showAskBar && <AskArjunBar onAsk={onQueryCount} />}
+
+        {/* ArjunMentor thread — from step 2 */}
+        {stepIdx >= 1 && (
+          <div className="mt-8">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.06)" }} />
+              <span className="font-mono text-[10px] uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.2)" }}>
+                Arjun · Available for questions
+              </span>
+              <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.06)" }} />
+            </div>
+            <ArjunMentor
+              milestone="synthesis"
+              dirtyDataEnabled={true}
+              onDirtyDataTrigger={onBehaviour ? () => onBehaviour("sanity", "Skipped data sanity check", "Needs improvement") : undefined}
+              initialMessages={[{
+                from: "arjun",
+                text: "You've seen the baseline. What's your working hypothesis right now — before you look at any more data?",
+                time: "10:15",
+              }]}
+            />
+          </div>
+        )}
+
+        {/* Strategic Workbench — from investigate step */}
+        {stepIdx >= 3 && (
+          <div className="mt-8">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.06)" }} />
+              <span className="font-mono text-[10px] uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.2)" }}>
+                Strategic Workbench · NL data requests
+              </span>
+              <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.06)" }} />
+            </div>
+            <StrategicWorkbench phase={2} dirtyDataTriggered={stepIdx >= 4} />
+          </div>
+        )}
 
       </div>
     </div>

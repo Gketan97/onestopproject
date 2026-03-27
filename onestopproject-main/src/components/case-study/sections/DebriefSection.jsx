@@ -11,6 +11,56 @@ function genId() {
 
 // Portfolio saving handled by portfolioService.js
 
+
+// ── War Room Score Card ───────────────────────────────────────────────────────
+function WarRoomScoreCard({ warRoomResult }) {
+  const WR_MILESTONES = [
+    { id: 'metric',     label: 'Metric Scoping',  icon: '◎' },
+    { id: 'sanity',     label: 'Data Sanity',      icon: '⚠' },
+    { id: 'hypothesis', label: 'Hypothesis MECE',  icon: '⊞' },
+    { id: 'synthesis',  label: 'Synthesis',        icon: '◈' },
+    { id: 'impact',     label: 'Impact Sizing',    icon: '△' },
+    { id: 'brief',      label: 'Executive Brief',  icon: '✦' },
+  ];
+  return (
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+      className="rounded-2xl overflow-hidden mb-6"
+      style={{ background: 'rgba(252,128,25,0.04)', border: '1px solid rgba(252,128,25,0.2)' }}>
+      <div className="px-5 py-4 border-b flex items-center justify-between"
+        style={{ borderColor: 'rgba(252,128,25,0.15)', background: 'rgba(252,128,25,0.06)' }}>
+        <div>
+          <p className="font-mono text-[10px] uppercase tracking-widest mb-0.5" style={{ color: 'rgba(252,128,25,0.6)' }}>War Room · Completed</p>
+          <p className="font-mono text-base font-bold" style={{ color: '#FC8019' }}>Strategic Incident Simulator</p>
+        </div>
+        <div className="w-12 h-12 rounded-xl flex items-center justify-center"
+          style={{ background: 'rgba(252,128,25,0.12)', border: '1px solid rgba(252,128,25,0.25)' }}>
+          <span style={{ fontSize: 20 }}>⚡</span>
+        </div>
+      </div>
+      <div className="p-4">
+        <div className="grid grid-cols-2 gap-2 mb-4">
+          {WR_MILESTONES.map((m, i) => (
+            <div key={m.id} className="rounded-xl px-3 py-2.5 flex items-center gap-2"
+              style={{ background: 'rgba(61,214,140,0.05)', border: '1px solid rgba(61,214,140,0.15)' }}>
+              <span style={{ color: '#3DD68C', fontSize: 12 }}>✓</span>
+              <div>
+                <p className="font-mono text-[9px] uppercase tracking-widest" style={{ color: '#3DD68C' }}>M{i+1}</p>
+                <p className="font-mono text-[11px]" style={{ color: 'rgba(255,255,255,0.65)' }}>{m.label}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+        {warRoomResult?.brief && (
+          <div className="rounded-xl p-3.5" style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <p className="font-mono text-[9px] uppercase tracking-widest mb-2" style={{ color: 'rgba(255,255,255,0.25)' }}>Your Executive Brief</p>
+            <p className="text-sm leading-relaxed italic" style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12 }}>{warRoomResult.brief}</p>
+          </div>
+        )}
+      </div>
+    </motion.div>
+  );
+}
+
 export default function DebriefSection({ state }) {
   const { behaviours, behaviourQuality, evidence, p2ElapsedSeconds, p2QueryCount, hints, completedPhases, p2Answers = {}, p3Answers = {} } = state;
   const [stage, setStage] = useState('loading'); // loading | ready
@@ -84,6 +134,14 @@ export default function DebriefSection({ state }) {
 
   return (
     <div className="px-5 pb-10">
+
+      {/* War Room score card — shown if user completed the war room */}
+      {state.completedWarRoom && (
+        <div className="mt-4">
+          <WarRoomScoreCard warRoomResult={state.warRoomResult} />
+        </div>
+      )}
+
 
       {/* ── Analyst Stats Splash ── */}
       <div className="splash-in rounded-2xl overflow-hidden mb-6 mt-4"

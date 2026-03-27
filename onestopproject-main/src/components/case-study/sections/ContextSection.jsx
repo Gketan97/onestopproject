@@ -1,12 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import SlackThread, { SlackMessage } from '../shared/SlackThread.jsx';
 import ArjunVoice from '../shared/ArjunVoice.jsx';
+import IncidentContext from './IncidentContext.jsx';
 import { MOCK } from '../data/swiggyData.js';
 
 export default function ContextSection({ onDone }) {
   const [q1, setQ1] = useState('');
   const [q2, setQ2] = useState('');
-  const [stage, setStage] = useState('input');
+  const [stage, setStage] = useState('kpi'); // kpi | input | loading | revealed
+
+  // Show the full incident context dashboard first
+  if (stage === 'kpi') {
+    return <IncidentContext onDone={() => setStage('input')} />;
+  }
   const [result, setResult] = useState(null);
   const [visible, setVisible] = useState(false);
 

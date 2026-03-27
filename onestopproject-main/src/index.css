@@ -507,3 +507,57 @@ textarea::placeholder, input::placeholder { color: var(--ink3); }
 
 .portfolio-prose p            { margin-bottom: 0.75rem; }
 .portfolio-prose p:last-child { margin-bottom: 0; }
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   SaaS-Noir additions — LayoutEngine, WarRoom, StrategicWorkbench
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* Fog overlay (used by LayoutEngine FogBlock) */
+.fog-overlay {
+  background: linear-gradient(to bottom, transparent 0%, rgba(5,5,5,0.7) 35%, rgba(5,5,5,0.97) 100%);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+/* Incident glow border */
+.incident-glow {
+  box-shadow: 0 0 0 1px rgba(255,90,101,0.2), 0 8px 32px rgba(255,90,101,0.1);
+}
+
+/* War room grid layout */
+.warroom-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+@media (min-width: 1024px) {
+  .warroom-grid { grid-template-columns: 56px 1fr 300px; }
+}
+
+/* Milestone active node pulse */
+@keyframes milestoneActive {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(252,128,25,0); }
+  50%       { box-shadow: 0 0 0 6px rgba(252,128,25,0.2); }
+}
+.milestone-active { animation: milestoneActive 2s ease-in-out infinite; }
+
+/* Typewriter cursor blink */
+@keyframes cursorBlink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+.cursor-blink { animation: cursorBlink 1s step-end infinite; }
+
+/* Data row hover */
+.data-row:hover { background: rgba(255,255,255,0.03); }
+
+/* Row highlight states */
+.row-highlight-red   { background: rgba(255,90,101,0.06) !important; }
+.row-highlight-green { background: rgba(61,214,140,0.06) !important; }
+.row-highlight-amber { background: rgba(245,166,35,0.06) !important; }
+
+/* Investigation mode background */
+.investigation-mode { background: #070810 !important; }
+
+/* War room sidebar — hide on mobile */
+@media (max-width: 640px) { .warroom-sidebar { display: none; } }
