@@ -87,9 +87,9 @@ export const SQL_RES = {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// PHASE 1 STEPS  (7 prediction nodes)
+// PHASE 1 STEPS LEGACY  (7 prediction nodes — original version, superseded)
 // ─────────────────────────────────────────────────────────────────────────────
-export const P1_STEPS = [
+export const P1_STEPS_LEGACY = [
   {
     num: 1, title: 'Clarify the metric',
     arjun: 'Before touching any data, I need to know exactly what "orders" means. Different teams use different definitions. I also need the comparison period.',
