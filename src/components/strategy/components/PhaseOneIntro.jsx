@@ -88,11 +88,10 @@ Rules:
 - Opening references something specific from their answer`;
 
 async function callClaudeAPI(userAnswer) {
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
+  const res = await fetch('/.netlify/functions/evaluate', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
       max_tokens: 1000,
       system: SYSTEM_PROMPT,
       messages: [{
@@ -102,7 +101,7 @@ async function callClaudeAPI(userAnswer) {
     }),
   });
   const data = await res.json();
-  const raw = data.content?.map(b => b.text || '').join('');
+  const raw = data.content?.[0]?.text || '';
   return JSON.parse(raw.replace(/```json|```/g, '').trim());
 }
 
@@ -207,7 +206,7 @@ function ArjunReveal({ arjunResponse, userAnswer, onComplete }) {
           gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
           gap: 10,
         }}>
-          {arjunResponse.cards.map((card, i) => (
+          {(arjunResponse.cards || []).map((card, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, y: 12 }}
@@ -403,7 +402,7 @@ export default function PhaseOneIntro({ onComplete }) {
     onComplete();
   }, [onComplete]);
 
-  if (stage === 'done') return null;
+ 
 
   return (
     <motion.div

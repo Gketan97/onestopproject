@@ -163,7 +163,7 @@ function KpiCard({ kpi, delay, visible }) {
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────
-export default function KpiScorecard() {
+export default function KpiScorecard({ onMetricClick, interactive = false, clickedMetric = null }) {
   // Each card becomes visible 120ms after the previous one — data "arriving"
   const kpis = Object.values(KPI_DATA);
   const [visibleCount, setVisibleCount] = useState(0);
@@ -231,14 +231,26 @@ export default function KpiScorecard() {
         gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
         gap: 12,
       }}>
-        {kpis.map((kpi, i) => (
-          <KpiCard
-            key={kpi.short}
-            kpi={kpi}
-            delay={i * 0.05}
-            visible={visibleCount > i}
-          />
-        ))}
+        {kpis.map((kpi, i) => {
+  const metricKey = Object.keys(KPI_DATA)[i];
+  return (
+    <motion.div
+      key={kpi.short}
+      onClick={() => interactive && onMetricClick?.(metricKey)}
+      whileHover={interactive && !clickedMetric ? { scale: 1.02, y: -2 } : {}}
+      style={{ cursor: interactive && !clickedMetric ? 'pointer' : 'default' }}
+      transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+    >
+      <KpiCard
+        kpi={kpi}
+        delay={i * 0.05}
+        visible={visibleCount > i}
+        isSelected={clickedMetric === metricKey}
+        isClickable={interactive && !clickedMetric}
+      />
+    </motion.div>
+  );
+})}
       </div>
     </div>
   );
