@@ -1,25 +1,23 @@
 // src/components/strategy/StrategyCase.jsx
-// Root orchestrator — 3-phase Strategic Incident Simulator
-// Phase 1: Triage (KPI + Arjun chat)
-// Phase 2: Deep Dive (NL Workbench + Funnel + Cohort)
-// Phase 3: Master (Impact Sizing + Memo)
+// Clean orchestrator. No gates. No separate pages.
+// PhaseOneIntro renders inline at the top of Phase 1 — collapses when done.
+// After that, KpiScorecard + ArjunSocraticChat take over normally.
 
 import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStrategyState } from './hooks/useStrategyState.js';
-import StrategyHero from './components/StrategyHero.jsx';
-import ResumeWidget from './components/ResumeWidget.jsx';
+import PhaseOneIntro from './components/PhaseOneIntro.jsx';
 import KpiScorecard from './components/KpiScorecard.jsx';
 import ArjunSocraticChat from './components/ArjunSocraticChat.jsx';
 import AnalysisWorkbench from './components/AnalysisWorkbench.jsx';
 import StrategyMemo from './components/StrategyMemo.jsx';
 
-// ── Progress strip ─────────────────────────────────────────────────────────────
+// ── Progress bar ──────────────────────────────────────────────────────────────
 const PROGRESS = {
-  triage:   { pct: 20, label: 'Phase 1 · Ambiguity Triage',     color: 'var(--phase1)' },
-  deepdive: { pct: 55, label: 'Phase 2 · Deep Dive & Funnels',  color: 'var(--phase2)' },
-  master:   { pct: 85, label: 'Phase 3 · Impact & Memo',        color: 'var(--green)' },
-  complete: { pct: 100, label: 'Investigation Complete',         color: 'var(--green)' },
+  triage:   { pct: 30,  label: 'Phase 1 · Ambiguity Triage',    color: 'var(--phase1)' },
+  deepdive: { pct: 60,  label: 'Phase 2 · Deep Dive & Funnels', color: 'var(--phase2)' },
+  master:   { pct: 85,  label: 'Phase 3 · Impact & Memo',       color: 'var(--green)'  },
+  complete: { pct: 100, label: 'Investigation Complete',         color: 'var(--green)'  },
 };
 
 function ProgressBar({ phase }) {
@@ -51,7 +49,7 @@ function ProgressBar({ phase }) {
   );
 }
 
-// ── Phase splash ───────────────────────────────────────────────────────────────
+// ── Phase splash ──────────────────────────────────────────────────────────────
 function PhaseSplash({ config, onDone }) {
   React.useEffect(() => {
     const t = setTimeout(onDone, 2000);
@@ -78,9 +76,12 @@ function PhaseSplash({ config, onDone }) {
         <p style={{ fontSize: 15, color: 'var(--ink2)', marginBottom: 6 }}>{config.subtitle}</p>
         <p style={{ fontFamily: 'var(--mono)', fontSize: 12, color: config.color }}>{config.stat}</p>
         <div style={{ display: 'flex', gap: 6, justifyContent: 'center', marginTop: 24 }}>
-          {[0,1,2].map(i => (
-            <motion.div key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: config.color }}
-              animate={{ y: [-3, 3, -3] }} transition={{ duration: 0.8, delay: i * 0.15, repeat: Infinity }} />
+          {[0, 1, 2].map(i => (
+            <motion.div key={i}
+              style={{ width: 6, height: 6, borderRadius: '50%', background: config.color }}
+              animate={{ y: [-3, 3, -3] }}
+              transition={{ duration: 0.8, delay: i * 0.15, repeat: Infinity }}
+            />
           ))}
         </div>
       </motion.div>
@@ -88,10 +89,10 @@ function PhaseSplash({ config, onDone }) {
   );
 }
 
-// ── Phase label ─────────────────────────────────────────────────────────────
+// ── Phase label ───────────────────────────────────────────────────────────────
 function PhaseLabel({ num, title, color }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 28 }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
       <div style={{
         width: 32, height: 32, borderRadius: 10, flexShrink: 0,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -108,115 +109,44 @@ function PhaseLabel({ num, title, color }) {
   );
 }
 
-// ── Main ───────────────────────────────────────────────────────────────────────
+const SPLASH_CONFIGS = {
+  phase2: {
+    icon: '🔍', title: 'Triage complete.',
+    subtitle: 'You scoped it right. Time to dig into the data.',
+    stat: 'Phase 2 → Deep Dive & Funnel Analysis',
+    color: 'var(--phase2)',
+  },
+  phase3: {
+    icon: '⚡', title: 'Patterns identified.',
+    subtitle: 'You found the friction. Now size it and write the call.',
+    stat: 'Phase 3 → Impact Sizing & Strategic Memo',
+    color: 'var(--green)',
+  },
+  complete: {
+    icon: '🏆', title: 'Investigation complete.',
+    subtitle: 'Your memo is ready. This is what Day-Zero readiness looks like.',
+    stat: 'Recovery identified. Portfolio link generated.',
+    color: '#FC8019',
+  },
+};
+
+// ── Main ──────────────────────────────────────────────────────────────────────
 export default function StrategyCase() {
-  const { state, advanceTriage, advanceToMaster, generateMemo } = useStrategyState();
+  const { state, advanceTriage, advanceToMaster } = useStrategyState();
   const [splash, setSplash] = useState(null);
   const [vizType, setVizType] = useState(null);
-  const [started, setStarted] = useState(false); // show hero until user clicks Start
 
-  const handleStart = useCallback(() => setStarted(true), []);
+  // PhaseOneIntro is shown at the top of Phase 1 until user completes it.
+  // Not persisted — every session sees it. It collapses after ~3 minutes.
+  const [introComplete, setIntroComplete] = useState(false);
 
-  const handleTriageAdvance = useCallback(() => {
-    setSplash('phase2');
-  }, []);
-
-  const handleDeepDiveAdvance = useCallback(() => {
-    setSplash('phase3');
-  }, []);
-
-  const handleMemoComplete = useCallback(({ url }) => {
-    setSplash('complete');
-  }, []);
-
-  const SPLASH_CONFIGS = {
-    phase2: {
-      icon: '🔍', title: 'Triage Complete',
-      subtitle: "You've scoped the problem correctly. Time to dig into the data.",
-      stat: 'Phase 2 → Deep Dive & Funnel Analysis',
-      color: 'var(--phase2)',
-    },
-    phase3: {
-      icon: '⚡', title: 'Patterns Identified',
-      subtitle: "You found the friction. Now size it and write the recommendation.",
-      stat: 'Phase 3 → Impact Sizing & Strategic Memo',
-      color: 'var(--green)',
-    },
-    complete: {
-      icon: '🏆', title: 'Investigation Complete',
-      subtitle: "Your memo is ready. This is what Day-Zero readiness looks like.",
-      stat: '₹2.07Cr recovery identified. Portfolio link generated.',
-      color: '#FC8019',
-    },
-  };
-
-  // If not started yet — show the hero + resume widget landing experience
-  if (!started) {
-    return (
-      <div style={{ background: '#050505', minHeight: '100vh' }}>
-        <StrategyHero onStartSimulator={handleStart} />
-        <div style={{ maxWidth: 960, margin: '0 auto', padding: '0 0 80px' }}>
-          <ResumeWidget />
-          {/* Preview of what's inside */}
-          <div style={{ padding: '0 24px' }}>
-            <div style={{ textAlign: 'center', marginBottom: 48 }}>
-              <h2 style={{ fontSize: 'clamp(1.6rem,3.5vw,2.4rem)', fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--ink)', marginBottom: 12 }}>
-                Three phases. One Investigation.
-              </h2>
-              <p style={{ fontSize: 15, color: 'var(--ink2)', maxWidth: 440, margin: '0 auto', lineHeight: 1.65 }}>
-                You're the analyst on call. Priya just pinged you. The data is live. Arjun is watching.
-              </p>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(240px,1fr))', gap: 16, marginBottom: 48 }}>
-              {[
-                { num: '01', title: 'Ambiguity Triage', desc: 'Scope the problem before touching data. Ask the right questions. Arjun will push back if you jump too fast.', color: 'var(--phase1)' },
-                { num: '02', title: 'Deep Dive & Funnels', desc: 'Ask in plain English. See the conversion funnel and cohort retention. Identify where the friction actually is.', color: 'var(--phase2)' },
-                { num: '03', title: 'Impact & Memo', desc: 'Size the GMV opportunity in INR. Write an executive memo. Get a portfolio link for your applications.', color: 'var(--green)' },
-              ].map(p => (
-                <div key={p.num} style={{
-                  borderRadius: 20, padding: '24px 22px',
-                  background: 'rgba(255,255,255,0.03)',
-                  border: '1px solid rgba(255,255,255,0.07)',
-                }}>
-                  <div style={{
-                    fontFamily: 'var(--mono)', fontSize: 24, fontWeight: 800,
-                    color: p.color, marginBottom: 12, letterSpacing: '-0.03em',
-                  }}>{p.num}</div>
-                  <h3 style={{ fontSize: 16, fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--ink)', marginBottom: 8 }}>{p.title}</h3>
-                  <p style={{ fontSize: 13, color: 'var(--ink2)', lineHeight: 1.6 }}>{p.desc}</p>
-                </div>
-              ))}
-            </div>
-            <div style={{ textAlign: 'center' }}>
-              <motion.button
-                onClick={handleStart}
-                whileHover={{ scale: 1.03, y: -2 }}
-                whileTap={{ scale: 0.97 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                style={{
-                  padding: '15px 36px', borderRadius: 12,
-                  background: 'var(--phase1)', color: '#fff',
-                  fontFamily: 'var(--sans)', fontSize: 16, fontWeight: 800,
-                  letterSpacing: '-0.01em', border: 'none', cursor: 'pointer',
-                  boxShadow: '0 0 0 1px rgba(252,128,25,0.4), 0 8px 32px rgba(252,128,25,0.32)',
-                }}
-              >
-                Begin the Investigation →
-              </motion.button>
-              <p style={{ marginTop: 12, fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--ink3)' }}>
-                Free · ~45 minutes · Portfolio link at end
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const handleTriageAdvance   = useCallback(() => setSplash('phase2'), []);
+  const handleDeepDiveAdvance = useCallback(() => setSplash('phase3'), []);
+  const handleMemoComplete    = useCallback(() => setSplash('complete'), []);
 
   return (
     <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
 
-      {/* Splash screen */}
       <AnimatePresence>
         {splash && (
           <PhaseSplash
@@ -231,69 +161,73 @@ export default function StrategyCase() {
         )}
       </AnimatePresence>
 
-      {/* Progress */}
       <ProgressBar phase={state.phase} />
 
-      {/* Content */}
       <div style={{ maxWidth: 800, margin: '0 auto', padding: '32px 24px 80px' }}>
-
         <AnimatePresence mode="wait">
 
-          {/* ── PHASE 1: TRIAGE ── */}
+          {/* ── Phase 1 ── */}
           {state.phase === 'triage' && (
-            <motion.div
-              key="triage"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.4 }}
+            <motion.div key="triage"
+              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4 }}
             >
               <PhaseLabel num="01" title="Ambiguity Triage" color="var(--phase1)" />
-              <KpiScorecard />
-              <ArjunSocraticChat
-                phase="triage"
-                onVizRequest={setVizType}
-                onAdvance={handleTriageAdvance}
-              />
+
+              {/* Inline diagnostic — collapses when done, then KpiScorecard loads */}
+              <AnimatePresence>
+                {!introComplete && (
+                  <PhaseOneIntro onComplete={() => setIntroComplete(true)} />
+                )}
+              </AnimatePresence>
+
+              {/* KpiScorecard appears after intro — user now has context to read it */}
+              <AnimatePresence>
+                {introComplete && (
+                  <motion.div
+                    key="phase1-content"
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                  >
+                    <KpiScorecard />
+                    <ArjunSocraticChat
+                      phase="triage"
+                      onVizRequest={setVizType}
+                      onAdvance={handleTriageAdvance}
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </motion.div>
           )}
 
-          {/* ── PHASE 2: DEEP DIVE ── */}
+          {/* ── Phase 2 ── */}
           {state.phase === 'deepdive' && (
-            <motion.div
-              key="deepdive"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.4 }}
+            <motion.div key="deepdive"
+              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4 }}
             >
               <PhaseLabel num="02" title="Deep Dive & Funnel Analysis" color="var(--phase2)" />
-              <AnalysisWorkbench
-                onAdvance={handleDeepDiveAdvance}
-              />
+              <AnalysisWorkbench onAdvance={handleDeepDiveAdvance} />
             </motion.div>
           )}
 
-          {/* ── PHASE 3: MASTER ── */}
+          {/* ── Phase 3 ── */}
           {state.phase === 'master' && (
-            <motion.div
-              key="master"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.4 }}
+            <motion.div key="master"
+              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4 }}
             >
               <PhaseLabel num="03" title="Impact Sizing & Strategic Memo" color="var(--green)" />
               <StrategyMemo onComplete={handleMemoComplete} />
             </motion.div>
           )}
 
-          {/* ── COMPLETE ── */}
+          {/* ── Complete ── */}
           {state.phase === 'complete' && (
-            <motion.div
-              key="complete"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+            <motion.div key="complete"
+              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
               style={{ textAlign: 'center', padding: '40px 0' }}
             >

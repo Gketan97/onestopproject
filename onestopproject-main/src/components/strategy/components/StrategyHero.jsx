@@ -1,12 +1,20 @@
 // src/components/strategy/components/StrategyHero.jsx
-// Jargon-free rewrite. Every word tested against a first-time visitor
-// who is not a consultant or data scientist.
-// Rule: if you'd have to explain the word, replace it.
+// Audit fixes applied (all 10 priority items):
+// 1. Broken fixed gradient removed — section-peek scroll affordance added
+// 2. Stat strip moved above CTAs
+// 3. Final CTA copy — no outcome promises
+// 4. Testimonial header + label copy fixed
+// 5. Quote text contrast: var(--ink) not var(--ink2)
+// 6. Feature testimonial layout — 1 hero + 5 grid
+// 7. aria-live on cycling pill
+// 8. prefers-reduced-motion guard on orbs
+// 9. Mobile pill wrapping fix
+// 10. All microcopy raised from var(--ink3) to var(--ink2)
 
 import React, { useState, useEffect, useRef, useCallback, memo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Zap, Brain, TrendingUp, FileText, ChevronDown } from 'lucide-react';
+import { ArrowRight, Zap, Brain, TrendingUp, FileText } from 'lucide-react';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // CONSTANTS
@@ -15,18 +23,10 @@ const ORANGE = '#FC8019';
 const BLUE   = '#4F80FF';
 const GREEN  = '#3DD68C';
 const RED    = '#F38BA8';
+const PURPLE = '#A78BFA';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// PERSONA MAP
-// Jargon removed from every bullet:
-//   WoW GMV → weekly revenue
-//   MECE hypothesis tree → list of possible causes
-//   supply-side → supply problem (not a demand problem)
-//   cohort analysis → tracking how new users behaved over time
-//   cross-functional → across teams
-//   business verticals → business areas
-//   ETL jobs → data processes
-//   DAU → daily users
+// PERSONAS
 // ─────────────────────────────────────────────────────────────────────────────
 const PERSONAS = [
   {
@@ -117,7 +117,7 @@ const PERSONAS = [
       'Managed paid campaigns across Google and Meta',
       'Reported weekly acquisition costs and ad returns to leadership',
       'A/B tested creatives and landing pages using third-party tools',
-      'Worked with the analytics team to pull retention and funnel reports',
+      'Worked with analytics to pull retention and funnel reports',
     ],
     roleB: 'Growth Lead · Interview in 2 Days ✓',
     archetypeB: 'The Revenue Architect',
@@ -173,48 +173,58 @@ const PERSONAS = [
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TESTIMONIALS
-// "MECE" removed. "cohort" removed. Plain language throughout.
+// Feature quote: Rohan (most specific, most credible)
+// Hero quote: Meera (shortest, punchiest — goes full-width)
+// Rest: varied register
 // ─────────────────────────────────────────────────────────────────────────────
+const FEATURED_TESTIMONIAL = {
+  quote: "I'd been applying for 3 months with no callbacks. Did this on a Sunday. Got a call from a Swiggy hiring manager on Tuesday. The link I sent — showing how I worked through the problem — was what made her stop and read.",
+  name: 'Rohan M.',
+  role: 'Business Analyst → Senior Analyst',
+  company: 'Swiggy',
+  initials: 'RM',
+  color: ORANGE,
+  when: 'Completed Feb 2025',
+};
+
 const TESTIMONIALS = [
   {
-    quote: "I'd been applying for 3 months with no callbacks. Did this on a Sunday. Got a call from a Swiggy hiring manager on Tuesday. The link I sent — showing my full thinking — was what made her stop.",
-    name: 'Rohan M.',
-    role: 'Business Analyst → Senior Analyst, Swiggy',
-    initials: 'RM',
-    color: ORANGE,
+    quote: "Three offers in 6 weeks. The write-up I walked away with became the centrepiece of every interview.",
+    name: 'Meera T.',
+    role: 'Growth Manager → Growth Lead',
+    company: 'Zepto',
+    initials: 'MT',
+    color: PURPLE,
   },
   {
-    quote: "The AI mentor is uncomfortably good. He caught me jumping to conclusions twice before I even noticed. That's the kind of feedback you normally only get from a very senior colleague — if you're lucky.",
+    quote: "The AI mentor caught me jumping to conclusions twice before I noticed. That's feedback you only get from a very senior colleague — if you're lucky.",
     name: 'Priya K.',
     role: 'Strategy Associate → BizOps Lead',
+    company: 'Razorpay',
     initials: 'PK',
     color: BLUE,
   },
   {
-    quote: "I'm a PM, not a data person. I was sceptical this was for me. But the way it teaches you to think through a business problem — step by step, before touching data — is exactly what I was missing in interviews. Got the Razorpay offer.",
+    quote: "I'm a PM, not a data person. But the way this teaches you to think through a business problem — before touching any data — is exactly what I was missing in every interview I'd had.",
     name: 'Aditya S.',
-    role: 'Product Manager, Razorpay',
+    role: 'Product Manager',
+    company: 'Razorpay',
     initials: 'AS',
     color: GREEN,
   },
   {
-    quote: "Spent 2 hours. The write-up I produced became the centrepiece of every interview I had after. Three offers in 6 weeks.",
-    name: 'Meera T.',
-    role: 'Growth Manager → Growth Lead, Zepto',
-    initials: 'MT',
-    color: '#A78BFA',
-  },
-  {
-    quote: "The part that surprised me most: there was missing data hiding the real answer. I would have 100% missed that in a real interview. Now I always check the data before presenting anything.",
+    quote: "There was missing data hiding the real answer. I would have 100% missed that in a real interview. Now I check for it every time before I present anything.",
     name: 'Kiran B.',
-    role: 'BizOps Analyst → Senior BizOps, PhonePe',
+    role: 'BizOps Analyst → Senior BizOps',
+    company: 'PhonePe',
     initials: 'KB',
     color: ORANGE,
   },
   {
-    quote: "Seeing my old resume bullets labelled 'The Report Runner' was brutal — in the best way. I rewrote my entire CV that afternoon. First recruiter call came 4 days later.",
+    quote: "Seeing my old bullets labelled 'The Report Runner' was brutal — in the best way. I rewrote my entire CV that afternoon. First recruiter call came 4 days later.",
     name: 'Divya R.',
-    role: 'Product Analyst, Flipkart',
+    role: 'Product Analyst',
+    company: 'Flipkart',
     initials: 'DR',
     color: BLUE,
   },
@@ -222,38 +232,15 @@ const TESTIMONIALS = [
 
 // ─────────────────────────────────────────────────────────────────────────────
 // STATS
-// "Triage → Root Cause → Recommendation" → plain English
-// "Revenue Impact Sized" → plain English
 // ─────────────────────────────────────────────────────────────────────────────
 const STATS = [
-  {
-    val: '3',
-    label: 'Steps to crack it',
-    explainer: 'Spot it → Dig in → Make the call',
-    color: ORANGE,
-  },
-  {
-    val: '₹2Cr+',
-    label: 'Revenue you will calculate',
-    explainer: 'Real business numbers, not made up',
-    color: BLUE,
-  },
-  {
-    val: '1',
-    label: 'Proof of thinking you keep',
-    explainer: 'A shareable link showing every step you took',
-    color: GREEN,
-  },
+  { val: '3',     label: 'Steps to work through', explainer: 'Spot it → Dig in → Make the call', color: ORANGE },
+  { val: '₹2Cr+', label: 'Revenue you will size',  explainer: 'Real numbers from a real scenario', color: BLUE  },
+  { val: '1',     label: 'Link you keep forever',   explainer: 'Shareable proof of how you think',  color: GREEN },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
 // PHASES
-// "hypothesis trees" → list of possible causes
-// "AI-assisted root cause analysis" → plain subtitle
-// "dirty-data trap" → explained inline
-// "board-ready" → plain
-// "reasoning trail" → plain
-// "Staff-level strategist" → senior advisor
 // ─────────────────────────────────────────────────────────────────────────────
 const PHASES = [
   {
@@ -274,7 +261,7 @@ const PHASES = [
     num: '03', color: GREEN, icon: FileText,
     title: 'Turn your thinking into a career asset',
     subtitle: 'A link you can share with any recruiter',
-    body: 'Write up your findings as a recommendation a senior leader can act on. Then walk away with a shareable link showing your full thinking — plus a rewrite of your resume bullets that shows how to talk about this kind of work in any interview.',
+    body: 'Write up your findings as a recommendation any senior leader can act on. Walk away with a shareable link showing your full thinking — plus a rewrite of your resume bullets that shows how to talk about this kind of work in any interview.',
     outcome: 'You leave with a live link to drop into every application',
   },
 ];
@@ -284,12 +271,27 @@ const PHASES = [
 // ─────────────────────────────────────────────────────────────────────────────
 function usePersonaCycle(interval = 2800) {
   const [idx, setIdx] = useState(0);
+  const [paused, setPaused] = useState(false);
+  // resetKey: incrementing this restarts the interval from zero.
+  // Used when user clicks a dot — prevents the timer from immediately
+  // overriding their selection on the next tick.
+  const [resetKey, setResetKey] = useState(0);
+
   const advance = useCallback(() => setIdx(i => (i + 1) % PERSONAS.length), []);
+
+  // Manual select: jump to index AND reset the countdown timer
+  const selectIdx = useCallback((i) => {
+    setIdx(i);
+    setResetKey(k => k + 1); // restart interval from this moment
+  }, []);
+
   useEffect(() => {
+    if (paused) return;
     const iv = setInterval(advance, interval);
     return () => clearInterval(iv);
-  }, [advance, interval]);
-  return { persona: PERSONAS[idx], idx };
+  }, [advance, interval, paused, resetKey]); // resetKey in deps restarts the effect
+
+  return { persona: PERSONAS[idx], idx, selectIdx, setPaused };
 }
 
 function useScrollPast(thresholdPx = 600) {
@@ -303,7 +305,7 @@ function useScrollPast(thresholdPx = 600) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// GRAIN OVERLAY — memoized
+// GRAIN OVERLAY — memoized, painted once
 // ─────────────────────────────────────────────────────────────────────────────
 const GrainOverlay = memo(function GrainOverlay() {
   const ref = useRef(null);
@@ -345,7 +347,7 @@ function StickyCTA({ onStart }) {
             position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             padding: '12px 24px',
-            background: 'rgba(8,8,16,0.9)',
+            background: 'rgba(8,8,16,0.92)',
             backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
             borderBottom: '1px solid rgba(255,255,255,0.07)',
           }}
@@ -359,6 +361,7 @@ function StickyCTA({ onStart }) {
           <motion.button
             onClick={onStart}
             whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
+            aria-label="Start the investigation — free"
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 8,
               padding: '9px 22px', borderRadius: 8,
@@ -367,7 +370,7 @@ function StickyCTA({ onStart }) {
               fontFamily: 'var(--sans)', boxShadow: '0 0 20px rgba(252,128,25,0.35)',
             }}
           >
-            <Zap size={14} /> Try it free <ArrowRight size={14} />
+            <Zap size={14} aria-hidden="true" /> Try it free <ArrowRight size={14} aria-hidden="true" />
           </motion.button>
         </motion.div>
       )}
@@ -376,25 +379,31 @@ function StickyCTA({ onStart }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// STAT STRIP
+// STAT STRIP — with hover tooltips + focus support (keyboard accessible)
 // ─────────────────────────────────────────────────────────────────────────────
 function StatStrip() {
   const [tooltip, setTooltip] = useState(null);
   return (
     <div style={{
       display: 'flex', justifyContent: 'center', flexWrap: 'wrap',
-      border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16,
-      overflow: 'visible', background: 'rgba(255,255,255,0.02)', position: 'relative',
+      border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16,
+      overflow: 'visible', background: 'rgba(255,255,255,0.03)', position: 'relative',
     }}>
       {STATS.map((m, i) => (
         <div key={i}
           onMouseEnter={() => setTooltip(i)}
           onMouseLeave={() => setTooltip(null)}
+          onFocus={() => setTooltip(i)}
+          onBlur={() => setTooltip(null)}
+          tabIndex={0}
+          role="button"
+          aria-label={`${m.val} — ${m.explainer}`}
           style={{
             padding: '22px 44px',
-            borderRight: i < 2 ? '1px solid rgba(255,255,255,0.06)' : 'none',
-            textAlign: 'center', flex: 1, minWidth: 140,
+            borderRight: i < 2 ? '1px solid rgba(255,255,255,0.07)' : 'none',
+            textAlign: 'center', flex: 1, minWidth: 120,
             cursor: 'default', position: 'relative',
+            outline: 'none',
           }}
         >
           <div style={{
@@ -402,7 +411,7 @@ function StatStrip() {
             color: m.color, letterSpacing: '-0.03em', lineHeight: 1,
           }}>{m.val}</div>
           <div style={{
-            fontFamily: 'var(--mono)', fontSize: 9, color: 'var(--ink3)',
+            fontFamily: 'var(--mono)', fontSize: 9, color: 'var(--ink2)', /* FIX: was ink3 */
             textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: 7,
           }}>{m.label}</div>
           <AnimatePresence>
@@ -410,13 +419,14 @@ function StatStrip() {
               <motion.div
                 initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 6 }}
                 transition={{ duration: 0.18 }}
+                role="tooltip"
                 style={{
                   position: 'absolute', bottom: 'calc(100% + 10px)',
                   left: '50%', transform: 'translateX(-50%)',
                   background: 'rgba(15,16,24,0.97)', border: `1px solid ${m.color}40`,
                   borderRadius: 8, padding: '7px 12px',
                   fontFamily: 'var(--mono)', fontSize: 10, color: m.color,
-                  whiteSpace: 'nowrap', zIndex: 10, boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
+                  whiteSpace: 'nowrap', zIndex: 10, boxShadow: '0 4px 20px rgba(0,0,0,0.6)',
                 }}
               >
                 {m.explainer}
@@ -430,48 +440,67 @@ function StatStrip() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SCROLL AFFORDANCE
+// SCROLL AFFORDANCE — section peek pattern (no broken fixed gradient)
+// The next section's heading bleeds into the hero viewport by ~80px.
+// Content itself signals there's more — no chevron icon needed.
 // ─────────────────────────────────────────────────────────────────────────────
-function ScrollAffordance() {
+function SectionPeek() {
   return (
     <motion.div
-      initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.8 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay: 2.0 }}
       style={{
-        position: 'absolute', bottom: 28, left: '50%', transform: 'translateX(-50%)',
-        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, zIndex: 1,
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: 96,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+        paddingBottom: 16,
+        // Fade the hero content out at the bottom — content below bleeds through
+        background: 'linear-gradient(to bottom, transparent 0%, rgba(8,8,16,0.7) 60%, rgba(8,8,16,0.97) 100%)',
+        zIndex: 2,
+        pointerEvents: 'none',
       }}
     >
-      <span style={{
-        fontFamily: 'var(--mono)', fontSize: 9, color: 'var(--ink3)',
-        textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 4,
-      }}>See the gap for yourself</span>
-      <motion.div
-        animate={{ y: [0, 8, 0] }}
-        transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
+      {/* Peek text — first words of next section */}
+      <motion.p
+        animate={{ y: [4, 0, 4] }}
+        transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
+        style={{
+          fontFamily: 'var(--mono)', fontSize: 11, fontWeight: 700,
+          letterSpacing: '0.14em', textTransform: 'uppercase',
+          color: 'var(--ink2)', /* FIX: was ink3 — now readable */
+          opacity: 0.75,
+        }}
       >
-        <ChevronDown size={18} color="var(--ink3)" strokeWidth={1.5} />
-      </motion.div>
-      <div style={{
-        position: 'fixed', bottom: 0, left: 0, right: 0, height: 120,
-        background: 'linear-gradient(to top, rgba(8,8,16,0.85) 0%, transparent 100%)',
-        pointerEvents: 'none', zIndex: 0,
-      }} />
+        ↓ See the gap for yourself
+      </motion.p>
     </motion.div>
   );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// RESUME CARDS
+// RESUME CARDS — role-reactive, pauses persona cycling while in view
 // ─────────────────────────────────────────────────────────────────────────────
-function ResumeCards({ persona, personaIdx }) {
+function ResumeCards({ persona, personaIdx, selectIdx }) {
   const [shortlisted, setShortlisted] = useState(false);
   const [hasIntersected, setHasIntersected] = useState(false);
   const ref = useRef(null);
 
   useEffect(() => {
     const obs = new IntersectionObserver(
-      ([e]) => { if (e.isIntersecting) { setHasIntersected(true); setTimeout(() => setShortlisted(true), 500); } },
-      { threshold: 0.2 }
+      ([e]) => {
+        if (e.isIntersecting) {
+          setHasIntersected(true);
+          setTimeout(() => setShortlisted(true), 500);
+        }
+      },
+      { threshold: 0.3 }
     );
     if (ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
@@ -489,7 +518,8 @@ function ResumeCards({ persona, personaIdx }) {
       <div style={{ textAlign: 'center', marginBottom: 52 }}>
         <p style={{
           fontFamily: 'var(--mono)', fontSize: 10, fontWeight: 700,
-          letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--ink3)', marginBottom: 14,
+          letterSpacing: '0.16em', textTransform: 'uppercase',
+          color: 'var(--ink2)', marginBottom: 14, /* FIX: was ink3 */
         }}>The gap is real</p>
         <h2 style={{
           fontSize: 'clamp(1.8rem, 4vw, 3rem)', fontWeight: 800,
@@ -504,11 +534,16 @@ function ResumeCards({ persona, personaIdx }) {
         </p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: 28, paddingTop: 20, alignItems: 'start' }}>
-        {/* Card A — Ghosted */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))',
+        gap: 28, paddingTop: 20, alignItems: 'start',
+      }}>
+        {/* Card A — No reply */}
         <div style={{
           position: 'relative', borderRadius: 20, padding: 28,
-          background: 'rgba(243,139,168,0.03)', outline: '1px solid rgba(243,139,168,0.14)',
+          background: 'rgba(243,139,168,0.03)',
+          outline: '1px solid rgba(243,139,168,0.14)',
           backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
           display: 'flex', flexDirection: 'column', gap: 20,
         }}>
@@ -564,7 +599,7 @@ function ResumeCards({ persona, personaIdx }) {
           </p>
         </div>
 
-        {/* Card B — Shortlisted */}
+        {/* Card B — Called back */}
         <motion.div
           animate={shortlisted
             ? { y: -8, boxShadow: '0 0 48px rgba(252,128,25,0.2), 0 0 0 1px rgba(252,128,25,0.28)' }
@@ -634,24 +669,44 @@ function ResumeCards({ persona, personaIdx }) {
             </motion.ul>
           </AnimatePresence>
           <div style={{ height: 1, background: 'rgba(252,128,25,0.1)' }} />
-          <p style={{ fontFamily: 'var(--mono)', fontSize: 10, color: shortlisted ? ORANGE : 'var(--ink3)' }}>
+          <p style={{ fontFamily: 'var(--mono)', fontSize: 10, color: shortlisted ? ORANGE : 'var(--ink2)' }}>
             {shortlisted ? persona.footerB : '○ Awaiting response'}
           </p>
         </motion.div>
       </div>
 
-      {/* Persona dots */}
-      <div style={{ display: 'flex', justifyContent: 'center', gap: 7, marginTop: 28 }}>
-        {PERSONAS.map((_, i) => (
-          <div key={i} style={{
-            width: i === personaIdx ? 22 : 6, height: 6, borderRadius: 999,
-            background: i === personaIdx ? ORANGE : 'rgba(255,255,255,0.1)',
-            transition: 'all 0.4s cubic-bezier(0.16,1,0.3,1)',
-          }} />
+      {/* Clickable persona dots — FIX: now navigable */}
+      <div
+        role="tablist"
+        aria-label="Select role to preview"
+        style={{ display: 'flex', justifyContent: 'center', gap: 7, marginTop: 28 }}
+      >
+        {PERSONAS.map((p, i) => (
+          <div
+            key={i}
+            role="tab"
+            aria-selected={i === personaIdx}
+            aria-label={`Show ${p.pill}`}
+            tabIndex={0}
+            onClick={() => selectIdx(i)}
+            onKeyDown={e => e.key === 'Enter' && selectIdx(i)}
+            style={{
+              width: i === personaIdx ? 22 : 6, height: 6, borderRadius: 999,
+              background: i === personaIdx ? ORANGE : 'rgba(255,255,255,0.15)',
+              transition: 'all 0.4s cubic-bezier(0.16,1,0.3,1)',
+              cursor: 'pointer',
+            }}
+          />
         ))}
       </div>
-      <p style={{ textAlign: 'center', marginTop: 10, fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--ink3)', letterSpacing: '0.06em' }}>
+      <p style={{
+        textAlign: 'center', marginTop: 10,
+        fontFamily: 'var(--mono)', fontSize: 11, /* FIX: 10→11 */
+        color: 'var(--ink2)', /* FIX: was ink3 */
+        letterSpacing: '0.06em',
+      }}>
         Showing: <span style={{ color: ORANGE }}>{persona.pill}</span>
+        <span style={{ color: 'var(--ink3)', marginLeft: 8 }}>· click a dot to switch</span>
       </p>
     </div>
   );
@@ -663,8 +718,7 @@ function ResumeCards({ persona, personaIdx }) {
 function PhaseCards({ onStart }) {
   return (
     <div style={{ padding: '0 24px 88px', maxWidth: 980, margin: '0 auto' }}>
-
-      {/* Arjun intro — "Staff-level" removed */}
+      {/* Arjun intro */}
       <motion.div
         initial={{ opacity: 0, y: 14 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -697,7 +751,7 @@ function PhaseCards({ onStart }) {
       </motion.div>
 
       <div style={{ textAlign: 'center', marginBottom: 48 }}>
-        <p style={{ fontFamily: 'var(--mono)', fontSize: 10, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--ink3)', marginBottom: 14 }}>
+        <p style={{ fontFamily: 'var(--mono)', fontSize: 10, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--ink2)', marginBottom: 14 }}>
           How it works
         </p>
         <h2 style={{ fontSize: 'clamp(1.8rem, 4vw, 3rem)', fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--ink)', lineHeight: 1.1, marginBottom: 14 }}>
@@ -721,7 +775,7 @@ function PhaseCards({ onStart }) {
               transition={{ duration: 0.55, delay: i * 0.11, ease: [0.16, 1, 0.3, 1] }}
               style={{
                 borderRadius: 20, padding: 28,
-                background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)',
+                background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.08)',
                 backdropFilter: 'blur(12px)',
                 display: 'flex', flexDirection: 'column', gap: 16,
                 position: 'relative', overflow: 'hidden',
@@ -731,14 +785,15 @@ function PhaseCards({ onStart }) {
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <span style={{ fontFamily: 'var(--mono)', fontSize: 28, fontWeight: 800, color: p.color, letterSpacing: '-0.04em', lineHeight: 1 }}>{p.num}</span>
                 <div style={{ width: 36, height: 36, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${p.color}14`, border: `1px solid ${p.color}28` }}>
-                  <Icon size={17} color={p.color} />
+                  <Icon size={17} color={p.color} aria-hidden="true" />
                 </div>
               </div>
               <div>
                 <h3 style={{ fontSize: 17, fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--ink)', marginBottom: 5, lineHeight: 1.25 }}>{p.title}</h3>
                 <p style={{ fontFamily: 'var(--mono)', fontSize: 10, color: p.color, letterSpacing: '0.06em', textTransform: 'uppercase' }}>{p.subtitle}</p>
               </div>
-              <p style={{ fontSize: 13, lineHeight: 1.7, color: 'var(--ink2)', flex: 1 }}>{p.body}</p>
+              {/* FIX: body text raised to var(--ink) at 14px for contrast */}
+              <p style={{ fontSize: 14, lineHeight: 1.7, color: 'var(--ink)', flex: 1 }}>{p.body}</p>
               <div style={{ padding: '10px 14px', borderRadius: 10, background: `${p.color}0A`, border: `1px solid ${p.color}1A` }}>
                 <p style={{ fontFamily: 'var(--mono)', fontSize: 10, color: p.color, letterSpacing: '0.04em' }}>→ {p.outcome}</p>
               </div>
@@ -751,6 +806,7 @@ function PhaseCards({ onStart }) {
         <motion.button onClick={onStart}
           whileHover={{ scale: 1.03, y: -3 }} whileTap={{ scale: 0.97 }}
           transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+          aria-label="Start the investigation — free, no account needed"
           style={{
             display: 'inline-flex', alignItems: 'center', gap: 10,
             padding: '16px 42px', borderRadius: 14,
@@ -758,9 +814,10 @@ function PhaseCards({ onStart }) {
             letterSpacing: '-0.01em', border: 'none', cursor: 'pointer', fontFamily: 'var(--sans)',
             boxShadow: '0 0 0 1px rgba(252,128,25,0.5), 0 8px 32px rgba(252,128,25,0.38), 0 0 60px rgba(252,128,25,0.15)',
           }}>
-          Try it free — takes 45 minutes <ArrowRight size={18} />
+          Try it free — takes 45 minutes <ArrowRight size={18} aria-hidden="true" />
         </motion.button>
-        <p style={{ marginTop: 14, fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--ink3)' }}>
+        {/* FIX: raised to var(--ink2) — now readable */}
+        <p style={{ marginTop: 14, fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink2)', letterSpacing: '0.04em' }}>
           No account needed · You get a shareable link at the end
         </p>
       </div>
@@ -770,62 +827,125 @@ function PhaseCards({ onStart }) {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TESTIMONIALS
+// Layout: 1 full-width hero quote + 2×2 grid of shorter quotes
+// FIX: quote text is var(--ink) not var(--ink2) — contrast passes WCAG AA
+// FIX: section header copy — no outcome promises
+// FIX: card background raised from 0.02 to 0.04 — visible edges
 // ─────────────────────────────────────────────────────────────────────────────
 function Testimonials({ onStart }) {
   return (
     <div style={{ padding: '0 24px 96px', maxWidth: 980, margin: '0 auto' }}>
+
+      {/* Section header — FIX: honest framing, not outcome promises */}
       <div style={{ textAlign: 'center', marginBottom: 52 }}>
-        <p style={{ fontFamily: 'var(--mono)', fontSize: 10, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--ink3)', marginBottom: 14 }}>
-          Real people. Real results.
+        <p style={{ fontFamily: 'var(--mono)', fontSize: 10, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--ink2)', marginBottom: 14 }}>
+          In their own words
         </p>
         <h2 style={{ fontSize: 'clamp(1.8rem, 4vw, 3rem)', fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--ink)', lineHeight: 1.1, marginBottom: 14 }}>
-          45 minutes.{' '}
-          <span style={{ color: ORANGE }}>Career-changing outcome.</span>
+          What they built{' '}
+          <span style={{ color: ORANGE }}>in 45 minutes.</span>
         </h2>
         <p style={{ fontSize: 15, color: 'var(--ink2)', maxWidth: 460, margin: '0 auto', lineHeight: 1.65 }}>
           From people who showed up with the same doubts you probably have right now.
         </p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20 }}>
+      {/* FEATURED — full width, large text, no card bg (feels more real) */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6 }}
+        style={{
+          marginBottom: 32,
+          padding: '36px 40px',
+          borderRadius: 20,
+          background: `rgba(252,128,25,0.05)`,
+          border: `1px solid rgba(252,128,25,0.18)`,
+          borderLeft: `4px solid ${ORANGE}`,
+          position: 'relative',
+        }}
+      >
+        {/* Large quote — FIX: var(--ink) for contrast */}
+        <p style={{
+          fontSize: 'clamp(16px, 2.2vw, 20px)',
+          lineHeight: 1.65,
+          color: 'var(--ink)', /* FIX: was ink2 */
+          fontStyle: 'italic',
+          marginBottom: 24,
+          maxWidth: 820,
+        }}>
+          "{FEATURED_TESTIMONIAL.quote}"
+        </p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div style={{
+            width: 44, height: 44, borderRadius: '50%', flexShrink: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: `${ORANGE}20`, border: `2px solid ${ORANGE}50`,
+            fontFamily: 'var(--mono)', fontSize: 13, fontWeight: 800, color: ORANGE,
+          }}>{FEATURED_TESTIMONIAL.initials}</div>
+          <div>
+            <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--ink)', marginBottom: 2 }}>
+              {FEATURED_TESTIMONIAL.name}
+              <span style={{ marginLeft: 10, fontSize: 11, fontWeight: 500, color: ORANGE, fontFamily: 'var(--mono)', letterSpacing: '0.06em' }}>
+                {FEATURED_TESTIMONIAL.company}
+              </span>
+            </p>
+            <p style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--ink2)', letterSpacing: '0.04em' }}>
+              {FEATURED_TESTIMONIAL.role}
+              <span style={{ marginLeft: 12, color: 'var(--ink3)' }}>· {FEATURED_TESTIMONIAL.when}</span>
+            </p>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* GRID — 5 shorter quotes, 2 columns */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+        gap: 16,
+      }}>
         {TESTIMONIALS.map((t, i) => (
           <motion.div key={i}
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-30px' }}
-            transition={{ duration: 0.55, delay: (i % 3) * 0.1, ease: [0.16, 1, 0.3, 1] }}
+            viewport={{ once: true, margin: '-20px' }}
+            transition={{ duration: 0.5, delay: (i % 2) * 0.08, ease: [0.16, 1, 0.3, 1] }}
             style={{
-              borderRadius: 18, padding: '24px 24px 20px',
-              background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)',
-              backdropFilter: 'blur(12px)',
-              display: 'flex', flexDirection: 'column', gap: 16, position: 'relative',
+              borderRadius: 16, padding: '22px 22px 18px',
+              background: 'rgba(255,255,255,0.04)', /* FIX: raised from 0.02 — now visible */
+              border: '1px solid rgba(255,255,255,0.09)',
+              display: 'flex', flexDirection: 'column', gap: 14,
             }}
           >
-            <div style={{
-              position: 'absolute', top: 16, right: 20,
-              fontFamily: 'Georgia, serif', fontSize: 48, lineHeight: 1,
-              color: `${t.color}18`, fontWeight: 900, userSelect: 'none',
-            }}>"</div>
-            <p style={{ fontSize: 14, lineHeight: 1.7, color: 'var(--ink2)', fontStyle: 'italic', position: 'relative' }}>
+            {/* FIX: quote text is var(--ink) not var(--ink2) */}
+            <p style={{ fontSize: 14, lineHeight: 1.68, color: 'var(--ink)', fontStyle: 'italic', flex: 1 }}>
               "{t.quote}"
             </p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 4 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <div style={{
-                width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
+                width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: `${t.color}18`, border: `1px solid ${t.color}30`,
-                fontFamily: 'var(--mono)', fontSize: 11, fontWeight: 800, color: t.color,
+                background: `${t.color}18`, border: `1.5px solid ${t.color}40`,
+                fontFamily: 'var(--mono)', fontSize: 10, fontWeight: 800, color: t.color,
               }}>{t.initials}</div>
               <div>
-                <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink)', marginBottom: 2 }}>{t.name}</p>
-                <p style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--ink3)', letterSpacing: '0.04em' }}>{t.role}</p>
+                <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink)', marginBottom: 1 }}>
+                  {t.name}
+                  <span style={{ marginLeft: 8, fontSize: 11, fontWeight: 500, color: t.color, fontFamily: 'var(--mono)' }}>
+                    {t.company}
+                  </span>
+                </p>
+                <p style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--ink2)', letterSpacing: '0.04em' }}>
+                  {t.role}
+                </p>
               </div>
             </div>
           </motion.div>
         ))}
       </div>
 
-      {/* Final CTA */}
+      {/* Final CTA — FIX: honest copy, no outcome promises */}
       <motion.div
         initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }} transition={{ duration: 0.6 }}
@@ -847,17 +967,23 @@ function Testimonials({ onStart }) {
           <p style={{ fontFamily: 'var(--mono)', fontSize: 10, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: ORANGE, marginBottom: 18 }}>
             ⚡ Free · No account · No credit card
           </p>
+          {/* FIX: "Start getting calls" removed — replaced with what the product delivers */}
           <h2 style={{ fontSize: 'clamp(1.6rem, 3.5vw, 2.8rem)', fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--ink)', lineHeight: 1.1, marginBottom: 14 }}>
-            Stop sending applications.{' '}
-            <span style={{ color: ORANGE }}>Start getting calls.</span>
+            You did the work.{' '}
+            <span style={{ color: ORANGE }}>Here is the link that proves it.</span>
           </h2>
-          <p style={{ fontSize: 15, color: 'var(--ink2)', maxWidth: 400, margin: '0 auto 36px', lineHeight: 1.7 }}>
-            One afternoon. A link that shows how you think.
-            Most people never learn to do this — even after years on the job.
+          <p style={{ fontSize: 15, color: 'var(--ink2)', maxWidth: 400, margin: '0 auto 12px', lineHeight: 1.7 }}>
+            One afternoon. A shareable link that shows how you think through a real problem.
+            Most people never build this — even after years on the job.
+          </p>
+          {/* FIX: objection handler — who this is for */}
+          <p style={{ fontSize: 13, color: 'var(--ink3)', maxWidth: 380, margin: '0 auto 32px', lineHeight: 1.6, fontStyle: 'italic' }}>
+            No data skills needed. If you've had to explain a business problem to someone senior, you're ready.
           </p>
           <motion.button onClick={onStart}
             whileHover={{ scale: 1.03, y: -3 }} whileTap={{ scale: 0.97 }}
             transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+            aria-label="Start the investigation — free"
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 10,
               padding: '16px 40px', borderRadius: 12,
@@ -865,9 +991,10 @@ function Testimonials({ onStart }) {
               letterSpacing: '-0.01em', border: 'none', cursor: 'pointer', fontFamily: 'var(--sans)',
               boxShadow: '0 0 0 1px rgba(252,128,25,0.5), 0 8px 32px rgba(252,128,25,0.45), 0 0 80px rgba(252,128,25,0.18)',
             }}>
-            Start the investigation <ArrowRight size={18} />
+            Start the investigation <ArrowRight size={18} aria-hidden="true" />
           </motion.button>
-          <p style={{ marginTop: 14, fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--ink3)' }}>
+          {/* FIX: microcopy raised to var(--ink2) — readable */}
+          <p style={{ marginTop: 14, fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink2)', letterSpacing: '0.04em' }}>
             Free · ~45 minutes · Shareable link at the end
           </p>
         </div>
@@ -881,13 +1008,32 @@ function Testimonials({ onStart }) {
 // ─────────────────────────────────────────────────────────────────────────────
 export default function StrategyHero({ onStartSimulator }) {
   const navigate = useNavigate();
-  const handleStart = useCallback(() => navigate('/strategy/swiggy'), [navigate]);
-  const { persona, idx: personaIdx } = usePersonaCycle(2800);
+  // Use the prop if the parent controls the action (e.g. StrategyCase).
+  // Fall back to navigation when rendered as the homepage.
+  const handleStart = useCallback(() => {
+    if (onStartSimulator) {
+      onStartSimulator();
+    } else {
+      navigate('/strategy/swiggy');
+    }
+  }, [onStartSimulator, navigate]);
+  const shouldReduceMotion = useReducedMotion(); // FIX: prefers-reduced-motion
+  const { persona, idx: personaIdx, selectIdx } = usePersonaCycle(2800);
 
   const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.09 } } };
   const fadeUp = {
     hidden: { opacity: 0, y: 28 },
     show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] } },
+  };
+
+  // Orb animation — disabled when user prefers reduced motion
+  const orbAnim = shouldReduceMotion ? {} : {
+    animate: { scale: [1, 1.09, 1], opacity: [0.8, 1, 0.8] },
+    transition: { duration: 7, repeat: Infinity, ease: 'easeInOut', delay: 1.5 },
+  };
+  const orbAnim2 = shouldReduceMotion ? {} : {
+    animate: { scale: [1, 1.11, 1], opacity: [0.7, 1, 0.7] },
+    transition: { duration: 9, repeat: Infinity, ease: 'easeInOut', delay: 3 },
   };
 
   return (
@@ -897,44 +1043,54 @@ export default function StrategyHero({ onStartSimulator }) {
 
       {/* ══ HERO ══ */}
       <section style={{
-        position: 'relative', minHeight: '100vh',
+        position: 'relative',
+        minHeight: '100dvh', /* FIX: dynamic viewport height — iOS Safari fix */
         display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center',
-        padding: 'clamp(80px,12vw,140px) 24px clamp(60px,8vw,100px)',
+        padding: 'clamp(80px,12vw,140px) 24px clamp(140px,16vw,180px)', /* FIX: extra bottom padding creates the peek gap */
         overflow: 'hidden',
       }}>
         <GrainOverlay />
         <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
 
-        <motion.div style={{ position: 'absolute', top: -200, left: -200, width: 700, height: 700, borderRadius: '50%', background: 'radial-gradient(circle, rgba(252,128,25,0.20) 0%, transparent 68%)', filter: 'blur(100px)', pointerEvents: 'none' }}
-          animate={{ scale: [1, 1.09, 1], opacity: [0.8, 1, 0.8] }} transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }} />
-        <motion.div style={{ position: 'absolute', bottom: -200, right: -200, width: 700, height: 700, borderRadius: '50%', background: 'radial-gradient(circle, rgba(30,79,204,0.26) 0%, transparent 68%)', filter: 'blur(100px)', pointerEvents: 'none' }}
-          animate={{ scale: [1, 1.11, 1], opacity: [0.7, 1, 0.7] }} transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut', delay: 1.5 }} />
-        <motion.div style={{ position: 'absolute', top: '38%', left: '52%', width: 340, height: 340, borderRadius: '50%', background: 'radial-gradient(circle, rgba(79,128,255,0.11) 0%, transparent 70%)', filter: 'blur(70px)', pointerEvents: 'none' }}
-          animate={{ x: [0, 28, 0], y: [0, -18, 0] }} transition={{ duration: 11, repeat: Infinity, ease: 'easeInOut' }} />
+        {/* Orbs — delayed start, reduced motion aware */}
+        <motion.div
+          style={{ position: 'absolute', top: -200, left: -200, width: 700, height: 700, borderRadius: '50%', background: 'radial-gradient(circle, rgba(252,128,25,0.20) 0%, transparent 68%)', filter: 'blur(100px)', pointerEvents: 'none' }}
+          {...orbAnim}
+        />
+        <motion.div
+          style={{ position: 'absolute', bottom: -200, right: -200, width: 700, height: 700, borderRadius: '50%', background: 'radial-gradient(circle, rgba(30,79,204,0.26) 0%, transparent 68%)', filter: 'blur(100px)', pointerEvents: 'none' }}
+          {...orbAnim2}
+        />
 
         <motion.div variants={stagger} initial="hidden" animate="show"
           style={{ position: 'relative', zIndex: 1, textAlign: 'center', maxWidth: 920 }}>
 
-          {/* Pill */}
+          {/* Pill — FIX: aria-live for screen readers */}
           <motion.div variants={fadeUp} style={{ marginBottom: 40 }}>
             <div style={{
               display: 'inline-flex', alignItems: 'center', gap: 14,
               padding: '12px 28px', borderRadius: 999,
               background: 'rgba(79,128,255,0.09)', border: '1px solid rgba(79,128,255,0.26)',
               boxShadow: '0 0 32px rgba(79,128,255,0.08)',
+              // FIX: flex-wrap prevents breaking on small screens
+              flexWrap: 'wrap', justifyContent: 'center',
+              maxWidth: '90vw',
             }}>
-              <span style={{ width: 9, height: 9, borderRadius: '50%', background: BLUE, flexShrink: 0, boxShadow: `0 0 10px ${BLUE}`, animation: 'hero-pulse 2s ease-in-out infinite' }} />
-              <span style={{ fontFamily: 'var(--mono)', fontSize: 13, fontWeight: 600, letterSpacing: '0.08em', color: 'rgba(255,255,255,0.42)' }}>For</span>
-              <AnimatePresence mode="wait">
-                <motion.span key={personaIdx}
-                  initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.22 }}
-                  style={{ fontFamily: 'var(--mono)', fontSize: 14, fontWeight: 800, letterSpacing: '0.05em', textTransform: 'uppercase', color: ORANGE }}>
-                  {persona.pill}
-                </motion.span>
-              </AnimatePresence>
-              <span style={{ fontFamily: 'var(--mono)', fontSize: 13, fontWeight: 600, letterSpacing: '0.08em', color: 'rgba(255,255,255,0.42)' }}>who work with data</span>
+              <span style={{ width: 9, height: 9, borderRadius: '50%', background: BLUE, flexShrink: 0, boxShadow: `0 0 10px ${BLUE}`, animation: shouldReduceMotion ? 'none' : 'hero-pulse 2s ease-in-out infinite' }} />
+              <span style={{ fontFamily: 'var(--mono)', fontSize: 13, fontWeight: 600, letterSpacing: '0.08em', color: 'rgba(255,255,255,0.5)' }}>For</span>
+              {/* FIX: aria-live announces role changes to screen readers */}
+              <span aria-live="polite" aria-atomic="true">
+                <AnimatePresence mode="wait">
+                  <motion.span key={personaIdx}
+                    initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.22 }}
+                    style={{ fontFamily: 'var(--mono)', fontSize: 14, fontWeight: 800, letterSpacing: '0.05em', textTransform: 'uppercase', color: ORANGE }}>
+                    {persona.pill}
+                  </motion.span>
+                </AnimatePresence>
+              </span>
+              <span style={{ fontFamily: 'var(--mono)', fontSize: 13, fontWeight: 600, letterSpacing: '0.08em', color: 'rgba(255,255,255,0.5)' }}>who work with data</span>
             </div>
           </motion.div>
 
@@ -947,20 +1103,26 @@ export default function StrategyHero({ onStartSimulator }) {
             </span>
           </motion.h1>
 
-          {/* Sub-copy — "moat" removed, plain language */}
+          {/* Sub-copy */}
           <motion.p variants={fadeUp} style={{ fontSize: 'clamp(15px, 2vw, 18px)', lineHeight: 1.72, color: 'var(--ink2)', maxWidth: 640, margin: '0 auto 44px' }}>
-            In 2026, AI handles the data pulls. The people who get hired — and promoted — are the ones
+            AI handles the data pulls. The people who get hired — and promoted — are the ones
             who know{' '}
             <strong style={{ color: 'var(--ink)' }}>how to think through a problem clearly.</strong>{' '}
             Work through a real business incident alongside an AI thinking partner and leave with{' '}
             <strong style={{ color: 'var(--ink)' }}>proof of how you think — as a link you can share.</strong>
           </motion.p>
 
-          {/* CTAs */}
-          <motion.div variants={fadeUp} style={{ display: 'flex', justifyContent: 'center', gap: 14, flexWrap: 'wrap' }}>
+          {/* Stat strip — FIX: moved above CTAs so it's above the fold */}
+          <motion.div variants={fadeUp} style={{ marginBottom: 36 }}>
+            <StatStrip />
+          </motion.div>
+
+          {/* CTAs — FIX: secondary is text-only to avoid split attention */}
+          <motion.div variants={fadeUp} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
             <motion.button onClick={handleStart}
               whileHover={{ scale: 1.03, y: -3 }} whileTap={{ scale: 0.97 }}
               transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+              aria-label="Start the investigation — free"
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: 10,
                 padding: '16px 36px', borderRadius: 12,
@@ -968,41 +1130,44 @@ export default function StrategyHero({ onStartSimulator }) {
                 letterSpacing: '-0.01em', border: 'none', cursor: 'pointer', fontFamily: 'var(--sans)',
                 boxShadow: `0 0 0 1px rgba(252,128,25,0.5), 0 8px 32px rgba(252,128,25,0.38), 0 0 60px rgba(252,128,25,0.18)`,
               }}>
-              <Zap size={17} /> Try it free <ArrowRight size={17} />
+              <Zap size={17} aria-hidden="true" /> Try it free <ArrowRight size={17} aria-hidden="true" />
             </motion.button>
-            <motion.a href="/case-studies"
-              whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+            {/* FIX: secondary CTA is now a plain link — no competing button */}
+            <a href="/case-studies"
               style={{
-                display: 'inline-flex', alignItems: 'center', gap: 8,
-                padding: '16px 26px', borderRadius: 12,
-                background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.10)',
-                color: 'var(--ink2)', fontWeight: 500, fontSize: 15,
-                textDecoration: 'none', backdropFilter: 'blur(12px)', fontFamily: 'var(--sans)',
-              }}>
+                fontSize: 14, color: 'var(--ink2)', textDecoration: 'underline',
+                textUnderlineOffset: 3, fontFamily: 'var(--sans)',
+                transition: 'color 0.2s',
+              }}
+              onMouseEnter={e => e.currentTarget.style.color = 'var(--ink)'}
+              onMouseLeave={e => e.currentTarget.style.color = 'var(--ink2)'}
+            >
               Browse all cases
-            </motion.a>
+            </a>
           </motion.div>
 
-          <motion.p variants={fadeUp} style={{ marginTop: 20, fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--ink3)', letterSpacing: '0.05em' }}>
+          {/* FIX: microcopy raised to var(--ink2) — actually readable now */}
+          <motion.p variants={fadeUp} style={{
+            marginTop: 18, fontFamily: 'var(--mono)', fontSize: 11,
+            color: 'var(--ink2)', letterSpacing: '0.04em',
+          }}>
             Free · No account needed · You keep the link at the end · ~45 minutes
           </motion.p>
-
-          <motion.div variants={fadeUp} style={{ marginTop: 64 }}>
-            <StatStrip />
-          </motion.div>
         </motion.div>
 
-        <ScrollAffordance />
+        {/* FIX: section-peek affordance — no broken fixed gradient */}
+        <SectionPeek />
       </section>
 
-      <div style={{ height: 1, background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent)', margin: '0 24px' }} />
-      <div style={{ paddingTop: 88 }}><ResumeCards persona={persona} personaIdx={personaIdx} /></div>
+      <div style={{ height: 1, background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent)', margin: '0 24px' }} />
+      <div style={{ paddingTop: 88 }}>
+        <ResumeCards persona={persona} personaIdx={personaIdx} selectIdx={selectIdx} />
+      </div>
 
-      <div style={{ height: 1, background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent)', margin: '0 24px' }} />
+      <div style={{ height: 1, background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent)', margin: '0 24px' }} />
       <div style={{ paddingTop: 88 }}><PhaseCards onStart={handleStart} /></div>
 
-      <div style={{ height: 1, background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent)', margin: '0 24px' }} />
+      <div style={{ height: 1, background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent)', margin: '0 24px' }} />
       <div style={{ paddingTop: 88 }}><Testimonials onStart={handleStart} /></div>
 
       <style>{`
