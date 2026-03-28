@@ -1,18 +1,18 @@
 // src/components/strategy/components/ArjunQueryTerminal.jsx
-// The AI query interface. Arjun types a query, reasoning appears, data loads.
-// Fixed dataset behind it — deterministic story, live feel.
-// User watches Arjun query, learns the pattern, takes over by Milestone 4.
+// UX fix: data loads IN PARALLEL with typing animation.
+// No "Watch Arjun query" button — auto-starts when mounted.
+// Data appears the moment typing finishes — zero additional wait.
+// Arjun's reading narration appears 800ms after data, not after a separate phase.
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Terminal, ChevronRight } from 'lucide-react';
 
-const BLUE = '#4F80FF';
-const GREEN = '#3DD68C';
+const BLUE   = '#4F80FF';
+const GREEN  = '#3DD68C';
 const ORANGE = '#FC8019';
 
-// Typewriter hook — types text character by character
-function useTypewriter(text, speed = 22, trigger = true) {
+function useTypewriter(text, speed = 20, trigger = true) {
   const [displayed, setDisplayed] = useState('');
   const [done, setDone] = useState(false);
   const idx = useRef(0);
@@ -36,45 +36,49 @@ function useTypewriter(text, speed = 22, trigger = true) {
   return { displayed, done };
 }
 
-export default function ArjunQueryTerminal({ queryKey, queryData, onComplete }) {
-  // phase: idle → typing_query → showing_reasoning → loading_data → data_shown → reading
-  const [phase, setPhase] = useState('idle');
-  const [started, setStarted] = useState(false);
+export default function ArjunQueryTerminal({ queryData, onComplete }) {
+  // Phases: typing → data_ready → reading → done
+  // Data loads IN PARALLEL with typing — no sequential blocking
+  const [phase, setPhase] = useState('typing');
+  const [dataReady, setDataReady] = useState(false);
 
-  const { displayed: typedQuery, done: queryTyped } = useTypewriter(queryData?.query, 18, phase === 'typing_query');
+  const { displayed: typedQuery, done: queryTyped } = useTypewriter(
+    queryData?.query, 18, phase === 'typing'
+  );
 
+  // Data loads in parallel — fires immediately on mount
   useEffect(() => {
-    if (!started) return;
-    setPhase('typing_query');
-  }, [started]);
+    const t = setTimeout(() => setDataReady(true), 900);
+    return () => clearTimeout(t);
+  }, []);
 
+  // When typing finishes AND data is ready → show data immediately
   useEffect(() => {
-    if (phase === 'typing_query' && queryTyped) {
-      setTimeout(() => setPhase('showing_reasoning'), 400);
+    if (queryTyped && dataReady && phase === 'typing') {
+      setPhase('data_ready');
     }
-  }, [phase, queryTyped]);
+  }, [queryTyped, dataReady, phase]);
 
+  // If data arrives before typing finishes — wait for typing
+  // If typing finishes before data — wait for data
+  // Either way: data appears the instant both are done
+
+  // Reading narration appears 600ms after data
   useEffect(() => {
-    if (phase === 'showing_reasoning') {
-      setTimeout(() => setPhase('loading_data'), 1800);
+    if (phase === 'data_ready') {
+      const t = setTimeout(() => setPhase('reading'), 600);
+      return () => clearTimeout(t);
     }
   }, [phase]);
 
-  useEffect(() => {
-    if (phase === 'loading_data') {
-      setTimeout(() => setPhase('data_shown'), 1200);
-    }
-  }, [phase]);
-
-  useEffect(() => {
-    if (phase === 'data_shown') {
-      setTimeout(() => setPhase('reading'), 600);
-    }
-  }, [phase]);
-
+  // onComplete fires after Arjun reads — 2.5s is enough to absorb the insight
   useEffect(() => {
     if (phase === 'reading') {
-      setTimeout(() => onComplete?.(), 3500);
+      const t = setTimeout(() => {
+        setPhase('done');
+        onComplete?.();
+      }, 2500);
+      return () => clearTimeout(t);
     }
   }, [phase, onComplete]);
 
@@ -87,7 +91,6 @@ export default function ArjunQueryTerminal({ queryKey, queryData, onComplete }) 
       transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
       style={{ marginBottom: 16 }}
     >
-      {/* Terminal window */}
       <div style={{
         borderRadius: 12, overflow: 'hidden',
         border: `1px solid ${BLUE}25`,
@@ -104,51 +107,76 @@ export default function ArjunQueryTerminal({ queryKey, queryData, onComplete }) 
           <span style={{ fontFamily: 'var(--mono)', fontSize: 10, fontWeight: 700, color: BLUE, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
             Arjun's query
           </span>
-          <div style={{ marginLeft: 'auto', display: 'flex', gap: 5 }}>
-            {['#FF5F57','#FFBD2E','#28CA41'].map((c, i) => (
-              <div key={i} style={{ width: 8, height: 8, borderRadius: '50%', background: c, opacity: 0.6 }} />
-            ))}
+          {/* Parallel load indicator */}
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6 }}>
+            {phase === 'typing' && !dataReady && (
+              <div style={{ display: 'flex', gap: 3 }}>
+                {[0,1,2].map(i => (
+                  <motion.div key={i}
+                    style={{ width: 4, height: 4, borderRadius: '50%', background: BLUE }}
+                    animate={{ opacity: [0.3, 1, 0.3] }}
+                    transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.15 }}
+                  />
+                ))}
+              </div>
+            )}
+            {dataReady && phase === 'typing' && (
+              <span style={{ fontFamily: 'var(--mono)', fontSize: 9, color: GREEN, opacity: 0.6 }}>data ready</span>
+            )}
+            {['data_ready', 'reading', 'done'].includes(phase) && (
+              <span style={{ fontFamily: 'var(--mono)', fontSize: 9, color: GREEN }}>✓ loaded</span>
+            )}
+            <div style={{ display: 'flex', gap: 4, marginLeft: 4 }}>
+              {['#FF5F57','#FFBD2E','#28CA41'].map((c, i) => (
+                <div key={i} style={{ width: 7, height: 7, borderRadius: '50%', background: c, opacity: 0.55 }} />
+              ))}
+            </div>
           </div>
         </div>
 
         <div style={{ padding: '12px 14px' }}>
-          {/* Query line */}
-          {phase !== 'idle' && (
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 8 }}>
-              <ChevronRight size={13} color={GREEN} style={{ flexShrink: 0, marginTop: 1 }} />
-              <span style={{ fontFamily: 'var(--mono)', fontSize: 12, color: GREEN, lineHeight: 1.5, wordBreak: 'break-all' }}>
-                {typedQuery}
-                {phase === 'typing_query' && <span style={{ animation: 'cursor-blink 1s step-end infinite', color: GREEN }}>▊</span>}
-              </span>
-            </div>
-          )}
+          {/* Query line — typewriter */}
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 8 }}>
+            <ChevronRight size={13} color={GREEN} style={{ flexShrink: 0, marginTop: 1 }} />
+            <span style={{ fontFamily: 'var(--mono)', fontSize: 12, color: GREEN, lineHeight: 1.5, wordBreak: 'break-all' }}>
+              {typedQuery}
+              {phase === 'typing' && (
+                <motion.span
+                  animate={{ opacity: [1, 0, 1] }}
+                  transition={{ duration: 0.8, repeat: Infinity }}
+                  style={{ color: GREEN }}
+                >▊</motion.span>
+              )}
+            </span>
+          </div>
 
-          {/* Reasoning */}
-          <AnimatePresence>
-            {['showing_reasoning', 'loading_data', 'data_shown', 'reading'].includes(phase) && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0 }} transition={{ duration: 0.28 }}
-                style={{ padding: '8px 10px', borderRadius: 8, background: `${BLUE}08`, border: `1px solid ${BLUE}16`, marginBottom: 10 }}
-              >
-                <span style={{ fontFamily: 'var(--mono)', fontSize: 9, fontWeight: 700, color: BLUE, letterSpacing: '0.08em', textTransform: 'uppercase', display: 'block', marginBottom: 4 }}>
-                  Why this query
-                </span>
-                <p style={{ fontSize: 12, color: 'var(--ink2)', lineHeight: 1.65, margin: 0 }}>
-                  {queryData.reasoning}
-                </p>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {/* Reasoning — visible throughout */}
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            transition={{ duration: 0.3, delay: 0.2 }}
+            style={{
+              padding: '8px 10px', borderRadius: 8,
+              background: `${BLUE}08`, border: `1px solid ${BLUE}16`,
+              marginBottom: 8,
+            }}
+          >
+            <span style={{ fontFamily: 'var(--mono)', fontSize: 9, fontWeight: 700, color: BLUE, letterSpacing: '0.08em', textTransform: 'uppercase', display: 'block', marginBottom: 4 }}>
+              Why this query
+            </span>
+            <p style={{ fontSize: 12, color: 'var(--ink2)', lineHeight: 1.65, margin: 0 }}>
+              {queryData.reasoning}
+            </p>
+          </motion.div>
 
-          {/* Loading state */}
-          <AnimatePresence>
-            {phase === 'loading_data' && (
-              <motion.div
+          {/* Data status */}
+          <AnimatePresence mode="wait">
+            {phase === 'typing' && !dataReady && (
+              <motion.div key="fetching"
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0' }}
+                style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0' }}
               >
-                <div style={{ display: 'flex', gap: 4 }}>
+                <div style={{ display: 'flex', gap: 3 }}>
                   {[0,1,2].map(i => (
                     <motion.div key={i}
                       style={{ width: 5, height: 5, borderRadius: '50%', background: BLUE }}
@@ -157,53 +185,33 @@ export default function ArjunQueryTerminal({ queryKey, queryData, onComplete }) 
                     />
                   ))}
                 </div>
-                <span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink3)' }}>Pulling data...</span>
+                <span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink3)' }}>Fetching data...</span>
               </motion.div>
             )}
-          </AnimatePresence>
-
-          {/* Data returned indicator */}
-          <AnimatePresence>
-            {['data_shown', 'reading'].includes(phase) && (
-              <motion.div
-                initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
-                style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}
+            {['data_ready', 'reading', 'done'].includes(phase) && (
+              <motion.div key="loaded"
+                initial={{ opacity: 0, y: 3 }} animate={{ opacity: 1, y: 0 }}
+                style={{ display: 'flex', alignItems: 'center', gap: 6 }}
               >
                 <span style={{ fontFamily: 'var(--mono)', fontSize: 10, color: GREEN }}>✓ Data loaded</span>
-                <span style={{ fontFamily: 'var(--mono)', fontSize: 9, color: 'var(--ink3)' }}>— see chart below</span>
+                <span style={{ fontFamily: 'var(--mono)', fontSize: 9, color: 'var(--ink3)' }}>— see below</span>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
       </div>
 
-      {/* Trigger button — shown only before started */}
-      {!started && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
-          <button
-            onClick={() => setStarted(true)}
-            style={{
-              marginTop: 10, display: 'inline-flex', alignItems: 'center', gap: 7,
-              padding: '7px 14px', borderRadius: 8,
-              background: `${BLUE}12`, border: `1px solid ${BLUE}28`,
-              fontFamily: 'var(--mono)', fontSize: 11, fontWeight: 700, color: BLUE,
-              cursor: 'pointer', transition: 'background 0.2s',
-            }}
-            onMouseEnter={e => e.currentTarget.style.background = `${BLUE}1C`}
-            onMouseLeave={e => e.currentTarget.style.background = `${BLUE}12`}
-          >
-            <Terminal size={11} /> Watch Arjun query the data
-          </button>
-        </motion.div>
-      )}
-
-      {/* Arjun reads the data */}
+      {/* Arjun reads the data — appears 600ms after data_ready */}
       <AnimatePresence>
-        {phase === 'reading' && (
+        {['reading', 'done'].includes(phase) && (
           <motion.div
             initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-            style={{ marginTop: 12, padding: '11px 14px', borderRadius: 10, background: `${ORANGE}08`, border: `1px solid ${ORANGE}20`, borderLeft: `2px solid ${ORANGE}` }}
+            transition={{ duration: 0.35 }}
+            style={{
+              marginTop: 10, padding: '12px 14px', borderRadius: 10,
+              background: `${ORANGE}08`, border: `1px solid ${ORANGE}20`,
+              borderLeft: `2px solid ${ORANGE}`,
+            }}
           >
             <span style={{ fontFamily: 'var(--mono)', fontSize: 9, fontWeight: 700, color: ORANGE, letterSpacing: '0.08em', textTransform: 'uppercase', display: 'block', marginBottom: 5 }}>
               Arjun reads the data
