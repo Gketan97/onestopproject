@@ -6,7 +6,6 @@
 //   3. Second message types in only after first finishes
 //   4. Input slides up only after both messages done — auto-focused
 //   5. "Your turn" label + first-time tooltip above input
-// CP6: fixed MilestoneScope input re-enable after non-advance Arjun reply
 // All other milestones unchanged.
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
@@ -33,6 +32,7 @@ const RED    = '#F38BA8';
 const PURPLE = '#A78BFA';
 
 // ── Arjun's M1 context message — plain English definitions ───────────────────
+// Written to land for a fresher with zero prior knowledge.
 const M1_CONTEXT_MESSAGE = `Quick context before we dive in — so we're on the same page.
 
 Priya said orders are down 8.3%. Let's be precise about what that means:
@@ -143,7 +143,7 @@ function TypingIndicator() {
   );
 }
 
-// ── Chat input ────────────────────────────────────────────────────────────────
+// ── Chat input — upgraded ─────────────────────────────────────────────────────
 function ChatInput({ value, onChange, onSend, loading, placeholder, rows = 2, autoFocus = false }) {
   const [focused, setFocused] = useState(false);
   const textareaRef           = useRef(null);
@@ -187,24 +187,23 @@ function ChatInput({ value, onChange, onSend, loading, placeholder, rows = 2, au
 //   'question'  → Arjun types scope question
 //   'input'     → Input slides up, auto-focused, "Your turn" cue
 //   'replied'   → User sent, waiting for Arjun response
-// Fix: after non-advance reply, setStage('input') re-enables input.
-//      after advance, setAdvanced(true) permanently hides input.
 // ─────────────────────────────────────────────────────────────────────────────
 function MilestoneScope({ onComplete, callArjunMilestone }) {
-  const [stage, setStage]       = useState('context');
-  const [input, setInput]       = useState('');
-  const [loading, setLoading]   = useState(false);
-  const [concept, setConcept]   = useState(null);
-  const [messages, setMessages] = useState([]);
-  const [advanced, setAdvanced] = useState(false);
+  const [stage, setStage]     = useState('context');  // context → bridge → question → input → replied
+  const [input, setInput]     = useState('');
+  const [loading, setLoading] = useState(false);
+  const [concept, setConcept] = useState(null);
+  const [messages, setMessages] = useState([]);        // stores user + arjun reply after submission
   const bottomRef = useRef(null);
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [stage, messages, loading]);
 
+  // Context message done → show bridge label after short pause
   const handleContextDone = useCallback(() => {
     setTimeout(() => setStage('bridge'), 600);
   }, []);
 
+  // Bridge shown → start typing question after 1.2s (let user read the bridge)
   useEffect(() => {
     if (stage === 'bridge') {
       const t = setTimeout(() => setStage('question'), 1200);
@@ -212,6 +211,7 @@ function MilestoneScope({ onComplete, callArjunMilestone }) {
     }
   }, [stage]);
 
+  // Question done → slide up input
   const handleQuestionDone = useCallback(() => {
     setTimeout(() => setStage('input'), 400);
   }, []);
@@ -227,12 +227,7 @@ function MilestoneScope({ onComplete, callArjunMilestone }) {
     setLoading(false);
     setMessages(prev => [...prev, { role: 'arjun', text, isNew: true }]);
     if (c) setConcept(c);
-    if (advance) {
-      setAdvanced(true);
-      setTimeout(() => onComplete(), 1200);
-    } else {
-      setStage('input');  // re-enable input for another attempt
-    }
+    if (advance) setTimeout(() => onComplete(), 1200);
   }, [input, loading, callArjunMilestone, onComplete]);
 
   return (
@@ -263,7 +258,7 @@ function MilestoneScope({ onComplete, callArjunMilestone }) {
         )}
       </AnimatePresence>
 
-      {/* ── Bridge label ── */}
+      {/* ── Bridge label — "Now watch how Arjun scopes this" ── */}
       <AnimatePresence>
         {['bridge','question','input','replied'].includes(stage) && (
           <motion.div
@@ -283,7 +278,7 @@ function MilestoneScope({ onComplete, callArjunMilestone }) {
         )}
       </AnimatePresence>
 
-      {/* ── Scope question ── */}
+      {/* ── Scope question — types in after bridge ── */}
       <AnimatePresence>
         {['question','input','replied'].includes(stage) && (
           <motion.div
@@ -309,7 +304,7 @@ function MilestoneScope({ onComplete, callArjunMilestone }) {
         )}
       </AnimatePresence>
 
-      {/* ── Post-submission messages ── */}
+      {/* ── Post-submission messages (user reply + Arjun response) ── */}
       {messages.length > 0 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 16 }}>
           {messages.map((msg, i) => <Message key={i} msg={msg} isNew={msg.isNew} />)}
@@ -319,9 +314,9 @@ function MilestoneScope({ onComplete, callArjunMilestone }) {
 
       <AnimatePresence>{concept && <ConceptChip concept={concept} onDismiss={() => setConcept(null)} />}</AnimatePresence>
 
-      {/* ── Input — re-appears after each non-advance reply, hidden after advance ── */}
+      {/* ── Your turn input — slides up only after both messages done ── */}
       <AnimatePresence>
-        {stage === 'input' && !advanced && (
+        {stage === 'input' && (
           <motion.div
             key="input-area"
             initial={{ opacity: 0, y: 16 }}
@@ -329,6 +324,7 @@ function MilestoneScope({ onComplete, callArjunMilestone }) {
             exit={{ opacity: 0, y: 8 }}
             transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
           >
+            {/* "Your turn" label */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
               <motion.div
                 animate={{ opacity: [1, 0.3, 1] }}
@@ -340,6 +336,7 @@ function MilestoneScope({ onComplete, callArjunMilestone }) {
               </span>
             </div>
 
+            {/* First-time tooltip */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -369,7 +366,7 @@ function MilestoneScope({ onComplete, callArjunMilestone }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// All other milestones — unchanged
+// All other milestones — unchanged from CP-C
 // ─────────────────────────────────────────────────────────────────────────────
 
 function FunnelComparison({ thisWeek, lastWeek, title }) {

@@ -1,18 +1,17 @@
 // src/components/strategy/StrategyCase.jsx
-// UX fix: ArjunBridge + floating KpiScorecard removed from above chat.
-// KPI lives exclusively inside MilestoneDashboard (milestone 2).
-// On intro complete: ArjunSocraticChat loads immediately with clear single focus.
-// Milestone 1 (Scope) opens instantly — no competing elements above it.
+// CP-E: PhaseOneIntro REMOVED. New flow:
+// IncidentAlert (page load) → "Enter War Room" → ArjunSocraticChat directly.
+// introComplete state removed — no longer needed.
 
 import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useStrategyState } from './hooks/useStrategyState.js';
-import PhaseOneIntro from './components/PhaseOneIntro.jsx';
 import ArjunSocraticChat from './components/ArjunSocraticChat.jsx';
 import AnalysisWorkbench from './components/AnalysisWorkbench.jsx';
 import StrategyMemo from './components/StrategyMemo.jsx';
+import IncidentAlert from './components/IncidentAlert.jsx';
 
 const ORANGE = '#FC8019';
 const BLUE   = '#4F80FF';
@@ -28,9 +27,17 @@ const PROGRESS = {
 function ProgressBar({ phase }) {
   const p = PROGRESS[phase] || PROGRESS.triage;
   return (
-    <div style={{ position: 'sticky', top: 45, zIndex: 40, background: 'rgba(8,8,16,0.92)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '0 20px' }}>
+    <div style={{
+      position: 'sticky', top: 45, zIndex: 40,
+      background: 'rgba(8,8,16,0.92)', backdropFilter: 'blur(12px)',
+      borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '0 20px',
+    }}>
       <div style={{ height: 2, background: 'rgba(255,255,255,0.06)' }}>
-        <motion.div style={{ height: '100%', background: p.color, borderRadius: 1 }} animate={{ width: `${p.pct}%` }} transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }} />
+        <motion.div
+          style={{ height: '100%', background: p.color, borderRadius: 1 }}
+          animate={{ width: `${p.pct}%` }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        />
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0' }}>
         <p style={{ fontFamily: 'var(--mono)', fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--ink3)' }}>{p.label}</p>
@@ -50,7 +57,7 @@ function PhaseSplash({ config, onDone }) {
         <p style={{ fontSize: 15, color: 'var(--ink2)', marginBottom: 6 }}>{config.subtitle}</p>
         <p style={{ fontFamily: 'var(--mono)', fontSize: 12, color: config.color }}>{config.stat}</p>
         <div style={{ display: 'flex', gap: 6, justifyContent: 'center', marginTop: 24 }}>
-          {[0,1,2].map(i => <motion.div key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: config.color }} animate={{ y: [-3,3,-3] }} transition={{ duration: 0.8, delay: i * 0.15, repeat: Infinity }} />)}
+          {[0,1,2].map(i => <motion.div key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: config.color }} animate={{ y: [-3,3,-3] }} transition={{ duration: 0.8, delay: i*0.15, repeat: Infinity }} />)}
         </div>
       </motion.div>
     </div>
@@ -77,10 +84,9 @@ function PhaseHeader({ num, title, color, onBack, backLabel }) {
   );
 }
 
-// ── Retrieval moment ──────────────────────────────────────────────────────────
 function RetrievalMoment({ onComplete }) {
-  const [answer, setAnswer] = useState('');
-  const [submitted, setSubmitted] = useState(false);
+  const [answer, setAnswer]         = useState('');
+  const [submitted, setSubmitted]   = useState(false);
   const [arjunReply, setArjunReply] = useState(null);
   const canSubmit = answer.trim().length >= 40;
 
@@ -111,7 +117,7 @@ function RetrievalMoment({ onComplete }) {
             <p style={{ fontSize: 14, color: 'var(--ink2)', lineHeight: 1.7, marginBottom: 6 }}>Before we move to Phase 2 — one question.</p>
             <div style={{ padding: '14px 16px', borderRadius: 10, background: `${BLUE}08`, border: `1px solid ${BLUE}20` }}>
               <p style={{ fontSize: 15, color: 'var(--ink)', lineHeight: 1.7, margin: 0, fontWeight: 500 }}>
-                You answered this same question at the start. Compare then and now — what would you do differently if you walked into this incident cold today?
+                You just worked through this incident from scratch. If you had to walk into the same situation cold tomorrow — what would you do in the first 10 minutes?
               </p>
             </div>
             <p style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--ink3)', lineHeight: 1.55, marginTop: 8 }}>Be specific. This becomes the opening line of your portfolio.</p>
@@ -122,8 +128,9 @@ function RetrievalMoment({ onComplete }) {
           {!submitted && (
             <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.25 }}
               style={{ borderRadius: 12, overflow: 'hidden', border: `1px solid ${canSubmit ? `${GREEN}40` : 'rgba(255,255,255,0.1)'}`, transition: 'border-color 0.25s' }}>
-              <textarea value={answer} onChange={e => setAnswer(e.target.value)} placeholder="Before, I would have jumped straight to GMV. Now I'd first..." rows={4}
-                style={{ width: '100%', padding: '14px 16px', background: 'rgba(255,255,255,0.03)', border: 'none', outline: 'none', color: 'var(--ink)', fontFamily: 'var(--sans)', fontSize: 14, lineHeight: 1.65, resize: 'none', boxSizing: 'border-box' }} />
+              <textarea value={answer} onChange={e => setAnswer(e.target.value)}
+                placeholder="First I'd confirm the scope — is it only North Bangalore or wider? Then I'd look at the funnel to find exactly where people dropped..."
+                rows={4} style={{ width: '100%', padding: '14px 16px', background: 'rgba(255,255,255,0.03)', border: 'none', outline: 'none', color: 'var(--ink)', fontFamily: 'var(--sans)', fontSize: 14, lineHeight: 1.65, resize: 'none', boxSizing: 'border-box' }} />
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: 'rgba(0,0,0,0.2)', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
                 <span style={{ fontFamily: 'var(--mono)', fontSize: 10, color: canSubmit ? GREEN : 'var(--ink3)' }}>{canSubmit ? '✓ Ready' : 'Keep going...'}</span>
                 <motion.button onClick={handleSubmit} whileHover={canSubmit ? { scale: 1.06, y: -1 } : {}} whileTap={canSubmit ? { scale: 0.96 } : {}}
@@ -166,24 +173,25 @@ function RetrievalMoment({ onComplete }) {
 }
 
 const SPLASH_CONFIGS = {
-  phase2: { icon: '🔍', title: 'Phase 1 complete.', subtitle: "You've learned the method. Now you lead the investigation.", stat: 'Phase 2 → Own the Investigation', color: `var(--phase2)` },
-  phase3: { icon: '⚡', title: 'Patterns identified.', subtitle: 'You found the friction. Now size it and write the call.', stat: 'Phase 3 → Impact Sizing & Strategic Memo', color: `var(--green)` },
-  complete: { icon: '🏆', title: 'Investigation complete.', subtitle: 'Your memo is ready. This is what Day-Zero readiness looks like.', stat: 'Recovery identified. Portfolio link generated.', color: ORANGE },
+  phase2:   { icon: '🔍', title: 'Phase 1 complete.',    subtitle: "You've learned the method. Now you lead.", stat: 'Phase 2 → Own the Investigation', color: `var(--phase2)` },
+  phase3:   { icon: '⚡', title: 'Patterns identified.', subtitle: 'You found the friction. Now size it.',    stat: 'Phase 3 → Impact Sizing & Memo',   color: `var(--green)`  },
+  complete: { icon: '🏆', title: 'Investigation complete.', subtitle: 'Your memo is ready.',                 stat: 'Portfolio link generated.',          color: ORANGE },
 };
 
 export default function StrategyCase() {
   const navigate = useNavigate();
   const { state, advanceTriage, advanceToMaster, update } = useStrategyState();
-  const [splash, setSplash] = useState(null);
-  const [introComplete, setIntroComplete] = useState(false);
-  const [milestonesComplete, setMilestonesComplete] = useState(false);
-  const [retrievalComplete, setRetrievalComplete] = useState(false);
 
-  const handleIntroComplete = useCallback(() => setIntroComplete(true), []);
+  const [splash, setSplash]                         = useState(null);
+  const [milestonesComplete, setMilestonesComplete] = useState(false);
+  const [retrievalComplete, setRetrievalComplete]   = useState(false);
+  const [showAlert, setShowAlert]                   = useState(state.phase === 'triage');
+
+  const handleAlertEnter         = useCallback(() => setShowAlert(false), []);
   const handleMilestonesComplete = useCallback(() => setMilestonesComplete(true), []);
-  const handleRetrievalComplete = useCallback(() => { setRetrievalComplete(true); setSplash('phase2'); }, []);
-  const handleDeepDiveAdvance = useCallback(() => setSplash('phase3'), []);
-  const handleMemoComplete    = useCallback(() => setSplash('complete'), []);
+  const handleRetrievalComplete  = useCallback(() => { setRetrievalComplete(true); setSplash('phase2'); }, []);
+  const handleDeepDiveAdvance    = useCallback(() => setSplash('phase3'), []);
+  const handleMemoComplete       = useCallback(() => setSplash('complete'), []);
   const handleBack = useCallback((fromPhase) => {
     if (fromPhase === 'triage')   navigate('/');
     if (fromPhase === 'deepdive') update({ phase: 'triage' });
@@ -192,6 +200,12 @@ export default function StrategyCase() {
 
   return (
     <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
+
+      {/* Cold open — full screen, Phase 1 only */}
+      {state.phase === 'triage' && showAlert && (
+        <IncidentAlert onEnter={handleAlertEnter} />
+      )}
+
       <AnimatePresence>
         {splash && (
           <PhaseSplash config={SPLASH_CONFIGS[splash]} onDone={() => {
@@ -203,83 +217,81 @@ export default function StrategyCase() {
       </AnimatePresence>
 
       <AnimatePresence>
-        {(introComplete || state.phase !== 'triage') && (
+        {!showAlert && (
           <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}>
             <ProgressBar phase={state.phase} />
           </motion.div>
         )}
       </AnimatePresence>
 
-      <div style={{ maxWidth: 1040, margin: '0 auto', padding: '28px 24px 80px' }}>
-        <AnimatePresence mode="wait">
+      <AnimatePresence>
+        {!showAlert && (
+          <motion.div key="main-content" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}>
+            <div style={{ maxWidth: 1040, margin: '0 auto', padding: '28px 24px 80px' }}>
+              <AnimatePresence mode="wait">
 
-          {/* ── Phase 1 ── */}
-          {state.phase === 'triage' && (
-            <motion.div key="triage" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.35 }}>
-              <PhaseHeader num="01" title="Understand the Problem" color={ORANGE} onBack={() => handleBack('triage')} backLabel="Back to home" />
+                {/* Phase 1 — straight to chat, zero intro */}
+                {state.phase === 'triage' && (
+                  <motion.div key="triage" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.35 }}>
+                    <PhaseHeader num="01" title="Understand the Problem" color={ORANGE} onBack={() => handleBack('triage')} backLabel="Back to home" />
 
-              {/* Diagnostic intro */}
-              <AnimatePresence>
-                {!introComplete && <PhaseOneIntro onComplete={handleIntroComplete} />}
-              </AnimatePresence>
+                    <AnimatePresence>
+                      {!milestonesComplete && (
+                        <motion.div key="chat" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}>
+                          <ArjunSocraticChat phase="triage" onVizRequest={() => {}} onAdvance={handleMilestonesComplete} />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
 
-              {/* After intro: ArjunSocraticChat loads immediately, clean single focus */}
-              {/* No ArjunBridge, no floating KpiScorecard above chat */}
-              <AnimatePresence>
-                {introComplete && !milestonesComplete && (
-                  <motion.div key="chat" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}>
-                    <ArjunSocraticChat phase="triage" onVizRequest={() => {}} onAdvance={handleMilestonesComplete} />
+                    <AnimatePresence>
+                      {milestonesComplete && !retrievalComplete && (
+                        <motion.div key="retrieval" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.4 }}>
+                          <RetrievalMoment onComplete={handleRetrievalComplete} />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </motion.div>
                 )}
-              </AnimatePresence>
 
-              {/* Retrieval moment after all milestones complete */}
-              <AnimatePresence>
-                {milestonesComplete && !retrievalComplete && (
-                  <motion.div key="retrieval" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.4 }}>
-                    <RetrievalMoment onComplete={handleRetrievalComplete} />
+                {/* Phase 2 */}
+                {state.phase === 'deepdive' && (
+                  <motion.div key="deepdive" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.35 }}>
+                    <PhaseHeader num="02" title="Own the Investigation" color={BLUE} onBack={() => handleBack('deepdive')} backLabel="Back to Phase 1" />
+                    <AnalysisWorkbench onAdvance={handleDeepDiveAdvance} />
                   </motion.div>
                 )}
+
+                {/* Phase 3 */}
+                {state.phase === 'master' && (
+                  <motion.div key="master" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.35 }}>
+                    <PhaseHeader num="03" title="Impact Sizing & Strategic Memo" color={GREEN} onBack={() => handleBack('master')} backLabel="Back to Phase 2" />
+                    <StrategyMemo onComplete={handleMemoComplete} />
+                  </motion.div>
+                )}
+
+                {/* Complete */}
+                {state.phase === 'complete' && (
+                  <motion.div key="complete" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }} style={{ textAlign: 'center', padding: '40px 0' }}>
+                    <motion.button onClick={() => navigate('/')} whileHover={{ x: -2 }}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 0', marginBottom: 40, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink3)', transition: 'color 0.2s' }}
+                      onMouseEnter={e => e.currentTarget.style.color = 'var(--ink2)'}
+                      onMouseLeave={e => e.currentTarget.style.color = 'var(--ink3)'}>
+                      <ArrowLeft size={13} />Back to home
+                    </motion.button>
+                    <div style={{ fontSize: 52, marginBottom: 20 }}>🏆</div>
+                    <h2 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.03em', color: ORANGE, marginBottom: 10 }}>You think like a Staff Analyst.</h2>
+                    <p style={{ fontSize: 15, color: 'var(--ink2)', maxWidth: 420, margin: '0 auto 32px', lineHeight: 1.65 }}>Your investigation memo is ready. Apply to the roles that need exactly this.</p>
+                    <a href="/jobs" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '14px 28px', borderRadius: 12, background: ORANGE, color: '#fff', fontFamily: 'var(--sans)', fontSize: 15, fontWeight: 700, textDecoration: 'none' }}>
+                      Browse roles that hire for this →
+                    </a>
+                  </motion.div>
+                )}
+
               </AnimatePresence>
-            </motion.div>
-          )}
-
-          {/* ── Phase 2 ── */}
-          {state.phase === 'deepdive' && (
-            <motion.div key="deepdive" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.35 }}>
-              <PhaseHeader num="02" title="Own the Investigation" color={BLUE} onBack={() => handleBack('deepdive')} backLabel="Back to Phase 1" />
-              <AnalysisWorkbench onAdvance={handleDeepDiveAdvance} />
-            </motion.div>
-          )}
-
-          {/* ── Phase 3 ── */}
-          {state.phase === 'master' && (
-            <motion.div key="master" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.35 }}>
-              <PhaseHeader num="03" title="Impact Sizing & Strategic Memo" color={GREEN} onBack={() => handleBack('master')} backLabel="Back to Phase 2" />
-              <StrategyMemo onComplete={handleMemoComplete} />
-            </motion.div>
-          )}
-
-          {/* ── Complete ── */}
-          {state.phase === 'complete' && (
-            <motion.div key="complete" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }} style={{ textAlign: 'center', padding: '40px 0' }}>
-              <motion.button onClick={() => navigate('/')} whileHover={{ x: -2 }}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 0', marginBottom: 40, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink3)', transition: 'color 0.2s' }}
-                onMouseEnter={e => e.currentTarget.style.color = 'var(--ink2)'}
-                onMouseLeave={e => e.currentTarget.style.color = 'var(--ink3)'}>
-                <ArrowLeft size={13} />Back to home
-              </motion.button>
-              <div style={{ fontSize: 52, marginBottom: 20 }}>🏆</div>
-              <h2 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.03em', color: ORANGE, marginBottom: 10 }}>You think like a Staff Analyst.</h2>
-              <p style={{ fontSize: 15, color: 'var(--ink2)', maxWidth: 420, margin: '0 auto 32px', lineHeight: 1.65 }}>Your investigation memo is ready. Apply to the roles that need exactly this.</p>
-              <a href="/jobs" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '14px 28px', borderRadius: 12, background: ORANGE, color: '#fff', fontFamily: 'var(--sans)', fontSize: 15, fontWeight: 700, textDecoration: 'none' }}>
-                Browse roles that hire for this →
-              </a>
-            </motion.div>
-          )}
-
-        </AnimatePresence>
-      </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
