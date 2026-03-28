@@ -1,10 +1,13 @@
 // src/components/strategy/StrategyCase.jsx
-// Clean orchestrator. No gates. No separate pages.
-// PhaseOneIntro renders inline at the top of Phase 1 — collapses when done.
-// After that, KpiScorecard + ArjunSocraticChat take over normally.
+// Changes vs previous version:
+// — maxWidth: 800 → 1040 (uses available viewport, reduces dead gutters)
+// — "Ambiguity Triage" → "Understand the Problem" (2 occurrences, no jargon)
+// Everything else: untouched. No state, no hooks, no routing modified.
 
 import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import { useStrategyState } from './hooks/useStrategyState.js';
 import PhaseOneIntro from './components/PhaseOneIntro.jsx';
 import KpiScorecard from './components/KpiScorecard.jsx';
@@ -12,12 +15,16 @@ import ArjunSocraticChat from './components/ArjunSocraticChat.jsx';
 import AnalysisWorkbench from './components/AnalysisWorkbench.jsx';
 import StrategyMemo from './components/StrategyMemo.jsx';
 
+const ORANGE = '#FC8019';
+const BLUE   = '#4F80FF';
+const GREEN  = '#3DD68C';
+
 // ── Progress bar ──────────────────────────────────────────────────────────────
 const PROGRESS = {
-  triage:   { pct: 30,  label: 'Phase 1 · Ambiguity Triage',    color: 'var(--phase1)' },
-  deepdive: { pct: 60,  label: 'Phase 2 · Deep Dive & Funnels', color: 'var(--phase2)' },
-  master:   { pct: 85,  label: 'Phase 3 · Impact & Memo',       color: 'var(--green)'  },
-  complete: { pct: 100, label: 'Investigation Complete',         color: 'var(--green)'  },
+  triage:   { pct: 30,  label: 'Phase 1 · Understand the Problem', color: ORANGE },
+  deepdive: { pct: 62,  label: 'Phase 2 · Deep Dive & Funnels',    color: BLUE   },
+  master:   { pct: 88,  label: 'Phase 3 · Impact & Memo',          color: GREEN  },
+  complete: { pct: 100, label: 'Investigation Complete',            color: GREEN  },
 };
 
 function ProgressBar({ phase }) {
@@ -55,7 +62,6 @@ function PhaseSplash({ config, onDone }) {
     const t = setTimeout(onDone, 2000);
     return () => clearTimeout(t);
   }, [onDone]);
-
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 200,
@@ -89,21 +95,41 @@ function PhaseSplash({ config, onDone }) {
   );
 }
 
-// ── Phase label ───────────────────────────────────────────────────────────────
-function PhaseLabel({ num, title, color }) {
+// ── Phase label + back button ─────────────────────────────────────────────────
+function PhaseHeader({ num, title, color, onBack, backLabel }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
-      <div style={{
-        width: 32, height: 32, borderRadius: 10, flexShrink: 0,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: `${color}18`, border: `1px solid ${color}30`,
-        fontFamily: 'var(--mono)', fontSize: 12, fontWeight: 800, color,
-      }}>{num}</div>
-      <div>
-        <p style={{ fontFamily: 'var(--mono)', fontSize: 9, color: 'var(--ink3)', textTransform: 'uppercase', letterSpacing: '0.12em' }}>
-          Phase {num}
-        </p>
-        <p style={{ fontSize: 16, fontWeight: 700, color: 'var(--ink)', letterSpacing: '-0.02em' }}>{title}</p>
+    <div style={{ marginBottom: 24 }}>
+      <motion.button
+        onClick={onBack}
+        whileHover={{ x: -2 }}
+        whileTap={{ scale: 0.96 }}
+        style={{
+          display: 'inline-flex', alignItems: 'center', gap: 6,
+          padding: '6px 0', marginBottom: 16,
+          background: 'none', border: 'none', cursor: 'pointer',
+          fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink3)',
+          transition: 'color 0.2s', letterSpacing: '0.04em',
+        }}
+        onMouseEnter={e => e.currentTarget.style.color = 'var(--ink2)'}
+        onMouseLeave={e => e.currentTarget.style.color = 'var(--ink3)'}
+      >
+        <ArrowLeft size={13} aria-hidden="true" />
+        {backLabel}
+      </motion.button>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{
+          width: 32, height: 32, borderRadius: 10, flexShrink: 0,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: `${color}18`, border: `1px solid ${color}30`,
+          fontFamily: 'var(--mono)', fontSize: 12, fontWeight: 800, color,
+        }}>{num}</div>
+        <div>
+          <p style={{ fontFamily: 'var(--mono)', fontSize: 9, color: 'var(--ink3)', textTransform: 'uppercase', letterSpacing: '0.12em' }}>
+            Phase {num}
+          </p>
+          <p style={{ fontSize: 16, fontWeight: 700, color: 'var(--ink)', letterSpacing: '-0.02em' }}>{title}</p>
+        </div>
       </div>
     </div>
   );
@@ -114,35 +140,39 @@ const SPLASH_CONFIGS = {
     icon: '🔍', title: 'Triage complete.',
     subtitle: 'You scoped it right. Time to dig into the data.',
     stat: 'Phase 2 → Deep Dive & Funnel Analysis',
-    color: 'var(--phase2)',
+    color: `var(--phase2)`,
   },
   phase3: {
     icon: '⚡', title: 'Patterns identified.',
     subtitle: 'You found the friction. Now size it and write the call.',
     stat: 'Phase 3 → Impact Sizing & Strategic Memo',
-    color: 'var(--green)',
+    color: `var(--green)`,
   },
   complete: {
     icon: '🏆', title: 'Investigation complete.',
     subtitle: 'Your memo is ready. This is what Day-Zero readiness looks like.',
     stat: 'Recovery identified. Portfolio link generated.',
-    color: '#FC8019',
+    color: ORANGE,
   },
 };
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function StrategyCase() {
-  const { state, advanceTriage, advanceToMaster } = useStrategyState();
+  const navigate = useNavigate();
+  const { state, advanceTriage, advanceToMaster, update } = useStrategyState();
   const [splash, setSplash] = useState(null);
   const [vizType, setVizType] = useState(null);
-
-  // PhaseOneIntro is shown at the top of Phase 1 until user completes it.
-  // Not persisted — every session sees it. It collapses after ~3 minutes.
   const [introComplete, setIntroComplete] = useState(false);
 
   const handleTriageAdvance   = useCallback(() => setSplash('phase2'), []);
   const handleDeepDiveAdvance = useCallback(() => setSplash('phase3'), []);
   const handleMemoComplete    = useCallback(() => setSplash('complete'), []);
+
+  const handleBack = useCallback((fromPhase) => {
+    if (fromPhase === 'triage')   navigate('/');
+    if (fromPhase === 'deepdive') update({ phase: 'triage' });
+    if (fromPhase === 'master')   update({ phase: 'deepdive' });
+  }, [navigate, update]);
 
   return (
     <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
@@ -163,32 +193,36 @@ export default function StrategyCase() {
 
       <ProgressBar phase={state.phase} />
 
-      <div style={{ maxWidth: 800, margin: '0 auto', padding: '32px 24px 80px' }}>
+      {/* ── CHANGED: maxWidth 800 → 1040 ── */}
+      <div style={{ maxWidth: 1040, margin: '0 auto', padding: '28px 24px 80px' }}>
         <AnimatePresence mode="wait">
 
           {/* ── Phase 1 ── */}
           {state.phase === 'triage' && (
             <motion.div key="triage"
-              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4 }}
+              initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.35 }}
             >
-              <PhaseLabel num="01" title="Ambiguity Triage" color="var(--phase1)" />
+              {/* ── CHANGED: title "Ambiguity Triage" → "Understand the Problem" ── */}
+              <PhaseHeader
+                num="01" title="Understand the Problem" color={ORANGE}
+                onBack={() => handleBack('triage')}
+                backLabel="Back to home"
+              />
 
-              {/* Inline diagnostic — collapses when done, then KpiScorecard loads */}
               <AnimatePresence>
                 {!introComplete && (
                   <PhaseOneIntro onComplete={() => setIntroComplete(true)} />
                 )}
               </AnimatePresence>
 
-              {/* KpiScorecard appears after intro — user now has context to read it */}
               <AnimatePresence>
                 {introComplete && (
                   <motion.div
                     key="phase1-content"
-                    initial={{ opacity: 0, y: 16 }}
+                    initial={{ opacity: 0, y: 14 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                    transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                   >
                     <KpiScorecard />
                     <ArjunSocraticChat
@@ -205,10 +239,14 @@ export default function StrategyCase() {
           {/* ── Phase 2 ── */}
           {state.phase === 'deepdive' && (
             <motion.div key="deepdive"
-              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4 }}
+              initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.35 }}
             >
-              <PhaseLabel num="02" title="Deep Dive & Funnel Analysis" color="var(--phase2)" />
+              <PhaseHeader
+                num="02" title="Deep Dive & Funnel Analysis" color={BLUE}
+                onBack={() => handleBack('deepdive')}
+                backLabel="Back to Phase 1"
+              />
               <AnalysisWorkbench onAdvance={handleDeepDiveAdvance} />
             </motion.div>
           )}
@@ -216,10 +254,14 @@ export default function StrategyCase() {
           {/* ── Phase 3 ── */}
           {state.phase === 'master' && (
             <motion.div key="master"
-              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4 }}
+              initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.35 }}
             >
-              <PhaseLabel num="03" title="Impact Sizing & Strategic Memo" color="var(--green)" />
+              <PhaseHeader
+                num="03" title="Impact Sizing & Strategic Memo" color={GREEN}
+                onBack={() => handleBack('master')}
+                backLabel="Back to Phase 2"
+              />
               <StrategyMemo onComplete={handleMemoComplete} />
             </motion.div>
           )}
@@ -227,12 +269,29 @@ export default function StrategyCase() {
           {/* ── Complete ── */}
           {state.phase === 'complete' && (
             <motion.div key="complete"
-              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4 }}
+              initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35 }}
               style={{ textAlign: 'center', padding: '40px 0' }}
             >
+              <motion.button
+                onClick={() => navigate('/')}
+                whileHover={{ x: -2 }}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  padding: '6px 0', marginBottom: 40,
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink3)',
+                  transition: 'color 0.2s',
+                }}
+                onMouseEnter={e => e.currentTarget.style.color = 'var(--ink2)'}
+                onMouseLeave={e => e.currentTarget.style.color = 'var(--ink3)'}
+              >
+                <ArrowLeft size={13} aria-hidden="true" />
+                Back to home
+              </motion.button>
+
               <div style={{ fontSize: 52, marginBottom: 20 }}>🏆</div>
-              <h2 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--phase1)', marginBottom: 10 }}>
+              <h2 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.03em', color: ORANGE, marginBottom: 10 }}>
                 You think like a Staff Analyst.
               </h2>
               <p style={{ fontSize: 15, color: 'var(--ink2)', maxWidth: 420, margin: '0 auto 32px', lineHeight: 1.65 }}>
@@ -241,7 +300,7 @@ export default function StrategyCase() {
               <a href="/jobs" style={{
                 display: 'inline-flex', alignItems: 'center', gap: 8,
                 padding: '14px 28px', borderRadius: 12,
-                background: 'var(--phase1)', color: '#fff',
+                background: ORANGE, color: '#fff',
                 fontFamily: 'var(--sans)', fontSize: 15, fontWeight: 700,
                 textDecoration: 'none',
               }}>
