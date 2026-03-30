@@ -1,25 +1,24 @@
 // src/components/strategy/components/ArjunSocraticChat.jsx
-// CP7: Feed persistence + milestone collapse cards + synthesis prompts
+// CP10: Accordion → Continuous Vertical War-Room Feed
 //
-// KEY ARCHITECTURAL CHANGE:
-//   Before: AnimatePresence mode="wait" — milestone content REPLACES on advance
-//   After:  Persistent vertical log — completed milestones COLLAPSE to summary
-//           cards and stay mounted. New milestone slides in below.
+// KEY CHANGES FROM CP9:
+//   1. Feed rendering: log.map() renders ALL completed milestones top-to-bottom,
+//      followed by the active milestone. Nothing is replaced — only appended.
 //
-// New per-milestone flow:
-//   Active milestone renders full content (chat, inputs, data viz)
-//   On complete: user writes a synthesis sentence → becomes the card summary
-//   Card collapses → next milestone slides in below in the same scroll
+//   2. Locked state: completed milestone cards have inputs removed but
+//      data visualizations (KPIs, Funnels, Cohort) remain fully visible
+//      when the card is expanded — so users can scroll back and reference them.
 //
-// Synthesis prompts added:
-//   M1: "Write your problem statement in one sentence" (60 char min)
-//   M3: "In one sentence — what did the funnel tell you that the dashboard couldn't?"
-//   M5: "What's the one-line number you'd lead with in your memo?"
+//   3. Auto-scroll: useEffect watches [log, activeMilestoneIndex, updating]
+//      and smoothly scrolls feedBottomRef into view on every change.
 //
-// Other changes:
-//   - Channel header now shows current milestone title (dynamic, not static)
-//   - onComplete delay → 2500ms (was 600–1200ms) — weight to advancing
-//   - "investigation log updating..." animation between milestones
+//   4. Scroll-spy refs: milestoneRefs array holds one ref per milestone.
+//      MilestoneStrip receives onMilestoneClick(index) which calls
+//      scrollIntoView on the matching ref.
+//
+//   5. onMilestoneAdvance prop: called after each milestone completes,
+//      passes (milestoneName, milestoneIndex) up to StrategyCase so the
+//      sticky IncidentStatusBar can update its label.
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -43,7 +42,7 @@ const BLUE   = '#4F80FF';
 const GREEN  = '#3DD68C';
 const RED    = '#F38BA8';
 const PURPLE = '#A78BFA';
-const MILESTONE_COLORS = [ORANGE, BLUE, PURPLE, GREEN, RED, '#F9E2AF'];
+const MILESTONE_COLORS = [ORANGE, BLUE, PURPLE, GREEN, RED, PURPLE, '#F9E2AF'];
 
 // ── Typewriter hook ───────────────────────────────────────────────────────────
 function useTypewriter(text, speed = 10, trigger = true) {
@@ -156,14 +155,10 @@ function ChatInput({ value, onChange, onSend, loading, placeholder, rows = 2, au
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// ── SYNTHESIS PROMPT — captures the user's conclusion per milestone ───────────
-// Shown after Arjun's final response, before advance.
-// The submitted sentence becomes the collapsed card summary.
-// ─────────────────────────────────────────────────────────────────────────────
+// ── Synthesis prompt ──────────────────────────────────────────────────────────
 function SynthesisPrompt({ prompt, placeholder, minChars = 60, onSubmit, color = ORANGE }) {
-  const [value, setValue]     = useState('');
-  const [focused, setFocused] = useState(false);
+  const [value, setValue]         = useState('');
+  const [focused, setFocused]     = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const canSubmit = value.trim().length >= minChars && !submitted;
 
@@ -182,7 +177,6 @@ function SynthesisPrompt({ prompt, placeholder, minChars = 60, onSubmit, color =
       transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
       style={{ marginTop: 20, padding: '16px', borderRadius: 12, background: `${color}07`, border: `1px solid ${color}25` }}
     >
-      {/* Arjun prompt label */}
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 12 }}>
         <Avatar initials="AJ" color={ORANGE} size={28} />
         <div>
@@ -190,8 +184,6 @@ function SynthesisPrompt({ prompt, placeholder, minChars = 60, onSubmit, color =
           <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--ink)', lineHeight: 1.65, margin: 0 }}>{prompt}</p>
         </div>
       </div>
-
-      {/* Input */}
       <div style={{ borderRadius: 10, overflow: 'hidden', border: `1px solid ${focused ? color : canSubmit ? `${color}40` : 'rgba(255,255,255,0.09)'}`, boxShadow: focused ? `0 0 0 1px ${color}35` : 'none', transition: 'border-color 0.18s, box-shadow 0.18s' }}>
         <textarea
           value={value}
@@ -217,322 +209,7 @@ function SynthesisPrompt({ prompt, placeholder, minChars = 60, onSubmit, color =
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// ── COLLAPSED MILESTONE CARD — shown in the investigation log ─────────────────
-// Renders the completed summary for each past milestone.
-// Expandable to show the full milestone content (future enhancement).
-// ─────────────────────────────────────────────────────────────────────────────
-function CollapsedMilestoneCard({ milestone, index, conclusion, isExpanded, onToggle }) {
-  const color = MILESTONE_COLORS[index % MILESTONE_COLORS.length];
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, height: 0 }}
-      animate={{ opacity: 1, height: 'auto' }}
-      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-      style={{ marginBottom: 8 }}
-    >
-      <div
-        onClick={onToggle}
-        style={{
-          display: 'flex', alignItems: 'center', gap: 10,
-          padding: '10px 14px', borderRadius: 10, cursor: 'pointer',
-          background: `${color}06`, border: `1px solid ${color}18`,
-          transition: 'background 0.2s',
-        }}
-        onMouseEnter={e => e.currentTarget.style.background = `${color}0E`}
-        onMouseLeave={e => e.currentTarget.style.background = `${color}06`}
-      >
-        {/* Check dot */}
-        <div style={{ width: 20, height: 20, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${color}20`, border: `1.5px solid ${color}45` }}>
-          <Check size={10} color={color} strokeWidth={3} />
-        </div>
-
-        {/* Label */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <span style={{ fontFamily: 'var(--mono)', fontSize: 10, fontWeight: 700, color, letterSpacing: '0.04em' }}>
-            {milestone.number} {milestone.title}
-          </span>
-          {conclusion && (
-            <p style={{ fontSize: 12, color: 'var(--ink2)', margin: '2px 0 0', lineHeight: 1.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              "{conclusion}"
-            </p>
-          )}
-        </div>
-
-        {/* Expand toggle */}
-        <div style={{ color: 'var(--ink3)', flexShrink: 0 }}>
-          {isExpanded ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
-        </div>
-      </div>
-    </motion.div>
-  );
-}
-
-// ── Investigation log updating animation ─────────────────────────────────────
-function LogUpdating() {
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 0', marginBottom: 8 }}
-    >
-      <div style={{ display: 'flex', gap: 3 }}>
-        {[0,1,2].map(i => (
-          <motion.div key={i} style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--ink3)' }}
-            animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.15 }} />
-        ))}
-      </div>
-      <span style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--ink3)' }}>
-        investigation log updating...
-      </span>
-    </motion.div>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// MILESTONE COMPONENTS
-// Each milestone receives: onComplete(conclusionSentence), callArjunMilestone
-// onComplete is called with the synthesis sentence the user writes.
-// ─────────────────────────────────────────────────────────────────────────────
-
-// Arjun's M1 context + scope messages
-const M1_CONTEXT_MESSAGE = `Quick context before we dive in — so we're on the same page.
-
-Priya said orders are down 8.3%. Let's be precise about what that means:
-
-• Orders = every time someone taps "Place Order" and it goes through. Not browsing, not adding to cart — a completed purchase.
-
-• Week-over-week (WoW) = this Tuesday compared to last Tuesday. Not yesterday, not last month.
-
-• GMV ₹19L = the total rupee value of those lost orders. Think of it this way: if 1,000 orders didn't happen and each was ₹190, that's ₹19 lakh gone.
-
-Now — Priya flagged North Bangalore. But before I pull a single number, I want to know: is this actually isolated there, or are we seeing it elsewhere?`;
-
-const M1_SCOPE_QUESTION = `Don't pull any data yet. Tell me — what's your instinct? Is this a North Bangalore problem, or could it be platform-wide and Priya just noticed it there first?`;
-
-// ── Milestone 1: Scope ────────────────────────────────────────────────────────
-function MilestoneScope({ onComplete, callArjunMilestone }) {
-  const [stage, setStage]       = useState('context');
-  const [input, setInput]       = useState('');
-  const [loading, setLoading]   = useState(false);
-  const [concept, setConcept]   = useState(null);
-  const [messages, setMessages] = useState([]);
-  const [advanced, setAdvanced] = useState(false);
-  const [showSynthesis, setShowSynthesis] = useState(false);
-  const bottomRef = useRef(null);
-
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [stage, messages, loading, showSynthesis]);
-
-  const handleContextDone = useCallback(() => { setTimeout(() => setStage('bridge'), 600); }, []);
-
-  useEffect(() => {
-    if (stage === 'bridge') { const t = setTimeout(() => setStage('question'), 1200); return () => clearTimeout(t); }
-  }, [stage]);
-
-  const handleQuestionDone = useCallback(() => { setTimeout(() => setStage('input'), 400); }, []);
-
-  const send = useCallback(async () => {
-    const q = input.trim();
-    if (!q || loading) return;
-    setInput('');
-    setStage('replied');
-    setMessages(prev => [...prev, { role: 'user', text: q, isNew: true }]);
-    setLoading(true);
-    const { text, advance, concept: c } = await callArjunMilestone(q, 'scope');
-    setLoading(false);
-    setMessages(prev => [...prev, { role: 'arjun', text, isNew: true }]);
-    if (c) setConcept(c);
-    if (advance) {
-      setAdvanced(true);
-      // Show synthesis prompt instead of auto-advancing
-      setTimeout(() => setShowSynthesis(true), 1000);
-    } else {
-      setStage('input');
-    }
-  }, [input, loading, callArjunMilestone]);
-
-  const handleSynthesis = useCallback((sentence) => {
-    onComplete(sentence);
-  }, [onComplete]);
-
-  return (
-    <div>
-      {/* Context message */}
-      {['context','bridge','question','input','replied'].includes(stage) && (
-        <motion.div key="context-msg" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}
-          style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: 20 }}>
-          <Avatar initials="AJ" color={ORANGE} size={32} />
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6 }}>
-              <span style={{ fontFamily: 'var(--mono)', fontSize: 11, fontWeight: 700, color: ORANGE }}>Arjun</span>
-              <span style={{ fontFamily: 'var(--mono)', fontSize: 9, color: ORANGE, opacity: 0.6 }}>Staff Analyst</span>
-            </div>
-            <ArjunTypedMessage text={M1_CONTEXT_MESSAGE} isNew={stage === 'context'} onDone={handleContextDone} />
-          </div>
-        </motion.div>
-      )}
-
-      {/* Bridge label */}
-      <AnimatePresence>
-        {['bridge','question','input','replied'].includes(stage) && (
-          <motion.div key="bridge" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}
-            style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '4px 0 20px 42px' }}>
-            <div style={{ flex: 1, height: 1, background: `${ORANGE}20` }} />
-            <span style={{ fontFamily: 'var(--mono)', fontSize: 10, color: ORANGE, opacity: 0.7, whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 5 }}>
-              <ArrowDown size={10} /> Your turn first
-            </span>
-            <div style={{ flex: 1, height: 1, background: `${ORANGE}20` }} />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Scope question */}
-      <AnimatePresence>
-        {['question','input','replied'].includes(stage) && (
-          <motion.div key="scope-q" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}
-            style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: 20 }}>
-            <Avatar initials="AJ" color={ORANGE} size={32} />
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6 }}>
-                <span style={{ fontFamily: 'var(--mono)', fontSize: 11, fontWeight: 700, color: ORANGE }}>Arjun</span>
-                <span style={{ fontFamily: 'var(--mono)', fontSize: 9, color: ORANGE, opacity: 0.6 }}>Staff Analyst</span>
-              </div>
-              <ArjunTypedMessage text={M1_SCOPE_QUESTION} isNew={stage === 'question'} onDone={handleQuestionDone} />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* User replies + Arjun responses */}
-      {messages.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 16 }}>
-          {messages.map((msg, i) => <Message key={i} msg={msg} isNew={msg.isNew} />)}
-          {loading && <TypingIndicator />}
-        </div>
-      )}
-
-      <AnimatePresence>{concept && <ConceptChip concept={concept} onDismiss={() => setConcept(null)} />}</AnimatePresence>
-
-      {/* Input — re-enabled after non-advance reply */}
-      <AnimatePresence>
-        {stage === 'input' && !advanced && (
-          <motion.div key="input-area" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <motion.div animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 1.2, repeat: Infinity }}
-                style={{ width: 6, height: 6, borderRadius: '50%', background: ORANGE, flexShrink: 0 }} />
-              <span style={{ fontFamily: 'var(--mono)', fontSize: 10, fontWeight: 700, color: ORANGE, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-                Your turn — reply to Arjun
-              </span>
-            </div>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
-              style={{ padding: '8px 12px', borderRadius: 8, marginBottom: 8, background: `${BLUE}08`, border: `1px solid ${BLUE}16` }}>
-              <p style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--ink2)', margin: 0, lineHeight: 1.6 }}>
-                💡 Type what you think — there's no wrong answer. Arjun will react to whatever you write.
-              </p>
-            </motion.div>
-            <ChatInput value={input} onChange={setInput} onSend={send} loading={loading}
-              placeholder="My instinct is this is probably isolated to North Bangalore because..." autoFocus />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Synthesis prompt — after advance, before moving on */}
-      <AnimatePresence>
-        {showSynthesis && (
-          <SynthesisPrompt
-            prompt="Before we pull any data — write your problem statement in one sentence. What exactly are we investigating?"
-            placeholder='We are investigating: [what dropped], in [where], compared to [when], because [why it matters]...'
-            minChars={60}
-            color={ORANGE}
-            onSubmit={handleSynthesis}
-          />
-        )}
-      </AnimatePresence>
-
-      <div ref={bottomRef} />
-    </div>
-  );
-}
-
-// ── Milestone 2: Dashboard ────────────────────────────────────────────────────
-function MilestoneDashboard({ onComplete, callArjunMilestone }) {
-  const [predictionDone, setPredictionDone] = useState(false);
-  const [arjunOpened, setArjunOpened]       = useState(false);
-  const [messages, setMessages]             = useState([]);
-  const [kpiClicked, setKpiClicked]         = useState(null);
-  const [concept, setConcept]               = useState(null);
-  const [loading, setLoading]               = useState(false);
-  const [input, setInput]                   = useState('');
-  const [followUpShown, setFollowUpShown]   = useState(false);
-  const [showSynthesis, setShowSynthesis]   = useState(false);
-  const bottomRef = useRef(null);
-
-  useEffect(() => {
-    if (predictionDone && !arjunOpened) {
-      const t = setTimeout(() => { setMessages([{ role: 'arjun', text: MILESTONES[1].arjunOpening, isNew: true }]); setArjunOpened(true); }, 400);
-      return () => clearTimeout(t);
-    }
-  }, [predictionDone, arjunOpened]);
-
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, loading, kpiClicked, showSynthesis]);
-
-  const handleKpiClick = useCallback((metricKey) => {
-    if (kpiClicked) return;
-    setKpiClicked(metricKey);
-    const { text, followUp, isCorrect, conceptTrigger } = getKpiClickResponse(metricKey);
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      setMessages(prev => [...prev, { role: 'arjun', text, isNew: true }]);
-      if (conceptTrigger) setConcept(conceptTrigger);
-      setTimeout(() => {
-        if (followUp) { setMessages(prev => [...prev, { role: 'arjun', text: followUp, isNew: true }]); setFollowUpShown(true); }
-        if (isCorrect) setTimeout(() => onComplete(null), 2500); // M2 has no synthesis prompt — conclusion captured in M1
-      }, 1200);
-    }, 900);
-  }, [kpiClicked, onComplete]);
-
-  const send = useCallback(async () => {
-    const q = input.trim();
-    if (!q || loading) return;
-    setInput('');
-    setMessages(prev => [...prev, { role: 'user', text: q, isNew: true }]);
-    setLoading(true);
-    const { text, advance, concept: c } = await callArjunMilestone(q, 'dashboard');
-    setLoading(false);
-    setMessages(prev => [...prev, { role: 'arjun', text, isNew: true }]);
-    if (c) setConcept(c);
-    if (advance) setTimeout(() => onComplete(null), 2500);
-  }, [input, loading, callArjunMilestone, onComplete]);
-
-  return (
-    <div>
-      {!predictionDone && <PredictionPrompt prediction={PREDICTIONS.dashboard} onComplete={() => setPredictionDone(true)} />}
-      <AnimatePresence>
-        {predictionDone && (
-          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 16 }}>
-              {messages.map((msg, i) => <Message key={i} msg={msg} isNew={msg.isNew} />)}
-              {loading && <TypingIndicator />}
-            </div>
-            {arjunOpened && (
-              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-                <KpiScorecard onMetricClick={handleKpiClick} clickedMetric={kpiClicked} interactive={!kpiClicked} />
-              </motion.div>
-            )}
-            <AnimatePresence>{concept && <ConceptChip concept={concept} onDismiss={() => setConcept(null)} />}</AnimatePresence>
-            {followUpShown && <ChatInput value={input} onChange={setInput} onSend={send} loading={loading} placeholder="Type your reasoning..." />}
-            <div ref={bottomRef} />
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
-
-// ── Milestone 3: Funnel ───────────────────────────────────────────────────────
+// ── Funnel table components (used both live and in locked cards) ───────────────
 function FunnelComparison({ thisWeek, lastWeek, title }) {
   return (
     <div style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.03)', marginBottom: 12 }}>
@@ -583,6 +260,360 @@ function SegmentedFunnel() {
   );
 }
 
+// ── Collapsed milestone card — locked state with visible data viz ──────────────
+// Inputs are gone. Data visualizations remain visible when expanded.
+// This is the core "feed" artifact for each completed milestone.
+function CollapsedMilestoneCard({ milestone, index, conclusion, isExpanded, onToggle }) {
+  const color = MILESTONE_COLORS[index % MILESTONE_COLORS.length];
+
+  // Read-only data viz snapshot — visible when card is expanded
+  // pointerEvents: none ensures nothing is clickable inside locked cards
+  const DataSnapshot = () => {
+    if (index === 1) { // M2 Dashboard
+      return (
+        <div style={{ marginTop: 12, pointerEvents: 'none', opacity: 0.8 }}>
+          <KpiScorecard onMetricClick={() => {}} clickedMetric={null} interactive={false} />
+        </div>
+      );
+    }
+    if (index === 2) { // M3 Funnel
+      return (
+        <div style={{ marginTop: 12, pointerEvents: 'none', opacity: 0.8 }}>
+          <FunnelComparison thisWeek={FUNNEL_THIS_WEEK} lastWeek={FUNNEL_LAST_WEEK} title="Conversion funnel · reference" />
+          <SegmentedFunnel />
+        </div>
+      );
+    }
+    if (index === 3) { // M4 Root Cause
+      return (
+        <div style={{ marginTop: 12, pointerEvents: 'none', opacity: 0.8 }}>
+          <CohortMatrix />
+        </div>
+      );
+    }
+    return null;
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: 'auto' }}
+      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+      style={{ marginBottom: 8 }}
+    >
+      {/* Card header — always visible */}
+      <div
+        onClick={onToggle}
+        style={{
+          display: 'flex', alignItems: 'center', gap: 10,
+          padding: '10px 14px', borderRadius: isExpanded ? '10px 10px 0 0' : 10,
+          cursor: 'pointer', background: `${color}06`,
+          border: `1px solid ${color}18`,
+          transition: 'background 0.2s, border-radius 0.2s',
+        }}
+        onMouseEnter={e => e.currentTarget.style.background = `${color}0E`}
+        onMouseLeave={e => e.currentTarget.style.background = `${color}06`}
+      >
+        <div style={{ width: 20, height: 20, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${color}20`, border: `1.5px solid ${color}45` }}>
+          <Check size={10} color={color} strokeWidth={3} />
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <span style={{ fontFamily: 'var(--mono)', fontSize: 10, fontWeight: 700, color, letterSpacing: '0.04em' }}>
+            {milestone.number} {milestone.title}
+          </span>
+          {conclusion && (
+            <p style={{ fontSize: 12, color: 'var(--ink2)', margin: '2px 0 0', lineHeight: 1.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: isExpanded ? 'normal' : 'nowrap' }}>
+              "{conclusion}"
+            </p>
+          )}
+        </div>
+        <div style={{ color: 'var(--ink3)', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 4 }}>
+          <span style={{ fontFamily: 'var(--mono)', fontSize: 9, color: 'var(--ink3)' }}>
+            {isExpanded ? 'collapse' : 'expand'}
+          </span>
+          {isExpanded ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
+        </div>
+      </div>
+
+      {/* Expanded body — read-only data viz, no inputs */}
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            style={{
+              overflow: 'hidden',
+              padding: '12px 14px',
+              background: `${color}04`,
+              border: `1px solid ${color}18`,
+              borderTop: 'none',
+              borderRadius: '0 0 10px 10px',
+            }}
+          >
+            <DataSnapshot />
+            {!([1, 2, 3].includes(index)) && (
+              <p style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--ink3)', margin: 0 }}>
+                No data visualization for this milestone.
+              </p>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+}
+
+// ── Investigation log updating animation ──────────────────────────────────────
+function LogUpdating() {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 0', marginBottom: 8 }}
+    >
+      <div style={{ display: 'flex', gap: 3 }}>
+        {[0,1,2].map(i => (
+          <motion.div key={i} style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--ink3)' }}
+            animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.15 }} />
+        ))}
+      </div>
+      <span style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--ink3)' }}>
+        investigation log updating...
+      </span>
+    </motion.div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MILESTONE COMPONENTS
+// ─────────────────────────────────────────────────────────────────────────────
+
+const M1_CONTEXT_MESSAGE = `Quick context before we dive in — so we're on the same page.
+
+Priya said orders are down 8.3%. Let's be precise about what that means:
+
+• Orders = every time someone taps "Place Order" and it goes through. Not browsing, not adding to cart — a completed purchase.
+
+• Week-over-week (WoW) = this Tuesday compared to last Tuesday. Not yesterday, not last month.
+
+• GMV ₹19L = the total rupee value of those lost orders. Think of it this way: if 1,000 orders didn't happen and each was ₹190, that's ₹19 lakh gone.
+
+Now — Priya flagged North Bangalore. But before I pull a single number, I want to know: is this actually isolated there, or are we seeing it elsewhere?`;
+
+const M1_SCOPE_QUESTION = `Don't pull any data yet. Tell me — what's your instinct? Is this a North Bangalore problem, or could it be platform-wide and Priya just noticed it there first?`;
+
+// ── Milestone 1: Scope ────────────────────────────────────────────────────────
+function MilestoneScope({ onComplete, callArjunMilestone }) {
+  const [stage, setStage]       = useState('context');
+  const [input, setInput]       = useState('');
+  const [loading, setLoading]   = useState(false);
+  const [concept, setConcept]   = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [advanced, setAdvanced] = useState(false);
+  const [showSynthesis, setShowSynthesis] = useState(false);
+  const bottomRef = useRef(null);
+
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [stage, messages, loading, showSynthesis]);
+
+  const handleContextDone = useCallback(() => { setTimeout(() => setStage('bridge'), 600); }, []);
+
+  useEffect(() => {
+    if (stage === 'bridge') { const t = setTimeout(() => setStage('question'), 1200); return () => clearTimeout(t); }
+  }, [stage]);
+
+  const handleQuestionDone = useCallback(() => { setTimeout(() => setStage('input'), 400); }, []);
+
+  const send = useCallback(async () => {
+    const q = input.trim();
+    if (!q || loading) return;
+    setInput('');
+    setStage('replied');
+    setMessages(prev => [...prev, { role: 'user', text: q, isNew: true }]);
+    setLoading(true);
+    const { text, advance, concept: c } = await callArjunMilestone(q, 'scope');
+    setLoading(false);
+    setMessages(prev => [...prev, { role: 'arjun', text, isNew: true }]);
+    if (c) setConcept(c);
+    if (advance) {
+      setAdvanced(true);
+      setTimeout(() => setShowSynthesis(true), 1000);
+    } else {
+      setStage('input');
+    }
+  }, [input, loading, callArjunMilestone]);
+
+  return (
+    <div>
+      {['context','bridge','question','input','replied'].includes(stage) && (
+        <motion.div key="context-msg" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}
+          style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: 20 }}>
+          <Avatar initials="AJ" color={ORANGE} size={32} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6 }}>
+              <span style={{ fontFamily: 'var(--mono)', fontSize: 11, fontWeight: 700, color: ORANGE }}>Arjun</span>
+              <span style={{ fontFamily: 'var(--mono)', fontSize: 9, color: ORANGE, opacity: 0.6 }}>Staff Analyst</span>
+            </div>
+            <ArjunTypedMessage text={M1_CONTEXT_MESSAGE} isNew={stage === 'context'} onDone={handleContextDone} />
+          </div>
+        </motion.div>
+      )}
+
+      <AnimatePresence>
+        {['bridge','question','input','replied'].includes(stage) && (
+          <motion.div key="bridge" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}
+            style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '4px 0 20px 42px' }}>
+            <div style={{ flex: 1, height: 1, background: `${ORANGE}20` }} />
+            <span style={{ fontFamily: 'var(--mono)', fontSize: 10, color: ORANGE, opacity: 0.7, whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 5 }}>
+              <ArrowDown size={10} /> Your turn first
+            </span>
+            <div style={{ flex: 1, height: 1, background: `${ORANGE}20` }} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {['question','input','replied'].includes(stage) && (
+          <motion.div key="scope-q" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}
+            style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: 20 }}>
+            <Avatar initials="AJ" color={ORANGE} size={32} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6 }}>
+                <span style={{ fontFamily: 'var(--mono)', fontSize: 11, fontWeight: 700, color: ORANGE }}>Arjun</span>
+                <span style={{ fontFamily: 'var(--mono)', fontSize: 9, color: ORANGE, opacity: 0.6 }}>Staff Analyst</span>
+              </div>
+              <ArjunTypedMessage text={M1_SCOPE_QUESTION} isNew={stage === 'question'} onDone={handleQuestionDone} />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {messages.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 16 }}>
+          {messages.map((msg, i) => <Message key={i} msg={msg} isNew={msg.isNew} />)}
+          {loading && <TypingIndicator />}
+        </div>
+      )}
+
+      <AnimatePresence>{concept && <ConceptChip concept={concept} onDismiss={() => setConcept(null)} />}</AnimatePresence>
+
+      <AnimatePresence>
+        {stage === 'input' && !advanced && (
+          <motion.div key="input-area" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+              <motion.div animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 1.2, repeat: Infinity }}
+                style={{ width: 6, height: 6, borderRadius: '50%', background: ORANGE, flexShrink: 0 }} />
+              <span style={{ fontFamily: 'var(--mono)', fontSize: 10, fontWeight: 700, color: ORANGE, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                Your turn — reply to Arjun
+              </span>
+            </div>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
+              style={{ padding: '8px 12px', borderRadius: 8, marginBottom: 8, background: `${BLUE}08`, border: `1px solid ${BLUE}16` }}>
+              <p style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--ink2)', margin: 0, lineHeight: 1.6 }}>
+                💡 Type what you think — there's no wrong answer. Arjun will react to whatever you write.
+              </p>
+            </motion.div>
+            <ChatInput value={input} onChange={setInput} onSend={send} loading={loading}
+              placeholder="My instinct is this is probably isolated to North Bangalore because..." autoFocus />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showSynthesis && (
+          <SynthesisPrompt
+            prompt="Before we pull any data — write your problem statement in one sentence. What exactly are we investigating?"
+            placeholder='We are investigating: [what dropped], in [where], compared to [when], because [why it matters]...'
+            minChars={60}
+            color={ORANGE}
+            onSubmit={(sentence) => onComplete(sentence)}
+          />
+        )}
+      </AnimatePresence>
+
+      <div ref={bottomRef} />
+    </div>
+  );
+}
+
+// ── Milestone 2: Dashboard ────────────────────────────────────────────────────
+function MilestoneDashboard({ onComplete, callArjunMilestone }) {
+  const [predictionDone, setPredictionDone] = useState(false);
+  const [arjunOpened, setArjunOpened]       = useState(false);
+  const [messages, setMessages]             = useState([]);
+  const [kpiClicked, setKpiClicked]         = useState(null);
+  const [concept, setConcept]               = useState(null);
+  const [loading, setLoading]               = useState(false);
+  const [input, setInput]                   = useState('');
+  const [followUpShown, setFollowUpShown]   = useState(false);
+  const bottomRef = useRef(null);
+
+  useEffect(() => {
+    if (predictionDone && !arjunOpened) {
+      const t = setTimeout(() => { setMessages([{ role: 'arjun', text: MILESTONES[1].arjunOpening, isNew: true }]); setArjunOpened(true); }, 400);
+      return () => clearTimeout(t);
+    }
+  }, [predictionDone, arjunOpened]);
+
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, loading, kpiClicked]);
+
+  const handleKpiClick = useCallback((metricKey) => {
+    if (kpiClicked) return;
+    setKpiClicked(metricKey);
+    const { text, followUp, isCorrect, conceptTrigger } = getKpiClickResponse(metricKey);
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      setMessages(prev => [...prev, { role: 'arjun', text, isNew: true }]);
+      if (conceptTrigger) setConcept(conceptTrigger);
+      setTimeout(() => {
+        if (followUp) { setMessages(prev => [...prev, { role: 'arjun', text: followUp, isNew: true }]); setFollowUpShown(true); }
+        if (isCorrect) setTimeout(() => onComplete(null), 2500);
+      }, 1200);
+    }, 900);
+  }, [kpiClicked, onComplete]);
+
+  const send = useCallback(async () => {
+    const q = input.trim();
+    if (!q || loading) return;
+    setInput('');
+    setMessages(prev => [...prev, { role: 'user', text: q, isNew: true }]);
+    setLoading(true);
+    const { text, advance, concept: c } = await callArjunMilestone(q, 'dashboard');
+    setLoading(false);
+    setMessages(prev => [...prev, { role: 'arjun', text, isNew: true }]);
+    if (c) setConcept(c);
+    if (advance) setTimeout(() => onComplete(null), 2500);
+  }, [input, loading, callArjunMilestone, onComplete]);
+
+  return (
+    <div>
+      {!predictionDone && <PredictionPrompt prediction={PREDICTIONS.dashboard} onComplete={() => setPredictionDone(true)} />}
+      <AnimatePresence>
+        {predictionDone && (
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 16 }}>
+              {messages.map((msg, i) => <Message key={i} msg={msg} isNew={msg.isNew} />)}
+              {loading && <TypingIndicator />}
+            </div>
+            {arjunOpened && (
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+                <KpiScorecard onMetricClick={handleKpiClick} clickedMetric={kpiClicked} interactive={!kpiClicked} />
+              </motion.div>
+            )}
+            <AnimatePresence>{concept && <ConceptChip concept={concept} onDismiss={() => setConcept(null)} />}</AnimatePresence>
+            {followUpShown && <ChatInput value={input} onChange={setInput} onSend={send} loading={loading} placeholder="Type your reasoning..." />}
+            <div ref={bottomRef} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// ── Milestone 3: Funnel ───────────────────────────────────────────────────────
 function MilestoneFunnel({ onComplete, callArjunMilestone }) {
   const [predictionDone, setPredictionDone] = useState(false);
   const [messages, setMessages]             = useState([]);
@@ -730,11 +761,11 @@ function ImpactInputs() {
 }
 
 function MilestoneImpact({ onComplete, callArjunMilestone }) {
-  const [messages, setMessages]         = useState([]);
-  const [input, setInput]               = useState('');
-  const [loading, setLoading]           = useState(false);
-  const [concept, setConcept]           = useState(null);
-  const [arjunOpened, setArjunOpened]   = useState(false);
+  const [messages, setMessages]           = useState([]);
+  const [input, setInput]                 = useState('');
+  const [loading, setLoading]             = useState(false);
+  const [concept, setConcept]             = useState(null);
+  const [arjunOpened, setArjunOpened]     = useState(false);
   const [showSynthesis, setShowSynthesis] = useState(false);
   const bottomRef = useRef(null);
 
@@ -793,8 +824,8 @@ function MilestoneImpact({ onComplete, callArjunMilestone }) {
 // ── Milestone 6: Respond ──────────────────────────────────────────────────────
 function MemoInput({ value, onChange, onSend, loading }) {
   const [focused, setFocused] = useState(false);
-  const charCount = value.trim().length;
-  const canSend   = charCount >= 80 && !loading;
+  const charCount  = value.trim().length;
+  const canSend    = charCount >= 80 && !loading;
   const hasContent = value.length > 0;
   return (
     <div style={{ marginTop: 12 }}>
@@ -821,11 +852,11 @@ function MemoInput({ value, onChange, onSend, loading }) {
 }
 
 function MilestoneRespond({ onComplete, callArjunMilestone, investigationLog }) {
-  const [messages, setMessages]   = useState([]);
-  const [memo, setMemo]           = useState('');
-  const [loading, setLoading]     = useState(false);
-  const [concept, setConcept]     = useState(null);
-  const [submitted, setSubmitted] = useState(false);
+  const [messages, setMessages]       = useState([]);
+  const [memo, setMemo]               = useState('');
+  const [loading, setLoading]         = useState(false);
+  const [concept, setConcept]         = useState(null);
+  const [submitted, setSubmitted]     = useState(false);
   const [logExpanded, setLogExpanded] = useState(false);
   const bottomRef = useRef(null);
 
@@ -857,18 +888,15 @@ function MilestoneRespond({ onComplete, callArjunMilestone, investigationLog }) 
     }
   }, [memo, loading, submitted, callArjunMilestone, onComplete]);
 
-  // M5 impact number for reference
   const impactLine = investigationLog?.find(l => l.index === 4)?.conclusion;
 
   return (
     <div>
-      {/* Priya is waiting banner */}
       <div style={{ padding: '10px 12px', borderRadius: 9, marginBottom: 16, background: `${RED}06`, border: `1px solid ${RED}16`, display: 'flex', alignItems: 'flex-start', gap: 8 }}>
         <span style={{ fontFamily: 'var(--mono)', fontSize: 9, fontWeight: 700, color: RED, textTransform: 'uppercase', flexShrink: 0, marginTop: 2 }}>Priya is waiting</span>
         <p style={{ fontSize: 12, color: 'var(--ink2)', lineHeight: 1.55, margin: 0 }}>{SCENARIO.priyaMessage}</p>
       </div>
 
-      {/* Investigation log summary — collapsible reference */}
       {investigationLog && investigationLog.filter(l => l.conclusion).length > 0 && (
         <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}
           style={{ marginBottom: 16, borderRadius: 10, border: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden' }}>
@@ -896,7 +924,6 @@ function MilestoneRespond({ onComplete, callArjunMilestone, investigationLog }) 
         </motion.div>
       )}
 
-      {/* Impact reference */}
       {impactLine && (
         <div style={{ padding: '8px 12px', borderRadius: 8, marginBottom: 14, background: `${PURPLE}08`, border: `1px solid ${PURPLE}18` }}>
           <span style={{ fontFamily: 'var(--mono)', fontSize: 9, color: PURPLE, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Your impact number: </span>
@@ -916,35 +943,57 @@ function MilestoneRespond({ onComplete, callArjunMilestone, investigationLog }) 
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// ── MAIN — Persistent investigation log ──────────────────────────────────────
+// ── MAIN — Continuous Vertical War-Room Feed ──────────────────────────────────
+//
 // State shape:
 //   activeMilestoneIndex: number — which milestone is currently active
-//   log: [{ index, conclusion }] — completed milestones + their conclusions
-//   expandedCards: Set<number> — which collapsed cards are expanded
+//   log: [{ index, conclusion }]  — completed milestones in order
+//   expandedCards: Set<number>    — which collapsed cards are expanded
+//
+// New in CP10:
+//   milestoneRefs: array of refs — one per milestone (for scroll-spy)
+//   feedBottomRef: ref           — auto-scroll anchor at end of feed
+//   onMilestoneAdvance prop      — notifies StrategyCase of active milestone name
 // ─────────────────────────────────────────────────────────────────────────────
-export default function ArjunSocraticChat({ phase, onVizRequest, onAdvance }) {
+export default function ArjunSocraticChat({ phase, onVizRequest, onAdvance, onMilestoneAdvance }) {
   const [activeMilestoneIndex, setActiveMilestoneIndex] = useState(0);
-  const [log, setLog]                                   = useState([]); // { index, conclusion }[]
+  const [log, setLog]                                   = useState([]);
   const [expandedCards, setExpandedCards]               = useState(new Set());
   const [updating, setUpdating]                         = useState(false);
   const { callArjunMilestone } = useArjunStrategy();
 
-  // completedIndices for MilestoneStrip
+  // Refs for scroll-spy — one slot per milestone
+  const milestoneRefs = useRef([]);
+  const feedBottomRef = useRef(null);
+
+  // Auto-scroll to bottom on every feed change
+  useEffect(() => {
+    feedBottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  }, [log, activeMilestoneIndex, updating]);
+
   const completedIndices = log.map(e => MILESTONES[e.index]?.id).filter(Boolean);
 
   const handleComplete = useCallback((index, conclusion) => {
-    // Show "investigation log updating..." animation
     setUpdating(true);
     setTimeout(() => {
       setUpdating(false);
       setLog(prev => [...prev, { index, conclusion }]);
+
       if (index < MILESTONES.length - 1) {
-        setTimeout(() => setActiveMilestoneIndex(index + 1), 400);
+        const nextIndex = index + 1;
+        setTimeout(() => {
+          setActiveMilestoneIndex(nextIndex);
+          // Notify StrategyCase so IncidentStatusBar can update
+          const nextMilestone = MILESTONES[nextIndex];
+          if (nextMilestone) {
+            onMilestoneAdvance?.(nextMilestone.title.toUpperCase(), nextIndex);
+          }
+        }, 400);
       } else {
         setTimeout(() => onAdvance?.(), 2500);
       }
     }, 1200);
-  }, [onAdvance]);
+  }, [onAdvance, onMilestoneAdvance]);
 
   const toggleCard = useCallback((index) => {
     setExpandedCards(prev => {
@@ -954,7 +1003,11 @@ export default function ArjunSocraticChat({ phase, onVizRequest, onAdvance }) {
     });
   }, []);
 
-  // Dynamic channel header label
+  // Scroll-spy click handler — passed to MilestoneStrip
+  const handleMilestoneClick = useCallback((idx) => {
+    milestoneRefs.current[idx]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, []);
+
   const currentMilestone = MILESTONES[activeMilestoneIndex];
   const headerLabel = currentMilestone
     ? `# analytics-incident · ${currentMilestone.number} ${currentMilestone.title}`
@@ -981,20 +1034,27 @@ export default function ArjunSocraticChat({ phase, onVizRequest, onAdvance }) {
         </div>
       </div>
 
-      {/* Milestone strip */}
-      <MilestoneStrip currentIndex={activeMilestoneIndex} completedIndices={completedIndices} />
+      {/* Milestone strip — now with scroll-spy click handler */}
+      <MilestoneStrip
+        currentIndex={activeMilestoneIndex}
+        completedIndices={completedIndices}
+        onMilestoneClick={handleMilestoneClick}
+      />
 
-      {/* ── PERSISTENT INVESTIGATION LOG ── */}
-      {/* Completed milestones render as collapsed summary cards */}
+      {/* ── CONTINUOUS FEED — completed milestones rendered top-to-bottom ── */}
       {log.map((entry) => (
-        <CollapsedMilestoneCard
+        <div
           key={entry.index}
-          milestone={MILESTONES[entry.index]}
-          index={entry.index}
-          conclusion={entry.conclusion}
-          isExpanded={expandedCards.has(entry.index)}
-          onToggle={() => toggleCard(entry.index)}
-        />
+          ref={el => { milestoneRefs.current[entry.index] = el; }}
+        >
+          <CollapsedMilestoneCard
+            milestone={MILESTONES[entry.index]}
+            index={entry.index}
+            conclusion={entry.conclusion}
+            isExpanded={expandedCards.has(entry.index)}
+            onToggle={() => toggleCard(entry.index)}
+          />
+        </div>
       ))}
 
       {/* Log updating animation */}
@@ -1002,20 +1062,21 @@ export default function ArjunSocraticChat({ phase, onVizRequest, onAdvance }) {
         {updating && <LogUpdating />}
       </AnimatePresence>
 
-      {/* ── ACTIVE MILESTONE — slides in below completed cards ── */}
+      {/* ── ACTIVE MILESTONE — always at bottom of feed, slides in ── */}
       <AnimatePresence mode="popLayout">
         <motion.div
           key={activeMilestoneIndex}
+          ref={el => { milestoneRefs.current[activeMilestoneIndex] = el; }}
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
           style={{ marginTop: log.length > 0 ? 16 : 0 }}
         >
-          {/* Active milestone separator */}
+          {/* Separator label between completed cards and active milestone */}
           {log.length > 0 && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
               <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.06)' }} />
-              <span style={{ fontFamily: 'var(--mono)', fontSize: 9, color: MILESTONE_COLORS[activeMilestoneIndex], opacity: 0.7, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+              <span style={{ fontFamily: 'var(--mono)', fontSize: 9, color: MILESTONE_COLORS[activeMilestoneIndex % MILESTONE_COLORS.length], opacity: 0.7, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                 {currentMilestone?.number} {currentMilestone?.title}
               </span>
               <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.06)' }} />
@@ -1061,6 +1122,9 @@ export default function ArjunSocraticChat({ phase, onVizRequest, onAdvance }) {
           )}
         </motion.div>
       </AnimatePresence>
+
+      {/* Feed scroll anchor — auto-scrolled to on every state change */}
+      <div ref={feedBottomRef} style={{ height: 1 }} />
     </div>
   );
 }

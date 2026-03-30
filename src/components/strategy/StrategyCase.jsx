@@ -1,7 +1,13 @@
 // src/components/strategy/StrategyCase.jsx
-// CP-E: PhaseOneIntro REMOVED. New flow:
-// IncidentAlert (page load) → "Enter War Room" → ArjunSocraticChat directly.
-// introComplete state removed — no longer needed.
+// CP10: Two changes from CP-E:
+//   1. IncidentStatusBar component added — sticky minimal bar showing
+//      INCIDENT #ANALYTICS-WAR-ROOM · STATUS: INVESTIGATING [MILESTONE_NAME]
+//      Replaces the static PhaseHeader once M1 is complete.
+//
+//   2. onMilestoneAdvance prop wired to ArjunSocraticChat:
+//      Called with (milestoneName, milestoneIndex) after each milestone advance.
+//      When milestoneIndex >= 1 (M1 done), m1Complete flips true and
+//      IncidentStatusBar replaces PhaseHeader.
 
 import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -16,6 +22,7 @@ import IncidentAlert from './components/IncidentAlert.jsx';
 const ORANGE = '#FC8019';
 const BLUE   = '#4F80FF';
 const GREEN  = '#3DD68C';
+const RED    = '#F38BA8';
 
 const PROGRESS = {
   triage:   { pct: 30,  label: 'Phase 1 · Understand the Problem', color: ORANGE },
@@ -24,6 +31,7 @@ const PROGRESS = {
   complete: { pct: 100, label: 'Investigation Complete',             color: GREEN  },
 };
 
+// ── Progress bar — always shown below nav ─────────────────────────────────────
 function ProgressBar({ phase }) {
   const p = PROGRESS[phase] || PROGRESS.triage;
   return (
@@ -47,6 +55,81 @@ function ProgressBar({ phase }) {
   );
 }
 
+// ── Incident Status Bar — replaces PhaseHeader after M1 is complete ───────────
+// Sticky, minimal. Shows: INCIDENT #ANALYTICS-WAR-ROOM · STATUS: INVESTIGATING [MILESTONE]
+function IncidentStatusBar({ currentMilestoneName }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+      style={{
+        position: 'sticky',
+        top: 69, // ProgressBar is top:45 + ~24px height = ~69px
+        zIndex: 39,
+        background: 'rgba(8,8,16,0.96)',
+        backdropFilter: 'blur(12px)',
+        borderBottom: '1px solid rgba(255,255,255,0.06)',
+        padding: '8px 24px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 10,
+        marginBottom: 20,
+      }}
+    >
+      {/* Pulsing red incident dot */}
+      <motion.div
+        animate={{ opacity: [1, 0.3, 1] }}
+        transition={{ duration: 1.4, repeat: Infinity }}
+        style={{ width: 6, height: 6, borderRadius: '50%', background: RED, flexShrink: 0 }}
+      />
+
+      <span style={{
+        fontFamily: 'var(--mono)',
+        fontSize: 9,
+        fontWeight: 700,
+        letterSpacing: '0.12em',
+        textTransform: 'uppercase',
+        color: 'var(--ink3)',
+      }}>
+        INCIDENT #ANALYTICS-WAR-ROOM
+      </span>
+
+      <span style={{ color: 'rgba(255,255,255,0.15)', fontSize: 14, lineHeight: 1 }}>·</span>
+
+      <span style={{
+        fontFamily: 'var(--mono)',
+        fontSize: 9,
+        letterSpacing: '0.1em',
+        textTransform: 'uppercase',
+        color: RED,
+        fontWeight: 700,
+      }}>
+        STATUS: INVESTIGATING
+      </span>
+
+      {/* Animated milestone name — updates on each advance */}
+      <motion.span
+        key={currentMilestoneName}
+        initial={{ opacity: 0, x: 6 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.25 }}
+        style={{
+          fontFamily: 'var(--mono)',
+          fontSize: 9,
+          color: ORANGE,
+          fontWeight: 700,
+          letterSpacing: '0.08em',
+          textTransform: 'uppercase',
+        }}
+      >
+        [{currentMilestoneName}]
+      </motion.span>
+    </motion.div>
+  );
+}
+
+// ── Phase splash screen — shown on phase transitions ──────────────────────────
 function PhaseSplash({ config, onDone }) {
   React.useEffect(() => { const t = setTimeout(onDone, 2000); return () => clearTimeout(t); }, [onDone]);
   return (
@@ -64,6 +147,7 @@ function PhaseSplash({ config, onDone }) {
   );
 }
 
+// ── Phase header — used for Phase 1 (before M1 done), Phase 2, Phase 3 ────────
 function PhaseHeader({ num, title, color, onBack, backLabel }) {
   return (
     <div style={{ marginBottom: 24 }}>
@@ -84,6 +168,7 @@ function PhaseHeader({ num, title, color, onBack, backLabel }) {
   );
 }
 
+// ── Retrieval moment — between Phase 1 and Phase 2 ────────────────────────────
 function RetrievalMoment({ onComplete }) {
   const [answer, setAnswer]         = useState('');
   const [submitted, setSubmitted]   = useState(false);
@@ -178,6 +263,7 @@ const SPLASH_CONFIGS = {
   complete: { icon: '🏆', title: 'Investigation complete.', subtitle: 'Your memo is ready.',                 stat: 'Portfolio link generated.',          color: ORANGE },
 };
 
+// ── Main ──────────────────────────────────────────────────────────────────────
 export default function StrategyCase() {
   const navigate = useNavigate();
   const { state, advanceTriage, advanceToMaster, update } = useStrategyState();
@@ -187,11 +273,23 @@ export default function StrategyCase() {
   const [retrievalComplete, setRetrievalComplete]   = useState(false);
   const [showAlert, setShowAlert]                   = useState(state.phase === 'triage');
 
+  // CP10: track M1 completion + current milestone name for IncidentStatusBar
+  const [m1Complete, setM1Complete]               = useState(false);
+  const [currentMilestoneName, setCurrentMilestoneName] = useState('SCOPE THE PROBLEM');
+
   const handleAlertEnter         = useCallback(() => setShowAlert(false), []);
   const handleMilestonesComplete = useCallback(() => setMilestonesComplete(true), []);
   const handleRetrievalComplete  = useCallback(() => { setRetrievalComplete(true); setSplash('phase2'); }, []);
   const handleDeepDiveAdvance    = useCallback(() => setSplash('phase3'), []);
   const handleMemoComplete       = useCallback(() => setSplash('complete'), []);
+
+  // Called by ArjunSocraticChat after each milestone completes
+  // milestoneIndex is the NEW active milestone (e.g. 1 = M2 is now active = M1 is done)
+  const handleMilestoneAdvance = useCallback((milestoneName, milestoneIndex) => {
+    setCurrentMilestoneName(milestoneName);
+    if (milestoneIndex >= 1) setM1Complete(true); // M1 complete once M2 becomes active
+  }, []);
+
   const handleBack = useCallback((fromPhase) => {
     if (fromPhase === 'triage')   navigate('/');
     if (fromPhase === 'deepdive') update({ phase: 'triage' });
@@ -224,21 +322,43 @@ export default function StrategyCase() {
         )}
       </AnimatePresence>
 
+      {/* Incident status bar — shown after M1 complete, Phase 1 only */}
+      <AnimatePresence>
+        {!showAlert && state.phase === 'triage' && m1Complete && (
+          <IncidentStatusBar currentMilestoneName={currentMilestoneName} />
+        )}
+      </AnimatePresence>
+
       <AnimatePresence>
         {!showAlert && (
           <motion.div key="main-content" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}>
             <div style={{ maxWidth: 1040, margin: '0 auto', padding: '28px 24px 80px' }}>
               <AnimatePresence mode="wait">
 
-                {/* Phase 1 — straight to chat, zero intro */}
+                {/* Phase 1 */}
                 {state.phase === 'triage' && (
                   <motion.div key="triage" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.35 }}>
-                    <PhaseHeader num="01" title="Understand the Problem" color={ORANGE} onBack={() => handleBack('triage')} backLabel="Back to home" />
+
+                    {/* PhaseHeader shown only until M1 completes, then IncidentStatusBar takes over */}
+                    {!m1Complete && (
+                      <PhaseHeader
+                        num="01"
+                        title="Understand the Problem"
+                        color={ORANGE}
+                        onBack={() => handleBack('triage')}
+                        backLabel="Back to home"
+                      />
+                    )}
 
                     <AnimatePresence>
                       {!milestonesComplete && (
                         <motion.div key="chat" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}>
-                          <ArjunSocraticChat phase="triage" onVizRequest={() => {}} onAdvance={handleMilestonesComplete} />
+                          <ArjunSocraticChat
+                            phase="triage"
+                            onVizRequest={() => {}}
+                            onAdvance={handleMilestonesComplete}
+                            onMilestoneAdvance={handleMilestoneAdvance}
+                          />
                         </motion.div>
                       )}
                     </AnimatePresence>

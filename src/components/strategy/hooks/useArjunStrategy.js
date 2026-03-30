@@ -1,15 +1,15 @@
 // src/components/strategy/hooks/useArjunStrategy.js
-// CP9: Two changes only:
-//   1. M1 'scope' advance condition tightened:
-//      Was: any geography OR time signal
-//      Now: BOTH geography AND time AND some acknowledgement of uncertainty/scope
-//      At attempt 3: force-advance with model sentence as before
+// CP10: Two changes from CP9:
+//   1. M1 'scope' branching rewritten — 4 explicit branches:
+//      Branch A (time only)  → pushes on geography
+//      Branch B (geo only)   → pushes on baseline
+//      Branch C (both)       → praises + advances
+//      Branch D (vague)      → pushes on both, force-advances at attempt 3
+//      All branches use responseOverride (inline string) instead of mock key
+//      so responses are precise and immersive rather than generic.
 //
-//   2. New milestone ID 'hypothesis' added (M2.5):
-//      Step 1: count hypotheses (line-break or comma separated) — need ≥3
-//      Step 2: ranking — any ranking text advances
-//      Step 3: query suggestion — funnel/cohort keywords advance, else redirect
-//      Force-advance at attempt 3
+//   2. callArjunMilestone now destructures + applies responseOverride:
+//      text = responseOverride || ARJUN_STRATEGY_MOCK[key] || fallback
 
 import { useCallback, useRef } from 'react';
 import {
@@ -54,39 +54,77 @@ function getMilestoneResponse(milestoneId, userMessage, attemptCount) {
 
   switch (milestoneId) {
 
-    // ── M1 SCOPE — tightened ─────────────────────────────────────────────────
-    // Requires geography signal AND time signal AND uncertainty/scope language
+    // ── M1 SCOPE — 4-branch intent recognition ───────────────────────────────
     case 'scope': {
-      const geoSignals  = ['north bangalore', 'city', 'cities', 'other city', 'platform-wide', 'platform wide', 'geography', 'region', 'local', 'specific'];
-      const timeSignals = ['tuesday', 'week', 'wow', 'week-over-week', 'rolling', 'baseline', 'last week', 'yesterday', 'time', 'period', 'when', 'since'];
-      const scopeSignals = ['assuming', 'know for certain', 'confirm', 'unclear', 'uncertain', 'not sure', 'scope', 'define', 'clarify', 'what we know', 'minimum'];
+      const timeSignals = [
+        'timeline', 'wow', 'week-over-week', 'baseline', 'rolling',
+        'tuesday', 'last week', 'yesterday', 'period', 'when', 'since', 'time',
+      ];
+      const geoSignals = [
+        'location', 'city', 'north bangalore', 'geography', 'region',
+        'platform-wide', 'platform wide', 'local', 'specific', 'where',
+        'cities', 'other city',
+      ];
 
-      const hasGeo   = geoSignals.some(s  => lower.includes(s));
-      const hasTime  = timeSignals.some(s  => lower.includes(s));
-      const hasScope = scopeSignals.some(s => lower.includes(s));
+      const hasTime = timeSignals.some(s => lower.includes(s));
+      const hasGeo  = geoSignals.some(s  => lower.includes(s));
 
-      // Strong: all three → advance
-      if (hasGeo && hasTime && hasScope)
-        return { key: 'triage_q1', advance: true };
-
-      // Good: geo + time, missing uncertainty acknowledgement → partial credit, don't advance
-      if (hasGeo && hasTime)
-        return { key: 'triage_q1', advance: true }; // still advance — geo+time is sufficient
-
-      // Partial: only one signal → push back
-      if (hasGeo || hasTime) {
-        if (attemptCount >= 2) return { key: 'triage_q1', advance: true }; // be generous at attempt 2
-        return { key: 'triage_scope_incomplete', advance: false };
+      // Branch C — Both geo + time → praise comprehensive scope, advance
+      if (hasTime && hasGeo) {
+        return {
+          key: 'triage_q1',
+          advance: true,
+          responseOverride: "Good — you're locking down both dimensions before touching data. Geography narrows the hypothesis space, the baseline anchors the severity. That's the minimum viable scope. Let's pull the numbers.",
+        };
       }
 
-      // No signals at all
-      if (attemptCount >= 3)
-        return { key: 'triage_q1', advance: true, forceAdvance: true };
+      // Branch A — Time only, no geo mentioned → push specifically on geography
+      if (hasTime && !hasGeo) {
+        if (attemptCount >= 2) {
+          return {
+            key: 'triage_q1',
+            advance: true,
+            responseOverride: "Fair to question the baseline, but Priya's WoW numbers are firm. The real wildcard is geography — is this North Bangalore or platform-wide? I'll treat it as North Bangalore for now and we can revisit.",
+          };
+        }
+        return {
+          key: 'triage_scope_incomplete',
+          advance: false,
+          responseOverride: "Fair to question the baseline, but Priya's WoW numbers are firm. The real wildcard is geography — is this North Bangalore or platform-wide?",
+        };
+      }
 
-      if (attemptCount >= 2)
-        return { key: 'triage_scope_incomplete', advance: false };
+      // Branch B — Geo only, no time mentioned → push specifically on baseline
+      if (hasGeo && !hasTime) {
+        if (attemptCount >= 2) {
+          return {
+            key: 'triage_q1',
+            advance: true,
+            responseOverride: "Good instinct. If the drop is concentrated in one zone, it's almost certainly supply-side. But compared to what? Tuesday baseline or a rolling average? I'll anchor to last Tuesday — that's Priya's reference.",
+          };
+        }
+        return {
+          key: 'triage_scope_incomplete',
+          advance: false,
+          responseOverride: "Good instinct. If the drop is concentrated in one zone, it's almost certainly supply-side. But compared to what? Tuesday baseline or a rolling average?",
+        };
+      }
 
-      return { key: 'triage_start', advance: false };
+      // Branch D — Vague: neither geo nor time → push back on both
+      if (attemptCount >= 3) {
+        return {
+          key: 'triage_q1',
+          advance: true,
+          forceAdvance: true,
+          responseOverride: "Let me anchor the scope for us: the drop is confirmed in North Bangalore specifically, measured WoW against last Tuesday. Those two facts change everything about where we look next.",
+        };
+      }
+
+      return {
+        key: 'triage_scope_incomplete',
+        advance: false,
+        responseOverride: "Before any data — two things need to be locked down: is this drop isolated to North Bangalore or platform-wide? And are we measuring against last Tuesday or a rolling average? Which of those is less clear to you?",
+      };
     }
 
     // ── M2 DASHBOARD ─────────────────────────────────────────────────────────
@@ -98,19 +136,15 @@ function getMilestoneResponse(milestoneId, userMessage, attemptCount) {
       return { key: 'triage_hypothesis_wrong', advance: false };
     }
 
-    // ── M2.5 HYPOTHESIS — 3-step flow ────────────────────────────────────────
-    // The hypothesis milestone has 3 internal steps managed by MilestoneHypothesis.
-    // useArjunStrategy handles only the final "query suggestion" step (step 3).
-    // Steps 1+2 are handled entirely within the component without API calls.
+    // ── M2.5 HYPOTHESIS — step 3 only (steps 1+2 handled in component) ───────
     case 'hypothesis': {
-      // This is called for step 3 only — user describes their first query
       const funnelSignals  = ['funnel', 'conversion', 'stage', 'step', 'journey', 'drop-off', 'where'];
       const supplySignals  = ['supply', 'restaurant', 'availability', 'biryani', 'menu'];
       const cohortSignals  = ['cohort', 'retention', 'new user', 'returning'];
 
-      const wantsFunnel  = funnelSignals.some(s  => lower.includes(s));
-      const wantsSupply  = supplySignals.some(s  => lower.includes(s));
-      const wantsCohort  = cohortSignals.some(s  => lower.includes(s));
+      const wantsFunnel  = funnelSignals.some(s => lower.includes(s));
+      const wantsSupply  = supplySignals.some(s => lower.includes(s));
+      const wantsCohort  = cohortSignals.some(s => lower.includes(s));
 
       if (wantsFunnel || wantsSupply)
         return { key: 'funnel_shown', advance: true, queryType: 'funnel' };
@@ -134,8 +168,7 @@ function getMilestoneResponse(milestoneId, userMessage, attemptCount) {
       return { key: 'wrong_conclusion', advance: false };
     }
 
-    // ── M4 ROOT CAUSE — tightened ─────────────────────────────────────────────
-    // Requires BOTH a what signal AND a causal mechanism word
+    // ── M4 ROOT CAUSE ─────────────────────────────────────────────────────────
     case 'rootcause': {
       const whatSignals = ['biryani', 'restaurant', 'supply', 'availability', 'new user', 'week 3', 'week 4', 'menu', 'selection'];
       const whySignals  = ['because', 'which means', 'causing', 'leads to', 'result', 'since', 'due to', 'explains', 'therefore'];
@@ -144,7 +177,7 @@ function getMilestoneResponse(milestoneId, userMessage, attemptCount) {
       const hasWhy  = whySignals.some(s  => lower.includes(s));
 
       if (hasWhat && hasWhy) return { key: 'cohort_insight', advance: true };
-      if (hasWhat)           return { key: 'cohort_insight', advance: true }; // generous — what alone is good enough
+      if (hasWhat)           return { key: 'cohort_insight', advance: true };
       if (attemptCount >= 3) return { key: 'cohort_insight', advance: true, forceAdvance: true };
       if (attemptCount >= 2) return { key: 'cohort_shown',   advance: false };
       return { key: 'wrong_conclusion', advance: false };
@@ -198,10 +231,11 @@ export function useArjunStrategy() {
 
     await delay(IS_DEV ? 900 : 1200);
 
-    const { key, advance, forceAdvance, conceptTrigger, queryType } =
+    // responseOverride: branch-specific inline string that bypasses mock lookup
+    const { key, advance, forceAdvance, conceptTrigger, queryType, responseOverride } =
       getMilestoneResponse(milestoneId, userMessage, count);
 
-    const text    = ARJUN_STRATEGY_MOCK[key] || ARJUN_STRATEGY_MOCK.fallback;
+    const text    = responseOverride || ARJUN_STRATEGY_MOCK[key] || ARJUN_STRATEGY_MOCK.fallback;
     const concept = conceptTrigger ? CONCEPTS[conceptTrigger] : null;
 
     return { text, advance: advance || false, forceAdvance: forceAdvance || false, concept, queryType };
