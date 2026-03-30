@@ -36,7 +36,6 @@ import ConceptChip from './ConceptChip.jsx';
 import KpiScorecard from './KpiScorecard.jsx';
 import CohortMatrix from './CohortMatrix.jsx';
 import ArjunQueryTerminal from './ArjunQueryTerminal.jsx';
-import ThinkingReveal from './ThinkingReveal.jsx';
 
 const ORANGE = '#FC8019';
 const BLUE   = '#4F80FF';
@@ -414,9 +413,7 @@ function MilestoneScope({ onComplete, callArjunMilestone }) {
   const [concept, setConcept]   = useState(null);
   const [messages, setMessages] = useState([]);
   const [advanced, setAdvanced] = useState(false);
-  const [showSynthesis, setShowSynthesis]   = useState(false);
-  const [expertAnalysis, setExpertAnalysis] = useState(null);
-  const [revealed, setRevealed]             = useState(false);
+  const [showSynthesis, setShowSynthesis] = useState(false);
   const bottomRef = useRef(null);
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [stage, messages, loading, showSynthesis]);
@@ -436,8 +433,7 @@ function MilestoneScope({ onComplete, callArjunMilestone }) {
     setStage('replied');
     setMessages(prev => [...prev, { role: 'user', text: q, isNew: true }]);
     setLoading(true);
-    const { text, advance, concept: c, expertAnalysis: ea } = await callArjunMilestone(q, 'scope');
-    if (ea) setExpertAnalysis(ea);
+    const { text, advance, concept: c } = await callArjunMilestone(q, 'scope');
     setLoading(false);
     setMessages(prev => [...prev, { role: 'arjun', text, isNew: true }]);
     if (c) setConcept(c);
@@ -643,8 +639,7 @@ function MilestoneFunnel({ onComplete, callArjunMilestone }) {
     setInput('');
     setMessages(prev => [...prev, { role: 'user', text: q, isNew: true }]);
     setLoading(true);
-    const { text, advance, concept: c, expertAnalysis: ea } = await callArjunMilestone(q, 'funnel');
-    if (ea) setExpertAnalysis(ea);
+    const { text, advance, concept: c } = await callArjunMilestone(q, 'funnel');
     setLoading(false);
     setMessages(prev => [...prev, { role: 'arjun', text, isNew: true }]);
     if (c) setConcept(c);
@@ -699,8 +694,6 @@ function MilestoneRootCause({ onComplete, callArjunMilestone }) {
   const [concept, setConcept]               = useState(null);
   const [cohortReady, setCohortReady]       = useState(false);
   const [arjunOpened, setArjunOpened]       = useState(false);
-  const [expertAnalysis, setExpertAnalysis] = useState(null);
-  const [revealed, setRevealed]             = useState(false);
   const bottomRef = useRef(null);
 
   const cohortQ = { query: COHORT_NARRATION.query, reasoning: COHORT_NARRATION.queryReasoning, arjunReads: COHORT_NARRATION.observation };
@@ -715,9 +708,7 @@ function MilestoneRootCause({ onComplete, callArjunMilestone }) {
     setInput('');
     setMessages(prev => [...prev, { role: 'user', text: q, isNew: true }]);
     setLoading(true);
-    const { text, advance, concept: c, expertAnalysis: ea } = await callArjunMilestone(q, 'rootcause');
-    if (ea) setExpertAnalysis(ea);
-    if (advance) { setRevealed(true); setTimeout(() => onComplete(null), 2500 + 1600); return; }
+    const { text, advance, concept: c } = await callArjunMilestone(q, 'rootcause');
     setLoading(false);
     setMessages(prev => [...prev, { role: 'arjun', text, isNew: true }]);
     if (c) setConcept(c);
@@ -775,9 +766,7 @@ function MilestoneImpact({ onComplete, callArjunMilestone }) {
   const [loading, setLoading]             = useState(false);
   const [concept, setConcept]             = useState(null);
   const [arjunOpened, setArjunOpened]     = useState(false);
-  const [showSynthesis, setShowSynthesis]   = useState(false);
-  const [expertAnalysis, setExpertAnalysis] = useState(null);
-  const [revealed, setRevealed]             = useState(false);
+  const [showSynthesis, setShowSynthesis] = useState(false);
   const bottomRef = useRef(null);
 
   useEffect(() => {
@@ -966,12 +955,12 @@ function MilestoneRespond({ onComplete, callArjunMilestone, investigationLog }) 
 //   feedBottomRef: ref           — auto-scroll anchor at end of feed
 //   onMilestoneAdvance prop      — notifies StrategyCase of active milestone name
 // ─────────────────────────────────────────────────────────────────────────────
-export default function ArjunSocraticChat({ phase, onVizRequest, onAdvance, onMilestoneAdvance, onExpertAnalysesUpdate, onLogUpdate }) {
+export default function ArjunSocraticChat({ phase, onVizRequest, onAdvance, onMilestoneAdvance }) {
   const [activeMilestoneIndex, setActiveMilestoneIndex] = useState(0);
   const [log, setLog]                                   = useState([]);
   const [expandedCards, setExpandedCards]               = useState(new Set());
   const [updating, setUpdating]                         = useState(false);
-  const { callArjunMilestone, getExpertAnalyses } = useArjunStrategy();
+  const { callArjunMilestone } = useArjunStrategy();
 
   // Refs for scroll-spy — one slot per milestone
   const milestoneRefs = useRef([]);
@@ -988,12 +977,7 @@ export default function ArjunSocraticChat({ phase, onVizRequest, onAdvance, onMi
     setUpdating(true);
     setTimeout(() => {
       setUpdating(false);
-      setLog(prev => {
-        const next = [...prev, { index, conclusion }];
-        onExpertAnalysesUpdate?.(getExpertAnalyses());
-        onLogUpdate?.(next);
-        return next;
-      });
+      setLog(prev => [...prev, { index, conclusion }]);
 
       if (index < MILESTONES.length - 1) {
         const nextIndex = index + 1;

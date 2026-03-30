@@ -1,5 +1,6 @@
 // src/components/strategy/StrategyCase.jsx
 // CP11: Sprint 2 — Cognitive Workbench Layout
+// PATCHED: Sprint 5 wiring applied
 //
 // CHANGES FROM CP10:
 //   1. Phase 1 (triage) now renders inside CognitiveWorkbenchShell
@@ -15,6 +16,15 @@
 //      - Phase 2/3 use old single-column layout (AnalysisWorkbench, StrategyMemo)
 //
 //   4. IncidentHUD live loss counter: ₹19L base, ~₹1,200/sec tick
+//
+// SPRINT 5 CHANGES:
+//   1. Added DecisionLog and TerminalScanline imports
+//   2. Added expertAnalyses + showDecisionLog state, handleExpertAnalysesUpdate callback
+//   3. handleMilestonesComplete now sets showDecisionLog(true)
+//   4. onExpertAnalysesUpdate wired into ArjunSocraticChat
+//   5. investigationLog state + onLogUpdate wired into ArjunSocraticChat
+//   6. DecisionLog rendered in Phase 1 triage block with AnimatePresence
+//   7. TerminalScanline added to CognitiveWorkbenchShell Terminal pane (see shell component)
 
 import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -27,6 +37,8 @@ import ArjunSocraticChat from './components/ArjunSocraticChat.jsx';
 import AnalysisWorkbench from './components/AnalysisWorkbench.jsx';
 import StrategyMemo from './components/StrategyMemo.jsx';
 import IncidentAlert from './components/IncidentAlert.jsx';
+import DecisionLog from './components/DecisionLog.jsx';
+import TerminalScanline from './components/TerminalScanline.jsx';
 
 const ORANGE = '#FC8019';
 const BLUE   = '#4F80FF';
@@ -210,8 +222,24 @@ export default function StrategyCase() {
   const [showAlert, setShowAlert]                         = useState(state.phase === 'triage');
   const [currentMilestoneName, setCurrentMilestoneName]  = useState('SCOPE THE PROBLEM');
 
+  // ── Sprint 5: expertAnalyses + DecisionLog state ──────────────────────────
+  const [expertAnalyses, setExpertAnalyses]   = useState({});
+  const [showDecisionLog, setShowDecisionLog] = useState(false);
+  const [investigationLog, setInvestigationLog] = useState([]);
+
+  // ── Sprint 5: callbacks ───────────────────────────────────────────────────
+  const handleExpertAnalysesUpdate = useCallback((analyses) => {
+    setExpertAnalyses(analyses);
+  }, []);
+
   const handleAlertEnter         = useCallback(() => setShowAlert(false), []);
-  const handleMilestonesComplete = useCallback(() => setMilestonesComplete(true), []);
+
+  // Sprint 5: also set showDecisionLog on milestones complete
+  const handleMilestonesComplete = useCallback(() => {
+    setMilestonesComplete(true);
+    setShowDecisionLog(true);
+  }, []);
+
   const handleRetrievalComplete  = useCallback(() => { setRetrievalComplete(true); setSplash('phase2'); }, []);
   const handleDeepDiveAdvance    = useCallback(() => setSplash('phase3'), []);
   const handleMemoComplete       = useCallback(() => setSplash('complete'), []);
@@ -272,11 +300,14 @@ export default function StrategyCase() {
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
               >
+                {/* Sprint 5: onExpertAnalysesUpdate + onLogUpdate wired in */}
                 <ArjunSocraticChat
                   phase="triage"
                   onVizRequest={() => {}}
                   onAdvance={handleMilestonesComplete}
                   onMilestoneAdvance={handleMilestoneAdvance}
+                  onExpertAnalysesUpdate={handleExpertAnalysesUpdate}
+                  onLogUpdate={setInvestigationLog}
                 />
               </motion.div>
             )}
@@ -294,6 +325,18 @@ export default function StrategyCase() {
             )}
           </AnimatePresence>
         </CognitiveWorkbenchShell>
+
+        {/* Sprint 5: Decision Log — generated on M6 completion */}
+        <AnimatePresence>
+          {showDecisionLog && (
+            <DecisionLog
+              investigationLog={investigationLog}
+              expertAnalyses={expertAnalyses}
+              scenario={{ company: 'Swiggy', city: 'North Bangalore', period: 'Tuesday WoW', drop: '8.3%', category: 'Biryani' }}
+              onClose={() => setShowDecisionLog(false)}
+            />
+          )}
+        </AnimatePresence>
       </>
     );
   }
