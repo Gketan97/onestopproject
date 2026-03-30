@@ -3,7 +3,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { COHORT_ROWS, COHORT_HEADERS, COHORT_INSIGHT } from '../data/swiggyStrategyData.js';
+import { COHORT_ROWS, COHORT_HEADERS, COHORT_NARRATION } from '../data/swiggyStrategyData.js';
 
 function retentionColor(pct, isAlert) {
   if (pct === null) return 'transparent';
@@ -140,10 +140,10 @@ export default function CohortMatrix() {
           ⚠ Pattern Detected
         </p>
         <p style={{ fontSize: 12, lineHeight: 1.65, color: 'var(--ink2)' }}>
-          {COHORT_INSIGHT.finding}
+          {COHORT_NARRATION.observation}
         </p>
         <p style={{ fontSize: 12, lineHeight: 1.65, color: 'var(--ink3)', marginTop: 6 }}>
-          Potential impact: <strong style={{ color: 'var(--amber)' }}>{COHORT_INSIGHT.impact}</strong>
+          Potential impact: <strong style={{ color: 'var(--amber)' }}>{'30% faster churn in Weeks 4–6 vs Week 1 baseline'}</strong>
         </p>
       </div>
 
