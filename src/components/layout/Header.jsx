@@ -53,7 +53,7 @@ const Header = () => (
       </nav>
 
       <NavLink
-        to="/case-study/swiggy"
+        to="/strategy/swiggy"
         className="px-4 py-2 text-white text-sm font-semibold rounded-lg transition-all hover:-translate-y-px"
         style={{
           background: 'var(--accent)',

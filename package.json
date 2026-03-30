@@ -9,8 +9,6 @@
     "ship": "git add -A && git commit -m 'ship: $(date +%Y-%m-%d\\ %H:%M)' && git push origin main"
   },
   "dependencies": {
-    "@duckdb/duckdb-wasm": "^1.29.0",
-    "apache-arrow": "^17.0.0",
     "firebase": "^10.12.2",
     "framer-motion": "^12.38.0",
     "lucide-react": "^0.303.0",

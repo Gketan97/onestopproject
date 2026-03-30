@@ -1,18 +1,17 @@
 import React, { useEffect, lazy, Suspense } from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route, useLocation, Navigate  } from 'react-router-dom';
 import { initializeApp, getApps } from 'firebase/app';
 import { getAuth, onAuthStateChanged, signInAnonymously } from 'firebase/auth';
 
+
 // Critical path — loaded immediately
 import HomePage        from './components/pages/HomePage.jsx';
-import CaseStudyPage   from './components/pages/CaseStudyPage.jsx';
 import Header          from './components/layout/Header.jsx';
 import MobileHeader    from './components/layout/MobileHeader.jsx';
 import MobileNav       from './components/layout/MobileNav.jsx';
 
 // Non-critical — lazy loaded
 const JobsPage        = lazy(() => import('./components/pages/JobsPage.jsx'));
-const CaseStudiesPage = lazy(() => import('./components/pages/CaseStudiesPage.jsx'));
 const ReferrerForm    = lazy(() => import('./components/pages/ReferrerForm.jsx'));
 const PortfolioPage   = lazy(() => import('./components/portfolio/PortfolioPage.jsx'));
 const StrategyCase    = lazy(() => import('./components/strategy/StrategyCase.jsx'));
@@ -76,9 +75,8 @@ const App = () => {
         <Suspense fallback={<PageLoader />}>
           <Routes>
             <Route path="/"                       element={<HomePage />} />
-            <Route path="/case-studies"           element={<CaseStudiesPage />} />
             <Route path="/jobs"                   element={<JobsPage />} />
-            <Route path="/case-study/:caseId"     element={<CaseStudyPage />} />
+            <Route path="/case-study/:caseId" element={<Navigate to="/strategy/swiggy" replace />} />
             <Route path="/strategy/:caseId"       element={<StrategyCase />} />
             <Route path="/become-referrer"        element={<ReferrerForm />} />
             <Route path="/portfolio/:portfolioId" element={<PortfolioPage />} />

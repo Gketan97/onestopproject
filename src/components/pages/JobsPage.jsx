@@ -72,7 +72,7 @@ const FlywheelBanner = ({ onDismiss, dismissed }) => {
               <ArrowRight size={12} />
             </a>
             <span style={{ color: 'var(--ink3)', fontSize: 11 }}>·</span>
-            <a href="/case-study/swiggy"
+            <a href="/strategy/swiggy"
               className="inline-flex items-center gap-1.5 text-xs font-medium text-ink2 hover:text-ink transition-colors"
               style={{ textDecoration: 'none' }}
             >

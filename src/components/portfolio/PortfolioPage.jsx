@@ -373,7 +373,7 @@ const PortfolioPage = () => {
           <div className="text-center py-4">
             <p className="text-ink3 text-xs mb-3">Not a recruiter? See how you compare.</p>
             <a
-              href="/case-study/swiggy"
+              href="/strategy/swiggy"
               className="inline-flex items-center gap-2 px-6 py-2.5 bg-accent text-white text-sm font-medium rounded-lg hover:bg-accent-dark transition-colors"
             >
               Try the same case study — free

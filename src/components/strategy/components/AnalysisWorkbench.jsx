@@ -5,7 +5,6 @@ import React, { useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Sparkles } from 'lucide-react';
 import { useArjunStrategy } from '../hooks/useArjunStrategy.js';
-import FunnelVisualizer from './FunnelVisualizer.jsx';
 import CohortMatrix from './CohortMatrix.jsx';
 
 const PROMPTS = [
