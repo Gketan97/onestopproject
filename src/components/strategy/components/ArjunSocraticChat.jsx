@@ -986,7 +986,7 @@ export default function ArjunSocraticChat({ phase, onVizRequest, onAdvance, onMi
           // Notify StrategyCase so IncidentStatusBar can update
           const nextMilestone = MILESTONES[nextIndex];
           if (nextMilestone) {
-            onMilestoneAdvance?.(nextMilestone.title.toUpperCase(), nextIndex);
+            onMilestoneAdvance?.(nextMilestone.title.toUpperCase(), nextIndex, conclusion);
           }
         }, 400);
       } else {

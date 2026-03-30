@@ -202,7 +202,40 @@ function getMilestoneResponse(milestoneId, userMessage, attemptCount) {
       if (attemptCount >= 3) return { key: 'memo_ready', advance: true, forceAdvance: true };
       return { key: 'fallback', advance: false, conceptTrigger: 'pyramid_principle' };
     }
-
+case 'p2_dirty': {
+      const lower = userMessage.toLowerCase();
+ 
+      // catchKeywords — same as P2_SANITY_CHECK.catchKeywords
+      const catchSignals = [
+        'session', 'total sessions', 'partition', 'zone', 'east', 'coverage',
+        'missing', 'sanity', 'check', 'sample', 'population', 'baseline',
+        'weird', 'suspicious', 'doesn\'t add', 'inconsistent', 'low', 'small',
+      ];
+      const caught = catchSignals.some(s => lower.includes(s));
+ 
+      if (caught) {
+        return {
+          key: 'p2_good_catch',
+          advance: true,
+          responseOverride: "Good catch. That's exactly the kind of sanity check that separates a senior analyst from a data-puller. The session count mismatch was the tell — South Mumbai East zone dropped out of the ETL partition. Reloading the full dataset now.",
+        };
+      }
+ 
+      if (attemptCount >= 2) {
+        return {
+          key: 'p2_dirty_reveal',
+          advance: true,
+          forceAdvance: true,
+          responseOverride: "I'll flag this before you go further — the dataset has an incomplete partition. South Mumbai East is missing (~23,600 sessions). This is a common ETL bug. Any metric you calculated on the dirty data is off by ~24%. Reloading the full set.",
+        };
+      }
+ 
+      return {
+        key: 'p2_dirty_hint',
+        advance: false,
+        responseOverride: "Before you interpret — look at total sessions. 71,200 this Thursday vs 94,100 last Thursday. That's a 24% drop. South Mumbai's population didn't change. What could explain that?",
+      };
+    }
     default:
       return { key: 'fallback', advance: false };
   }

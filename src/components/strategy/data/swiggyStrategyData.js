@@ -570,3 +570,261 @@ export const SCENARIO = {
   priyaMessage: `Hey — orders in North Bangalore are down 8.3% week-over-week. Started Tuesday. GMV impact already ₹19L. Need a full breakdown by EOD. @you can you take point on this?`,
   priyaTime: '9:04 AM',
 };
+
+export const P2_SCENARIO = {
+  company: 'Swiggy',
+  city: 'South Mumbai',
+  metric: 'Orders',
+  drop: '11.2%',
+  period: 'WoW (Thursday)',
+  category: 'Desserts',
+  gmvLost: '₹23.4L',
+  priyaMessage: `Hey — different city this time. South Mumbai orders down 11.2% week-over-week. Thursday. Desserts category is the suspected vector. ₹23.4L GMV at risk. This one's yours to lead — I'm not pulling any data for you. What's your investigation plan?`,
+};
+
+// ── Phase 2 KPI Data — DIRTY VERSION (incomplete partition) ──────────────────
+// This is the "trap" dataset — city filter is silently missing South Mumbai East.
+// Total sessions = 71,200 (should be ~94,800 with East included).
+// If user does not sanity-check partition coverage, they'll miss 24.8% of sessions.
+export const P2_KPI_DIRTY = {
+  _meta: {
+    partition: 'South Mumbai (partial — West + Central only)',
+    missing: 'South Mumbai East (est. 23,600 sessions)',
+    coverageActual: 0.752, // 71,200 / 94,800
+    warningFlag: 'INCOMPLETE_PARTITION',
+  },
+  gmv: {
+    label: 'Gross Merchandise Value',
+    short: 'GMV',
+    current: '₹1.89Cr', prev: '₹2.13Cr', delta: -11.2,
+    unit: '₹Cr', alert: true, detail: 'WoW vs last Thursday',
+    currentNum: 1.89, prevNum: 2.13,
+    definition: 'Total rupee value of completed orders — but this data covers West + Central zones only.',
+  },
+  conversion: {
+    label: 'Order Conversion Rate',
+    short: 'Conversion',
+    current: '10.8%', prev: '13.1%', delta: -2.3,
+    unit: '%', alert: true, detail: 'App open → placed',
+    currentNum: 10.8, prevNum: 13.1,
+    definition: 'Of every 100 users who open the app, how many place an order.',
+  },
+  total_sessions: {
+    label: 'Total App Sessions',
+    short: 'Sessions',
+    current: '71,200', prev: '94,100', delta: -24.3,
+    unit: '', alert: true, detail: 'Sessions this Thursday vs last',
+    currentNum: 71200, prevNum: 94100,
+    definition: 'Total app sessions — WARNING: this figure covers only West + Central zones.',
+  },
+  search_null_rate: {
+    label: 'Search Null Rate',
+    short: 'Search Null',
+    current: '11.8%', prev: '3.9%', delta: +7.9,
+    unit: '%', alert: true, detail: '% searches returning 0 results',
+    currentNum: 11.8, prevNum: 3.9,
+    definition: '% of searches returning 0 results. Spike suggests dessert restaurants unavailable.',
+  },
+  dessert_availability: {
+    label: 'Dessert Category Availability',
+    short: 'Dessert Avail',
+    current: '61.4%', prev: '88.2%', delta: -26.8,
+    unit: '%', alert: true, detail: '% dessert restaurants online',
+    currentNum: 61.4, prevNum: 88.2,
+    definition: 'Percentage of dessert-category restaurants actively accepting orders in the queried zone.',
+  },
+  delivery_time: {
+    label: 'Avg Delivery Time',
+    short: 'Delivery Time',
+    current: '38 min', prev: '31 min', delta: +22.6,
+    unit: 'min', alert: false, detail: 'Door-to-door avg',
+    currentNum: 38, prevNum: 31,
+    definition: 'Average time from order placement to delivery.',
+  },
+  payment_success: {
+    label: 'Payment Success Rate',
+    short: 'Payment',
+    current: '92.1%', prev: '93.8%', delta: -1.7,
+    unit: '%', alert: false, detail: 'Checkout → payment complete',
+    currentNum: 92.1, prevNum: 93.8,
+    definition: 'Of users who reach checkout, what % successfully complete payment.',
+  },
+};
+
+// ── Phase 2 KPI Data — CLEAN VERSION (full partition, post sanity-check) ─────
+export const P2_KPI_CLEAN = {
+  _meta: {
+    partition: 'South Mumbai (all zones — West + Central + East)',
+    coverageActual: 1.0,
+    warningFlag: null,
+  },
+  gmv: { label: 'Gross Merchandise Value', short: 'GMV', current: '₹2.31Cr', prev: '₹2.60Cr', delta: -11.2, unit: '₹Cr', alert: true, detail: 'WoW vs last Thursday', currentNum: 2.31, prevNum: 2.60 },
+  conversion: { label: 'Order Conversion Rate', short: 'Conversion', current: '11.4%', prev: '13.1%', delta: -1.7, unit: '%', alert: true, detail: 'App open → placed', currentNum: 11.4, prevNum: 13.1 },
+  total_sessions: { label: 'Total App Sessions', short: 'Sessions', current: '94,800', prev: '94,100', delta: +0.7, unit: '', alert: false, detail: 'Full city sessions', currentNum: 94800, prevNum: 94100 },
+  search_null_rate: { label: 'Search Null Rate', short: 'Search Null', current: '12.1%', prev: '3.9%', delta: +8.2, unit: '%', alert: true, detail: '% searches returning 0 results', currentNum: 12.1, prevNum: 3.9 },
+  dessert_availability: { label: 'Dessert Category Availability', short: 'Dessert Avail', current: '59.8%', prev: '88.2%', delta: -28.4, unit: '%', alert: true, detail: '% dessert restaurants online', currentNum: 59.8, prevNum: 88.2 },
+  delivery_time: { label: 'Avg Delivery Time', short: 'Delivery Time', current: '38 min', prev: '31 min', delta: +22.6, unit: 'min', alert: false, detail: 'Door-to-door avg', currentNum: 38, prevNum: 31 },
+  payment_success: { label: 'Payment Success Rate', short: 'Payment', current: '92.1%', prev: '93.8%', delta: -1.7, unit: '%', alert: false, detail: 'Checkout → payment complete', currentNum: 92.1, prevNum: 93.8 },
+};
+
+// ── Phase 2 Funnel — Dirty (West + Central only, missing East) ───────────────
+export const P2_FUNNEL_DIRTY_THIS_WEEK = [
+  { stage: 'App Open',     users: 71200, pct: 100  },
+  { stage: 'Search',       users: 49800, pct: 69.9 },
+  { stage: 'Menu View',    users: 31400, pct: 63.1 },
+  { stage: 'Add to Cart',  users: 12900, pct: 41.1, alert: true },
+  { stage: 'Checkout',     users: 9800,  pct: 76.0 },
+  { stage: 'Payment',      users: 7690,  pct: 78.5 },
+  { stage: 'Order Placed', users: 7690,  pct: 100  },
+];
+
+export const P2_FUNNEL_DIRTY_LAST_WEEK = [
+  { stage: 'App Open',     users: 94100, pct: 100  },
+  { stage: 'Search',       users: 68200, pct: 72.5 },
+  { stage: 'Menu View',    users: 46900, pct: 68.8 },
+  { stage: 'Add to Cart',  users: 28100, pct: 59.9 },
+  { stage: 'Checkout',     users: 20600, pct: 73.3 },
+  { stage: 'Payment',      users: 16800, pct: 81.6 },
+  { stage: 'Order Placed', users: 12360, pct: 100  },
+];
+
+// ── Phase 2 Funnel — Clean (full city) ───────────────────────────────────────
+export const P2_FUNNEL_CLEAN_THIS_WEEK = [
+  { stage: 'App Open',     users: 94800, pct: 100  },
+  { stage: 'Search',       users: 66900, pct: 70.6 },
+  { stage: 'Menu View',    users: 44100, pct: 65.9 },
+  { stage: 'Add to Cart',  users: 18200, pct: 41.3, alert: true },
+  { stage: 'Checkout',     users: 13900, pct: 76.4 },
+  { stage: 'Payment',      users: 10820, pct: 77.8 },
+  { stage: 'Order Placed', users: 10820, pct: 100  },
+];
+
+// ── Dirty Data Sanity Check Thresholds ───────────────────────────────────────
+export const P2_SANITY_CHECK = {
+  // If the user notices the session drop (94.1k → 71.2k = -24.3%)
+  // WHILE the city had same population, that's the red flag.
+  sessionDropThreshold: 0.20,        // >20% session drop without population change = suspicious
+  expectedSessionsDelta: 0.01,       // South Mumbai population didn't change week-over-week
+  dirtyPartitionLabel: 'West + Central only (missing East)',
+  cleanPartitionLabel: 'All zones (West + Central + East)',
+  eastZoneSessionEstimate: 23600,
+  catchKeywords: [
+    'session', 'sessions', 'total sessions', 'user count', 'partition',
+    'zone', 'east', 'coverage', 'missing', 'sanity', 'check', 'sample',
+    'population', 'same users', 'baseline', 'weird', 'suspicious',
+    'doesn\'t add', 'doesn\'t make', 'doesn\'t match', 'inconsistent',
+  ],
+};
+
+// ── Phase 2 Impact Sizing ─────────────────────────────────────────────────────
+export const P2_IMPACT_SIZING = {
+  churnedUsers: 940,
+  avgOrderValue: 410,           // Desserts AOV is higher than Biryani
+  ordersPerWeek: 1.8,           // Desserts ordered less frequently
+  weeksInYear: 52,
+  recoveryRate: 0.60,
+  answer: {
+    weekly: '₹6.93L',
+    monthly: '₹27.7L',
+    annual: '₹3.61Cr',
+    conservative: '₹2.17Cr',   // 60% recovery
+  },
+};
+
+// ── Arjun Hard-Mode Intervention Messages ────────────────────────────────────
+export const P2_ARJUN_HARDMODE = {
+  // Triggered when user requests data without catching the partition error
+  trigger: "Hold on — before we interpret anything, I need you to run a sanity check on this data. Look at the total sessions figure. Does that match your expectations for South Mumbai on a Thursday?",
+
+  // First hint if they still don't catch it
+  hint1: "South Mumbai's Thursday session baseline is typically around 94,000. You're looking at 71,200. The city didn't shrink by 25% overnight. What does that tell you about the data you're working with?",
+
+  // Direct reveal after 2 failed attempts
+  reveal: "I'll stop you there — this dataset has an incomplete partition. It's only showing West and Central zones. South Mumbai East is missing entirely (≈23,600 sessions). This is a classic data engineering error — a partition filter got dropped in the ETL job. If you'd built a recommendation on this, you'd be off by ~24% on every metric. Always check your data completeness before interpreting.",
+
+  // After they correctly identify the issue
+  caught: "Good catch. That's exactly the kind of sanity check that separates a senior analyst from a data-puller. The session count mismatch was the tell. Let me reload the full dataset with East included.",
+
+  // Logic pushback messages — triggered by specific weak-logic patterns
+  logicPushbacks: {
+    // User blames demand without checking supply
+    demand_blame: "You're jumping to demand-side without checking supply first. Dessert availability dropped 27 points — that's not a demand signal, that's restaurants going dark. Why would users stop wanting desserts on a Thursday specifically?",
+
+    // User cites delivery time as root cause
+    delivery_time: "Delivery time is a symptom here, not a cause. If restaurants are offline, delivery time is irrelevant — orders never reach the driver. What metric tells you why restaurants went offline?",
+
+    // User cites payment failure
+    payment_blame: "Payment failure is 1.7 points — within normal variance. The funnel shows the drop is at Add-to-Cart, before checkout. You can't blame payment for a pre-checkout exit.",
+
+    // User presents single point estimate without range
+    no_range: "One number without a range isn't an estimate — it's a guess dressed up as precision. What's your conservative case? What assumptions would have to fail for your number to be wrong?",
+
+    // User recommends fix without sizing
+    unsized_recommendation: "You have a direction but no number. 'Fix dessert availability' is an ops ticket, not a recommendation. How much GMV recovery justifies the engineering and ops effort? Size it first.",
+  },
+};
+
+// ── Executive Memo Evaluation Rubric ─────────────────────────────────────────
+export const EXEC_MEMO_RUBRIC = {
+  // Minimum chars for a valid submission
+  minChars: 120,
+
+  // Scoring dimensions
+  dimensions: {
+    sizing: {
+      label: 'Sizing',
+      weight: 0.40,
+      description: 'Does the memo include a specific, defensible number with a recovery rate?',
+      keywords: ['cr', 'lakh', '₹', 'crore', 'recovery', '%', 'gmv', 'annualized', 'annual', 'weekly'],
+      rangeKeywords: ['conservative', 'range', 'best case', 'expected', '60%', '65%', '40%'],
+    },
+    actionability: {
+      label: 'Actionability',
+      weight: 0.35,
+      description: 'Does the memo specify WHO does WHAT by WHEN?',
+      keywords: ['restore', 'ops', 'partner', 'merchant', 'reactivate', 'fix', 'investigate', 'escalate', 'by', 'within', 'team', 'owner'],
+    },
+    structure: {
+      label: 'Structure',
+      weight: 0.25,
+      description: 'Conclusion first — root cause → evidence → impact → action.',
+      keywords: ['drop', 'caused', 'driven', 'evidence', 'because', 'funnel', 'availability', 'dessert', 'south mumbai'],
+    },
+  },
+
+  // Arjun's evaluation response templates (built dynamically in ExecutiveMemo)
+  feedback: {
+    high: "Solid memo. You led with the finding, the number is defensible, and you've given ops a clear action. This would hold up in a VP review.",
+    medium_sizing: "The narrative is clean, but the number needs a range. A single estimate without a recovery rate looks overconfident to a senior audience. Add a conservative case.",
+    medium_action: "Good root cause and evidence — but the action item is vague. 'Fix availability' isn't actionable. Who specifically? Which restaurants? By when? The ops team needs a name and a deadline.",
+    medium_structure: "You buried the finding. A VP reading this at 9am needs the conclusion in sentence one — not after three sentences of context. Rewrite with the root cause up front.",
+    low: "This reads more like a data summary than a recommendation. Start with what you found, add a number, and end with one specific action. Right now there's no clear ask.",
+  },
+};
+
+// ── Arjun Phase 2 System Prompt ───────────────────────────────────────────────
+export const ARJUN_PHASE2_SYSTEM = `You are Arjun, a Staff Product Analyst at Swiggy. The analyst is now leading Phase 2 — a new incident in South Mumbai (Desserts, Thursday, 11.2% GMV drop).
+
+Your role has shifted: you are now REACTIVE, not leading. Answer what is asked. Push back on weak logic. Do not volunteer information the analyst hasn't earned by asking.
+
+Voice rules:
+- Never say: score, gap, covered, missed, framework, assessment, correct, incorrect, well done, great job
+- Sound like a sharp senior colleague who's watching and occasionally intervening
+- Keep responses under 4 sentences
+- If the analyst presents a conclusion without evidence, ask for the evidence
+- If the analyst misses a sanity check, push back hard`;
+
+// ── Phase 2 Mock Responses ────────────────────────────────────────────────────
+export const ARJUN_P2_MOCK = {
+  // Natural language query responses
+  funnel: "Here's the funnel. Before you read the numbers — check the session count first. Does the total volume look right for a South Mumbai Thursday?",
+  cohort: "Cohort data loaded. Week 4 and 5 are the cliff — W1 retention dropped 14 points. But the cohort sizes also look smaller than usual. Something to note.",
+  kpi: "Dashboard is up. Ten metrics. Two in red. Same rule as before — which one is the lead indicator, and which is the consequence?",
+  availability: "Dessert availability at 59.8% — that's the sharpest single-week drop in this city's history for a category. What would cause 40% of dessert restaurants to go offline on a Thursday?",
+  impact: "You've got the root cause and the funnel. Now size it. Use 940 churned users, ₹410 AOV, 1.8 orders/week, 52 weeks, 60% recovery. What's the annual GMV at risk?",
+
+  // Pushback responses
+  dirty_data_probe: "Before I confirm anything — how confident are you in the session count? 71,200 for a South Mumbai Thursday seems low. What's your baseline expectation?",
+  good_catch: "Correct. The partition was missing South Mumbai East. 23,600 sessions dropped out of the ETL. I've reloaded the full dataset. Now your conversion rate looks different — 11.4% not 10.8%. Recheck your hypothesis with the clean data.",
+  fallback: "Interesting angle. What specific data would either confirm or reject that? Don't narrate — query.",
+};

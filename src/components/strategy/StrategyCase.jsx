@@ -1,19 +1,28 @@
 // src/components/strategy/StrategyCase.jsx
-// CP10: Two changes from CP-E:
-//   1. IncidentStatusBar component added — sticky minimal bar showing
-//      INCIDENT #ANALYTICS-WAR-ROOM · STATUS: INVESTIGATING [MILESTONE_NAME]
-//      Replaces the static PhaseHeader once M1 is complete.
+// CP11: Sprint 2 — Cognitive Workbench Layout
 //
-//   2. onMilestoneAdvance prop wired to ArjunSocraticChat:
-//      Called with (milestoneName, milestoneIndex) after each milestone advance.
-//      When milestoneIndex >= 1 (M1 done), m1Complete flips true and
-//      IncidentStatusBar replaces PhaseHeader.
+// CHANGES FROM CP10:
+//   1. Phase 1 (triage) now renders inside CognitiveWorkbenchShell
+//      - IncidentHUD replaces old ProgressBar + IncidentStatusBar for Phase 1
+//      - Two-pane grid: Terminal (left 68%) + Strategy Pad (right 32%)
+//      - ArjunSocraticChat moves into the Strategy Pad (right pane)
+//      - Data blocks (KPI, Funnel, Cohort) unlock into Terminal (left pane)
+//
+//   2. useTerminalBlocks hook wired to ArjunSocraticChat via onMilestoneComplete
+//      - Called with (milestoneIndex, { conclusion, funnelData }) after each milestone
+//
+//   3. ProgressBar retained for Phase 2 + Phase 3 (deepdive, master)
+//      - Phase 2/3 use old single-column layout (AnalysisWorkbench, StrategyMemo)
+//
+//   4. IncidentHUD live loss counter: ₹19L base, ~₹1,200/sec tick
 
 import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useStrategyState } from './hooks/useStrategyState.js';
+import { useTerminalBlocks } from './hooks/useTerminalBlocks.jsx';
+import CognitiveWorkbenchShell, { IncidentHUD, WorkbenchGrid, TerminalStack } from './components/CognitiveWorkbenchShell.jsx';
 import ArjunSocraticChat from './components/ArjunSocraticChat.jsx';
 import AnalysisWorkbench from './components/AnalysisWorkbench.jsx';
 import StrategyMemo from './components/StrategyMemo.jsx';
@@ -31,12 +40,12 @@ const PROGRESS = {
   complete: { pct: 100, label: 'Investigation Complete',             color: GREEN  },
 };
 
-// ── Progress bar — always shown below nav ─────────────────────────────────────
+// ── Progress bar — for Phase 2 and Phase 3 ────────────────────────────────────
 function ProgressBar({ phase }) {
   const p = PROGRESS[phase] || PROGRESS.triage;
   return (
     <div style={{
-      position: 'sticky', top: 45, zIndex: 40,
+      position: 'sticky', top: 0, zIndex: 40,
       background: 'rgba(8,8,16,0.92)', backdropFilter: 'blur(12px)',
       borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '0 20px',
     }}>
@@ -52,80 +61,6 @@ function ProgressBar({ phase }) {
         <p style={{ fontFamily: 'var(--mono)', fontSize: 9, color: 'var(--ink3)' }}>{p.pct}% complete</p>
       </div>
     </div>
-  );
-}
-
-// ── Incident Status Bar — replaces PhaseHeader after M1 is complete ───────────
-// Sticky, minimal. Shows: INCIDENT #ANALYTICS-WAR-ROOM · STATUS: INVESTIGATING [MILESTONE]
-function IncidentStatusBar({ currentMilestoneName }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: -8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-      style={{
-        position: 'sticky',
-        top: 69, // ProgressBar is top:45 + ~24px height = ~69px
-        zIndex: 39,
-        background: 'rgba(8,8,16,0.96)',
-        backdropFilter: 'blur(12px)',
-        borderBottom: '1px solid rgba(255,255,255,0.06)',
-        padding: '8px 24px',
-        display: 'flex',
-        alignItems: 'center',
-        gap: 10,
-        marginBottom: 20,
-      }}
-    >
-      {/* Pulsing red incident dot */}
-      <motion.div
-        animate={{ opacity: [1, 0.3, 1] }}
-        transition={{ duration: 1.4, repeat: Infinity }}
-        style={{ width: 6, height: 6, borderRadius: '50%', background: RED, flexShrink: 0 }}
-      />
-
-      <span style={{
-        fontFamily: 'var(--mono)',
-        fontSize: 9,
-        fontWeight: 700,
-        letterSpacing: '0.12em',
-        textTransform: 'uppercase',
-        color: 'var(--ink3)',
-      }}>
-        INCIDENT #ANALYTICS-WAR-ROOM
-      </span>
-
-      <span style={{ color: 'rgba(255,255,255,0.15)', fontSize: 14, lineHeight: 1 }}>·</span>
-
-      <span style={{
-        fontFamily: 'var(--mono)',
-        fontSize: 9,
-        letterSpacing: '0.1em',
-        textTransform: 'uppercase',
-        color: RED,
-        fontWeight: 700,
-      }}>
-        STATUS: INVESTIGATING
-      </span>
-
-      {/* Animated milestone name — updates on each advance */}
-      <motion.span
-        key={currentMilestoneName}
-        initial={{ opacity: 0, x: 6 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.25 }}
-        style={{
-          fontFamily: 'var(--mono)',
-          fontSize: 9,
-          color: ORANGE,
-          fontWeight: 700,
-          letterSpacing: '0.08em',
-          textTransform: 'uppercase',
-        }}
-      >
-        [{currentMilestoneName}]
-      </motion.span>
-    </motion.div>
   );
 }
 
@@ -147,7 +82,7 @@ function PhaseSplash({ config, onDone }) {
   );
 }
 
-// ── Phase header — used for Phase 1 (before M1 done), Phase 2, Phase 3 ────────
+// ── Phase header — Phase 2 and Phase 3 ───────────────────────────────────────
 function PhaseHeader({ num, title, color, onBack, backLabel }) {
   return (
     <div style={{ marginBottom: 24 }}>
@@ -267,15 +202,13 @@ const SPLASH_CONFIGS = {
 export default function StrategyCase() {
   const navigate = useNavigate();
   const { state, advanceTriage, advanceToMaster, update } = useStrategyState();
+  const { terminalBlocks, unlockBlock } = useTerminalBlocks();
 
-  const [splash, setSplash]                         = useState(null);
-  const [milestonesComplete, setMilestonesComplete] = useState(false);
-  const [retrievalComplete, setRetrievalComplete]   = useState(false);
-  const [showAlert, setShowAlert]                   = useState(state.phase === 'triage');
-
-  // CP10: track M1 completion + current milestone name for IncidentStatusBar
-  const [m1Complete, setM1Complete]               = useState(false);
-  const [currentMilestoneName, setCurrentMilestoneName] = useState('SCOPE THE PROBLEM');
+  const [splash, setSplash]                               = useState(null);
+  const [milestonesComplete, setMilestonesComplete]       = useState(false);
+  const [retrievalComplete, setRetrievalComplete]         = useState(false);
+  const [showAlert, setShowAlert]                         = useState(state.phase === 'triage');
+  const [currentMilestoneName, setCurrentMilestoneName]  = useState('SCOPE THE PROBLEM');
 
   const handleAlertEnter         = useCallback(() => setShowAlert(false), []);
   const handleMilestonesComplete = useCallback(() => setMilestonesComplete(true), []);
@@ -283,12 +216,23 @@ export default function StrategyCase() {
   const handleDeepDiveAdvance    = useCallback(() => setSplash('phase3'), []);
   const handleMemoComplete       = useCallback(() => setSplash('complete'), []);
 
-  // Called by ArjunSocraticChat after each milestone completes
-  // milestoneIndex is the NEW active milestone (e.g. 1 = M2 is now active = M1 is done)
-  const handleMilestoneAdvance = useCallback((milestoneName, milestoneIndex) => {
+  // CP11: Called by ArjunSocraticChat after each milestone completes.
+  // milestoneIndex = newly active milestone (e.g. 1 = M2 now active = M1 just done)
+  // conclusion = user's synthesis sentence (if any)
+  const handleMilestoneAdvance = useCallback((milestoneName, milestoneIndex, conclusion) => {
     setCurrentMilestoneName(milestoneName);
-    if (milestoneIndex >= 1) setM1Complete(true); // M1 complete once M2 becomes active
-  }, []);
+    // Unlock Terminal block for the COMPLETED milestone (index - 1)
+    const completedIndex = milestoneIndex - 1;
+    if (completedIndex >= 0) {
+      setTimeout(() => {
+        unlockBlock(completedIndex, { conclusion });
+      }, 600);
+    }
+  }, [unlockBlock]);
+
+  // Also unlock M5 block (impact) when M5 completes (index 4)
+  // This is handled by onMilestoneComplete being called for M5 → M6 advance
+  // which triggers handleMilestoneAdvance with milestoneIndex=5 → completedIndex=4
 
   const handleBack = useCallback((fromPhase) => {
     if (fromPhase === 'triage')   navigate('/');
@@ -296,122 +240,126 @@ export default function StrategyCase() {
     if (fromPhase === 'master')   update({ phase: 'deepdive' });
   }, [navigate, update]);
 
+  // ── Phase 1 (triage) renders inside the CognitiveWorkbenchShell ──────────
+  if (state.phase === 'triage' && !showAlert) {
+    return (
+      <>
+        {/* Full-screen splash overlay */}
+        <AnimatePresence>
+          {splash && (
+            <PhaseSplash config={SPLASH_CONFIGS[splash]} onDone={() => {
+              const s = splash; setSplash(null);
+              if (s === 'phase2') advanceTriage();
+            }} />
+          )}
+        </AnimatePresence>
+
+        {/* Cognitive Workbench Shell — wraps the entire Phase 1 experience */}
+        <CognitiveWorkbenchShell
+          milestoneName={currentMilestoneName}
+          lossAmount={1900000}
+          lossTickRate={1200}
+          terminalBlocks={terminalBlocks}
+          showHUD={true}
+        >
+          {/* Right Pane content: ArjunSocraticChat or RetrievalMoment */}
+          <AnimatePresence mode="wait">
+            {!milestonesComplete && (
+              <motion.div
+                key="chat"
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <ArjunSocraticChat
+                  phase="triage"
+                  onVizRequest={() => {}}
+                  onAdvance={handleMilestonesComplete}
+                  onMilestoneAdvance={handleMilestoneAdvance}
+                />
+              </motion.div>
+            )}
+
+            {milestonesComplete && !retrievalComplete && (
+              <motion.div
+                key="retrieval"
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.4 }}
+              >
+                <RetrievalMoment onComplete={handleRetrievalComplete} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </CognitiveWorkbenchShell>
+      </>
+    );
+  }
+
+  // ── Phase 1 alert (cold open) ─────────────────────────────────────────────
+  if (state.phase === 'triage' && showAlert) {
+    return (
+      <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
+        <IncidentAlert onEnter={handleAlertEnter} />
+      </div>
+    );
+  }
+
+  // ── Phase 2 + Phase 3 + Complete — single-column layouts ─────────────────
   return (
     <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
-
-      {/* Cold open — full screen, Phase 1 only */}
-      {state.phase === 'triage' && showAlert && (
-        <IncidentAlert onEnter={handleAlertEnter} />
-      )}
-
       <AnimatePresence>
         {splash && (
           <PhaseSplash config={SPLASH_CONFIGS[splash]} onDone={() => {
             const s = splash; setSplash(null);
-            if (s === 'phase2') advanceTriage();
             if (s === 'phase3') advanceToMaster();
           }} />
         )}
       </AnimatePresence>
 
-      <AnimatePresence>
-        {!showAlert && (
-          <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}>
-            <ProgressBar phase={state.phase} />
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <ProgressBar phase={state.phase} />
 
-      {/* Incident status bar — shown after M1 complete, Phase 1 only */}
-      <AnimatePresence>
-        {!showAlert && state.phase === 'triage' && m1Complete && (
-          <IncidentStatusBar currentMilestoneName={currentMilestoneName} />
-        )}
-      </AnimatePresence>
+      <div style={{ maxWidth: 1040, margin: '0 auto', padding: '28px 24px 80px' }}>
+        <AnimatePresence mode="wait">
 
-      <AnimatePresence>
-        {!showAlert && (
-          <motion.div key="main-content" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}>
-            <div style={{ maxWidth: 1040, margin: '0 auto', padding: '28px 24px 80px' }}>
-              <AnimatePresence mode="wait">
+          {/* Phase 2 */}
+          {state.phase === 'deepdive' && (
+            <motion.div key="deepdive" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.35 }}>
+              <PhaseHeader num="02" title="Own the Investigation" color={BLUE} onBack={() => handleBack('deepdive')} backLabel="Back to Phase 1" />
+              <AnalysisWorkbench onAdvance={handleDeepDiveAdvance} />
+            </motion.div>
+          )}
 
-                {/* Phase 1 */}
-                {state.phase === 'triage' && (
-                  <motion.div key="triage" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.35 }}>
+          {/* Phase 3 */}
+          {state.phase === 'master' && (
+            <motion.div key="master" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.35 }}>
+              <PhaseHeader num="03" title="Impact Sizing & Strategic Memo" color={GREEN} onBack={() => handleBack('master')} backLabel="Back to Phase 2" />
+              <StrategyMemo onComplete={handleMemoComplete} />
+            </motion.div>
+          )}
 
-                    {/* PhaseHeader shown only until M1 completes, then IncidentStatusBar takes over */}
-                    {!m1Complete && (
-                      <PhaseHeader
-                        num="01"
-                        title="Understand the Problem"
-                        color={ORANGE}
-                        onBack={() => handleBack('triage')}
-                        backLabel="Back to home"
-                      />
-                    )}
+          {/* Complete */}
+          {state.phase === 'complete' && (
+            <motion.div key="complete" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }} style={{ textAlign: 'center', padding: '40px 0' }}>
+              <motion.button onClick={() => navigate('/')} whileHover={{ x: -2 }}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 0', marginBottom: 40, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink3)', transition: 'color 0.2s' }}
+                onMouseEnter={e => e.currentTarget.style.color = 'var(--ink2)'}
+                onMouseLeave={e => e.currentTarget.style.color = 'var(--ink3)'}>
+                <ArrowLeft size={13} />Back to home
+              </motion.button>
+              <div style={{ fontSize: 52, marginBottom: 20 }}>🏆</div>
+              <h2 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.03em', color: ORANGE, marginBottom: 10 }}>You think like a Staff Analyst.</h2>
+              <p style={{ fontSize: 15, color: 'var(--ink2)', maxWidth: 420, margin: '0 auto 32px', lineHeight: 1.65 }}>Your investigation memo is ready. Apply to the roles that need exactly this.</p>
+              <a href="/jobs" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '14px 28px', borderRadius: 12, background: ORANGE, color: '#fff', fontFamily: 'var(--sans)', fontSize: 15, fontWeight: 700, textDecoration: 'none' }}>
+                Browse roles that hire for this →
+              </a>
+            </motion.div>
+          )}
 
-                    <AnimatePresence>
-                      {!milestonesComplete && (
-                        <motion.div key="chat" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}>
-                          <ArjunSocraticChat
-                            phase="triage"
-                            onVizRequest={() => {}}
-                            onAdvance={handleMilestonesComplete}
-                            onMilestoneAdvance={handleMilestoneAdvance}
-                          />
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-
-                    <AnimatePresence>
-                      {milestonesComplete && !retrievalComplete && (
-                        <motion.div key="retrieval" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.4 }}>
-                          <RetrievalMoment onComplete={handleRetrievalComplete} />
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </motion.div>
-                )}
-
-                {/* Phase 2 */}
-                {state.phase === 'deepdive' && (
-                  <motion.div key="deepdive" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.35 }}>
-                    <PhaseHeader num="02" title="Own the Investigation" color={BLUE} onBack={() => handleBack('deepdive')} backLabel="Back to Phase 1" />
-                    <AnalysisWorkbench onAdvance={handleDeepDiveAdvance} />
-                  </motion.div>
-                )}
-
-                {/* Phase 3 */}
-                {state.phase === 'master' && (
-                  <motion.div key="master" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.35 }}>
-                    <PhaseHeader num="03" title="Impact Sizing & Strategic Memo" color={GREEN} onBack={() => handleBack('master')} backLabel="Back to Phase 2" />
-                    <StrategyMemo onComplete={handleMemoComplete} />
-                  </motion.div>
-                )}
-
-                {/* Complete */}
-                {state.phase === 'complete' && (
-                  <motion.div key="complete" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }} style={{ textAlign: 'center', padding: '40px 0' }}>
-                    <motion.button onClick={() => navigate('/')} whileHover={{ x: -2 }}
-                      style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 0', marginBottom: 40, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink3)', transition: 'color 0.2s' }}
-                      onMouseEnter={e => e.currentTarget.style.color = 'var(--ink2)'}
-                      onMouseLeave={e => e.currentTarget.style.color = 'var(--ink3)'}>
-                      <ArrowLeft size={13} />Back to home
-                    </motion.button>
-                    <div style={{ fontSize: 52, marginBottom: 20 }}>🏆</div>
-                    <h2 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.03em', color: ORANGE, marginBottom: 10 }}>You think like a Staff Analyst.</h2>
-                    <p style={{ fontSize: 15, color: 'var(--ink2)', maxWidth: 420, margin: '0 auto 32px', lineHeight: 1.65 }}>Your investigation memo is ready. Apply to the roles that need exactly this.</p>
-                    <a href="/jobs" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '14px 28px', borderRadius: 12, background: ORANGE, color: '#fff', fontFamily: 'var(--sans)', fontSize: 15, fontWeight: 700, textDecoration: 'none' }}>
-                      Browse roles that hire for this →
-                    </a>
-                  </motion.div>
-                )}
-
-              </AnimatePresence>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+        </AnimatePresence>
+      </div>
     </div>
   );
 }
