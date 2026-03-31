@@ -1,28 +1,15 @@
 // src/components/strategy/hooks/useArjunStrategy.js
-// CP12: Sprint 4 — Agentic Arjun + Sprint 3 ThinkingReveal wiring
+// CP-6A: Sprint 6 — Production Hardening
 //
-// KEY CHANGES FROM CP10/CP11:
+// CHANGES FROM CP12:
 //
-//   1. MarketplaceDB integration:
-//      - applyAnomaly('SupplyDrop') called once on mount
-//      - Each milestone maps to a queryType: DASHBOARD_KPI | CONVERSION_FUNNEL | COHORT_RETENTION
-//      - callArjunMilestone() now:
-//          a. Identifies the correct query for the milestone
-//          b. Calls MarketplaceDB.execute(queryType)
-//          c. Derives expertAnalysis from the returned data
-//          d. Returns { text, advance, concept, queryType, expertAnalysis, sqlQuery }
+//   1. expertAnalysis now uses 3-layer metacognitive shape:
+//      { title, layers: [ { id, label, icon, items[] }, ... ] }
+//      Layer IDs: 'observations' | 'inferences' | 'frameworks'
+//      Consumed by ThinkingReveal.jsx as progressive unblurs.
 //
-//   2. expertAnalysis payload:
-//      Built deterministically from actual DB anomaly values.
-//      Shape: { title, insight, evidence[], implication }
-//      Consumed by ThinkingReveal.jsx — revealed only after user commits.
-//
-//   3. sqlQuery:
-//      Each milestone now exposes a `sqlQuery` string.
-//      ArjunQueryTerminal uses this for the typewriter SQL effect in the Terminal.
-//
-//   4. All existing milestone routing (scope, dashboard, funnel, rootcause,
-//      impact, respond, p2_dirty) is PRESERVED exactly — no regressions.
+//   2. All existing milestone routing preserved exactly — no regressions.
+//   3. IS_DEV flag and callArjun fetch path unchanged (T4 is a separate gate).
 
 import { useCallback, useRef } from 'react';
 import {
@@ -39,23 +26,22 @@ const IS_DEV = import.meta.env.DEV;
 const delay  = ms => new Promise(r => setTimeout(r, ms));
 
 // ── Bootstrap: apply SupplyDrop anomaly once ──────────────────────────────────
-// Safe to call multiple times — buildDatabase() is idempotent with same type
 let _anomalyApplied = false;
 function ensureAnomaly() {
   if (!_anomalyApplied) {
     try { applyAnomaly('SupplyDrop'); _anomalyApplied = true; }
-    catch (_) { /* silent — DB may already be seeded */ }
+    catch (_) { /* silent */ }
   }
 }
 
 // ── Milestone → DB query mapping ──────────────────────────────────────────────
 const MILESTONE_QUERY_MAP = {
-  dashboard: 'DASHBOARD_KPI',
-  funnel:    'CONVERSION_FUNNEL',
-  rootcause: 'COHORT_RETENTION',
-  impact:    'DASHBOARD_KPI',   // re-uses KPI to build impact sizing
-  respond:   null,              // no DB query needed
-  scope:     null,
+  dashboard:  'DASHBOARD_KPI',
+  funnel:     'CONVERSION_FUNNEL',
+  rootcause:  'COHORT_RETENTION',
+  impact:     'DASHBOARD_KPI',
+  respond:    null,
+  scope:      null,
   hypothesis: null,
 };
 
@@ -101,68 +87,157 @@ WHERE city = 'North Bangalore'
 ORDER BY cohort ASC;`,
 };
 
-// ── Expert analysis builder — reads actual DB output ─────────────────────────
+// ── 3-Layer Expert Analysis Builder ──────────────────────────────────────────
+// Shape: { title, layers: [{ id, label, icon, items[] }] }
+// Layer order: Observations → Inferences → Frameworks
+// ThinkingReveal renders each layer as a distinct progressive unblur.
 function buildExpertAnalysis(milestoneId, dbResult) {
   if (!dbResult) return null;
 
   switch (milestoneId) {
 
     case 'dashboard': {
-      const nb = dbResult.by_city?.['North Bangalore'];
+      const nb       = dbResult.by_city?.['North Bangalore'];
       if (!nb) return null;
       const nullRate = nb.metrics?.null_result_rate?.value;
       const gmvWow   = nb.metrics?.total_gmv?.wow;
       const baseline = 0.065;
-      const spike    = nullRate ? Math.round((nullRate - baseline) / baseline * 100) : 0;
+      const spike    = nullRate ? Math.round((nullRate - baseline) / baseline * 100) : 377;
+      const nullPct  = nullRate ? (nullRate * 100).toFixed(1) : '31.0';
+      const gmvDrop  = Math.abs(gmvWow || 8.3);
 
       return {
         title: 'Dashboard — Lead Indicator Identification',
-        insight: `Search Null Rate spiked to ${nullRate ? (nullRate * 100).toFixed(1) : '~31'}% — a ${spike}% increase above the 6.5% baseline. This is the lead indicator. GMV (−${Math.abs(gmvWow || 8.3)}% WoW) is the lagging consequence, not the cause.`,
-        evidence: [
-          `Null result rate: ${nullRate ? (nullRate * 100).toFixed(1) : '31'}% this week vs 6.5% baseline — users are searching and finding nothing.`,
-          `Delivery fleet and on-time rate unchanged — this is not a logistics problem.`,
-          `Session count stable — demand intent is there, supply is the gap.`,
+        layers: [
+          {
+            id:    'observations',
+            label: 'Observations',
+            icon:  '🔬',
+            sublabel: 'What the data says',
+            items: [
+              `Search Null Rate: ${nullPct}% this week vs 6.5% baseline — users searching and finding nothing.`,
+              `GMV down ${gmvDrop}% WoW (₹19L). Delivery fleet and on-time rate are unchanged.`,
+              `Session count stable — demand intent is present. The gap is on the supply side.`,
+            ],
+          },
+          {
+            id:    'inferences',
+            label: 'Inferences',
+            icon:  '🧠',
+            sublabel: 'What the data means',
+            items: [
+              `Null result spike without session drop = restaurants went offline, not users. Demand exists, supply doesn't.`,
+              `GMV (−${gmvDrop}%) is the lagging consequence. Search Null Rate (${nullPct}%) is the lead indicator — the actual cause.`,
+              `Delivery unchanged rules out logistics. This is a restaurant availability problem, not an ops failure.`,
+            ],
+          },
+          {
+            id:    'frameworks',
+            label: 'Frameworks',
+            icon:  '📐',
+            sublabel: 'Mental models applied',
+            items: [
+              `Lead vs Lag: Search Null Rate leads GMV by ~24hrs. Fixing supply will restore GMV within a day — if this is reversible.`,
+              `Funnel-first: KPI dashboards show *what* broke. The funnel will show *where* in the user journey it broke.`,
+            ],
+          },
         ],
-        implication: 'When null_result_rate spikes without a session drop, restaurants went offline — not users. The funnel will confirm where exactly the conversion breaks.',
       };
     }
 
     case 'funnel': {
-      const seg = dbResult.segment_by_day || [];
-      const tue = seg.find(d => d.day_name === 'Tuesday');
-      const avg = seg.reduce((s, d) => s + (d.null_result_rate || 0), 0) / Math.max(seg.length, 1);
-      const cartConvTue  = tue?.cart_conv  || 0.373;
-      const cartConvAvg  = seg.reduce((s, d) => s + (d.pdp_conv || 0), 0) / Math.max(seg.length, 1);
+      const seg       = dbResult.segment_by_day || [];
+      const tue       = seg.find(d => d.day_name === 'Tuesday');
+      const avg       = seg.reduce((s, d) => s + (d.null_result_rate || 0), 0) / Math.max(seg.length, 1);
+      const cartConv  = tue?.cart_conv || 0.373;
+      const nullPct   = tue ? (tue.null_result_rate * 100).toFixed(1) : '31.0';
+      const avgPct    = (avg * 100).toFixed(1);
 
       return {
         title: 'Funnel — Stage Anomaly Isolation',
-        insight: `Tuesday's Add-to-Cart conversion is ${(cartConvTue * 100).toFixed(1)}% — the sharpest single-day drop in the funnel. Every other stage moved 2–5 points. This is an anomaly, not a drift.`,
-        evidence: [
-          `Tuesday null_result_rate: ${tue ? (tue.null_result_rate * 100).toFixed(1) : '31.0'}% vs weekly avg ${(avg * 100).toFixed(1)}% — 4.8× elevated.`,
-          `Search→PDP conversion collapses 39% on Tuesday — users who do get results aren't finding Biryani options.`,
-          `Cart→Checkout rate is normal — users who add items are completing. The problem is at discovery, not intent.`,
+        layers: [
+          {
+            id:    'observations',
+            label: 'Observations',
+            icon:  '🔬',
+            sublabel: 'What the data says',
+            items: [
+              `Tuesday Add-to-Cart: ${(cartConv * 100).toFixed(1)}% — sharpest single-day drop in the funnel.`,
+              `Tuesday null_result_rate: ${nullPct}% vs weekly avg ${avgPct}% — 4.8× elevated.`,
+              `Cart→Checkout rate is normal. Users who add items do complete. The problem is at discovery.`,
+            ],
+          },
+          {
+            id:    'inferences',
+            label: 'Inferences',
+            icon:  '🧠',
+            sublabel: 'What the data means',
+            items: [
+              `The cart drop is supply-driven: users open the app, search, find nothing relevant, and leave before adding.`,
+              `Every other stage moved 2–5 points. A 13.5pp anomaly at one stage is not drift — it's an event.`,
+              `Biryani category (28% of North BLR orders) is the primary suspect given the null result pattern.`,
+            ],
+          },
+          {
+            id:    'frameworks',
+            label: 'Frameworks',
+            icon:  '📐',
+            sublabel: 'Mental models applied',
+            items: [
+              `Stage Isolation: When one funnel stage moves 3× more than others, it's the root node — not a symptom.`,
+              `New vs Returning split: returning users have Favorites as a bypass. New users hit full search friction. Segmenting will confirm.`,
+            ],
+          },
         ],
-        implication: 'The cart drop is supply-driven: users open the app, search, find nothing relevant, and leave. The Biryani category is the primary suspect given its 28% share of North BLR orders.',
       };
     }
 
     case 'rootcause': {
       const heatmap = dbResult.heatmap || [];
-      const wk3 = heatmap.find(r => r.cohort === 'Week 3');
-      const wk1 = heatmap.find(r => r.cohort === 'Week 1');
-      const wk3W1 = wk3?.cells?.find(c => c.week === 'W1')?.retention_rate;
-      const wk1W1 = wk1?.cells?.find(c => c.week === 'W1')?.retention_rate;
+      const wk3     = heatmap.find(r => r.cohort === 'Week 3');
+      const wk1     = heatmap.find(r => r.cohort === 'Week 1');
+      const wk3W1   = wk3?.cells?.find(c => c.week === 'W1')?.retention_rate;
+      const wk1W1   = wk1?.cells?.find(c => c.week === 'W1')?.retention_rate;
       const penalty = wk3W1 && wk1W1 ? Math.round((1 - wk3W1 / wk1W1) * 100) : 18;
+      const wk3Pct  = wk3W1 ? (wk3W1 * 100).toFixed(0) : '32';
+      const wk1Pct  = wk1W1 ? (wk1W1 * 100).toFixed(0) : '42';
 
       return {
         title: 'Cohort — Retention Degradation Root Cause',
-        insight: `Week 3 cohort W1 retention is ${wk3W1 ? (wk3W1 * 100).toFixed(0) : '32'}% — ${penalty}% below Week 1 cohort's ${wk1W1 ? (wk1W1 * 100).toFixed(0) : '42'}%. This is not a one-week blip. It's been building for 4 weeks.`,
-        evidence: [
-          `Week 3 cohort (acquired during supply gap): W1 retention ${wk3W1 ? (wk3W1 * 100).toFixed(0) : '32'}% vs ${wk1W1 ? (wk1W1 * 100).toFixed(0) : '42'}% baseline.`,
-          `Cohort sizes are stable (3,900–4,400) — this is not a sample size problem.`,
-          `Weeks 4, 5, 6 all show the same degraded pattern — the supply gap is ongoing, not fixed.`,
+        layers: [
+          {
+            id:    'observations',
+            label: 'Observations',
+            icon:  '🔬',
+            sublabel: 'What the data says',
+            items: [
+              `Week 3 cohort W1 retention: ${wk3Pct}% vs Week 1 baseline of ${wk1Pct}% — ${penalty}% lower.`,
+              `Cohort sizes stable (3,900–4,400 users). This is not a sample size artefact.`,
+              `Weeks 4, 5, 6 all show the same degraded pattern. The supply gap is ongoing, not a one-week blip.`,
+            ],
+          },
+          {
+            id:    'inferences',
+            label: 'Inferences',
+            icon:  '🧠',
+            sublabel: 'What the data means',
+            items: [
+              `New users who hit null search results in their first session churned ${penalty}% faster — permanently.`,
+              `Supply disruption doesn't just lose orders today. It degrades the new user base and compounds over weeks.`,
+              `Returning users are insulated by Favorites/History. New users carry the full churn penalty.`,
+            ],
+          },
+          {
+            id:    'frameworks',
+            label: 'Frameworks',
+            icon:  '📐',
+            sublabel: 'Mental models applied',
+            items: [
+              `First-session imprinting: the first experience sets the user's mental model of a product. A null result in session 1 = "this app doesn't have what I want."`,
+              `LTV risk compounding: churn in W1 wipes out not just this week's revenue but all future orders. Impact sizing must use LTV, not GMV.`,
+            ],
+          },
         ],
-        implication: 'New users who experienced null search results in their first session churned at 18% higher rates. Supply disruption doesn\'t just lose orders today — it erodes the new user base permanently.',
       };
     }
 
@@ -291,20 +366,19 @@ export function getKpiClickResponse(metricKey) {
   const response = ARJUN_KPI_RESPONSES[metricKey];
   if (!response) return { text: ARJUN_STRATEGY_MOCK.fallback, followUp: null, isCorrect: false, redirectTo: null, conceptTrigger: null };
   return {
-    text: response.immediate,
-    followUp: response.followUp || null,
-    isCorrect: response.isCorrect || false,
-    redirectTo: response.redirectTo || null,
+    text:           response.immediate,
+    followUp:       response.followUp    || null,
+    isCorrect:      response.isCorrect   || false,
+    redirectTo:     response.redirectTo  || null,
     conceptTrigger: response.conceptTrigger ? CONCEPTS[response.conceptTrigger] : null,
   };
 }
 
 // ── Hook ──────────────────────────────────────────────────────────────────────
 export function useArjunStrategy() {
-  const attemptCounts  = useRef({});
-  const expertCache    = useRef({});  // cache expertAnalysis per milestone
+  const attemptCounts = useRef({});
+  const expertCache   = useRef({});
 
-  // Ensure anomaly is seeded on first hook instantiation
   ensureAnomaly();
 
   const callArjunMilestone = useCallback(async (userMessage, milestoneId) => {
@@ -319,7 +393,7 @@ export function useArjunStrategy() {
     const text    = responseOverride || ARJUN_STRATEGY_MOCK[key] || ARJUN_STRATEGY_MOCK.fallback;
     const concept = conceptTrigger ? CONCEPTS[conceptTrigger] : null;
 
-    // ── Sprint 4: DB query + expertAnalysis ──────────────────────────────────
+    // ── DB query + 3-layer expertAnalysis ────────────────────────────────────
     let expertAnalysis = expertCache.current[milestoneId] || null;
     let sqlQuery       = MILESTONE_SQL[milestoneId] || null;
 
@@ -330,23 +404,21 @@ export function useArjunStrategy() {
         expertAnalysis = buildExpertAnalysis(milestoneId, dbResult);
         expertCache.current[milestoneId] = expertAnalysis;
       } catch (_) {
-        // Graceful fallback — ThinkingReveal simply won't render
         expertAnalysis = null;
       }
     }
 
     return {
       text,
-      advance:        advance || false,
+      advance:        advance      || false,
       forceAdvance:   forceAdvance || false,
       concept,
       queryType,
-      expertAnalysis, // → consumed by ThinkingReveal
-      sqlQuery,       // → consumed by ArjunQueryTerminal typewriter
+      expertAnalysis,
+      sqlQuery,
     };
   }, []);
 
-  // callArjun — Phase 2 NL interface (unchanged except expert cache)
   const callArjun = useCallback(async (userMessage, phaseKey) => {
     const logicErrorKey = detectLogicError(userMessage);
     if (logicErrorKey && ARJUN_STRATEGY_MOCK[logicErrorKey]) {
@@ -365,11 +437,11 @@ export function useArjunStrategy() {
 
     try {
       const res = await fetch('/.netlify/functions/evaluate', {
-        method: 'POST',
+        method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          system: ARJUN_PHASE1_SYSTEM,
-          messages: [{ role: 'user', content: userMessage }],
+          system:     ARJUN_PHASE1_SYSTEM,
+          messages:   [{ role: 'user', content: userMessage }],
           max_tokens: 250,
         }),
       });
@@ -384,7 +456,6 @@ export function useArjunStrategy() {
     attemptCounts.current[milestoneId] = 0;
   }, []);
 
-  // Expose the expert cache so StrategyCase can pass it to DecisionLog
   const getExpertAnalyses = useCallback(() => {
     return { ...expertCache.current };
   }, []);
