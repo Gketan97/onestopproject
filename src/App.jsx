@@ -15,6 +15,7 @@ const JobsPage        = lazy(() => import('./components/pages/JobsPage.jsx'));
 const ReferrerForm    = lazy(() => import('./components/pages/ReferrerForm.jsx'));
 const PortfolioPage   = lazy(() => import('./components/portfolio/PortfolioPage.jsx'));
 const StrategyCase    = lazy(() => import('./components/strategy/StrategyCase.jsx'));
+const CaseStudiesPage = lazy(() => import('./components/pages/CaseStudiesPage.jsx'));
 
 // Minimal fallback while lazy chunks load
 function PageLoader() {
@@ -75,6 +76,7 @@ const App = () => {
         <Suspense fallback={<PageLoader />}>
           <Routes>
             <Route path="/"                       element={<HomePage />} />
+            <Route path="/case-studies"           element={<CaseStudiesPage />} /> 
             <Route path="/jobs"                   element={<JobsPage />} />
             <Route path="/case-study/:caseId" element={<Navigate to="/strategy/swiggy" replace />} />
             <Route path="/strategy/:caseId"       element={<StrategyCase />} />

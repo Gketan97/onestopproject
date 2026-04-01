@@ -85,12 +85,13 @@ export const useDataFetching = () => {
     for (const src of jobsSources) {
       try {
         const res = await fetchWithTimeout(src, 7000);
-        if (!res.ok) continue;
-        const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) {
-          jobsData = data;
-          break;
-        }
+if (!res.ok) continue;
+const raw  = await res.json();
+const data = Array.isArray(raw) ? raw : (raw.jobs ?? []);
+if (Array.isArray(data) && data.length > 0) {
+  jobsData = data;
+  break;
+}
       } catch {
         // try next source
       }
