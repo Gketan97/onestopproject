@@ -19,8 +19,12 @@
 //     {children}                            // right-pane content (ArjunSocraticChat)
 //   </CognitiveWorkbenchShell>
 
+// ── STEP 1: Imports ───────────────────────────────────────────────────────────
+// useState was duplicated in the original — consolidated here into one import.
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { WorkbenchContext } from '../../../contexts/WorkbenchContext.js';
+import SpeedToggle, { getInitialSpeed } from './SpeedToggle.jsx';
 
 const ORANGE = '#FC8019';
 const RED    = '#F38BA8';
@@ -102,8 +106,18 @@ function LossCounter({ initialAmount, tickRate = 1200 }) {
 }
 
 // ── Incident HUD ──────────────────────────────────────────────────────────────
-// Sticky bar: [● INCIDENT #ANALYTICS-WAR-ROOM] [STATUS: INVESTIGATING [MILESTONE]] [-₹X and counting]
-export function IncidentHUD({ milestoneName, lossAmount = 1900000, lossTickRate = 1200, visible = true }) {
+// Sticky bar: [● INCIDENT #ANALYTICS-WAR-ROOM] [STATUS: INVESTIGATING [MILESTONE]] [-₹X and counting] [SpeedToggle]
+//
+// STEP 4: IncidentHUD now accepts typewriterSpeed + onSpeedChange props
+// so SpeedToggle can be rendered at the right end of the bar.
+export function IncidentHUD({
+  milestoneName,
+  lossAmount = 1900000,
+  lossTickRate = 1200,
+  visible = true,
+  typewriterSpeed,
+  onSpeedChange,
+}) {
   if (!visible) return null;
 
   return (
@@ -198,9 +212,11 @@ export function IncidentHUD({ milestoneName, lossAmount = 1900000, lossTickRate 
       {/* Divider */}
       <div style={{ width: 1, height: 20, background: 'rgba(255,255,255,0.1)', flexShrink: 0 }} />
 
-      {/* Right: Live loss counter */}
-      <div style={{ flexShrink: 0 }}>
+      {/* Right: Live loss counter + SpeedToggle */}
+      {/* STEP 4: SpeedToggle added here, receiving speed state from the shell */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
         <LossCounter initialAmount={lossAmount} tickRate={lossTickRate} />
+        <SpeedToggle speed={typewriterSpeed} onChange={onSpeedChange} />
       </div>
     </motion.div>
   );
@@ -500,35 +516,45 @@ export function WorkbenchGrid({ terminalContent, strategyPadContent }) {
 //     <ArjunSocraticChat ... />
 //   </CognitiveWorkbenchShell>
 export default function CognitiveWorkbenchShell({
-  milestoneName = 'SCOPE THE PROBLEM',
-  lossAmount    = 1900000,
-  lossTickRate  = 1200,
+  milestoneName  = 'SCOPE THE PROBLEM',
+  lossAmount     = 1900000,
+  lossTickRate   = 1200,
   terminalBlocks = [],
-  showHUD = true,
+  showHUD        = true,
   children,
 }) {
-  return (
-    <div style={{
-      background: '#050505',
-      minHeight: '100vh',
-      position: 'relative',
-    }}>
-      {/* Incident HUD — always at very top */}
-      <AnimatePresence>
-        {showHUD && (
-          <IncidentHUD
-            milestoneName={milestoneName}
-            lossAmount={lossAmount}
-            lossTickRate={lossTickRate}
-          />
-        )}
-      </AnimatePresence>
+  // STEP 2: Typewriter speed state — initialised from SpeedToggle's persisted value
+  const [typewriterSpeed, setTypewriterSpeed] = useState(getInitialSpeed);
 
-      {/* Two-pane grid */}
-      <WorkbenchGrid
-        terminalContent={<TerminalStack blocks={terminalBlocks} />}
-        strategyPadContent={children}
-      />
-    </div>
+  // STEP 3: Entire shell wrapped in WorkbenchContext.Provider so any descendant
+  // (e.g. ArjunSocraticChat) can read typewriterSpeed via useContext(WorkbenchContext).
+  return (
+    <WorkbenchContext.Provider value={{ typewriterSpeed }}>
+      <div style={{
+        background: '#050505',
+        minHeight: '100vh',
+        position: 'relative',
+      }}>
+        {/* Incident HUD — always at very top */}
+        {/* STEP 4: Pass speed state + setter down so HUD can render SpeedToggle */}
+        <AnimatePresence>
+          {showHUD && (
+            <IncidentHUD
+              milestoneName={milestoneName}
+              lossAmount={lossAmount}
+              lossTickRate={lossTickRate}
+              typewriterSpeed={typewriterSpeed}
+              onSpeedChange={setTypewriterSpeed}
+            />
+          )}
+        </AnimatePresence>
+
+        {/* Two-pane grid */}
+        <WorkbenchGrid
+          terminalContent={<TerminalStack blocks={terminalBlocks} />}
+          strategyPadContent={children}
+        />
+      </div>
+    </WorkbenchContext.Provider>
   );
 }

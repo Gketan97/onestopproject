@@ -11,7 +11,7 @@
 //      passes the data verification step. `onDataVerified` unlocks them.
 //   4. All existing flow (dirty → sanity_check → caught | hard_mode → clean) preserved.
 
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useRef, useEffect, useContext } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertTriangle, CheckCircle, Database, RefreshCw, ChevronDown, ChevronRight, Lock } from 'lucide-react';
 import {
@@ -20,30 +20,14 @@ import {
   P2_SANITY_CHECK,
   P2_ARJUN_HARDMODE,
 } from '../data/swiggyStrategyData.js';
+import { useTypewriter } from '../../../hooks/useTypewriter.js';
+import { WorkbenchContext } from '../../../contexts/WorkbenchContext.js';
 
 const ORANGE = '#FC8019';
 const RED    = '#F38BA8';
 const GREEN  = '#3DD68C';
 const BLUE   = '#4F80FF';
 const YELLOW = '#F9E2AF';
-
-// ── Typewriter ────────────────────────────────────────────────────────────────
-function useTypewriter(text, speed = 12, trigger = true) {
-  const [displayed, setDisplayed] = useState('');
-  const [done, setDone]           = useState(false);
-  const idx = useRef(0);
-  useEffect(() => {
-    if (!trigger || !text) { setDisplayed(text || ''); setDone(true); return; }
-    idx.current = 0; setDisplayed(''); setDone(false);
-    const iv = setInterval(() => {
-      idx.current += 1;
-      setDisplayed(text.slice(0, idx.current));
-      if (idx.current >= text.length) { clearInterval(iv); setDone(true); }
-    }, speed);
-    return () => clearInterval(iv);
-  }, [text, speed, trigger]);
-  return { displayed, done };
-}
 
 // ── Mini Avatar ───────────────────────────────────────────────────────────────
 function Avatar({ initials, color, size = 28 }) {
@@ -61,7 +45,8 @@ function Avatar({ initials, color, size = 28 }) {
 
 // ── Arjun message with typewriter ─────────────────────────────────────────────
 function ArjunLine({ text, isNew = true }) {
-  const { displayed, done } = useTypewriter(text, 12, isNew);
+  const { typewriterSpeed } = useContext(WorkbenchContext);
+  const { displayed, done } = useTypewriter(text, { speed: typewriterSpeed, trigger: isNew });
   return (
     <div style={{ display: 'flex', gap: 9, alignItems: 'flex-start' }}>
       <Avatar initials="AJ" color={ORANGE} />
