@@ -1,49 +1,33 @@
 // src/components/strategy/StrategyCase.jsx
-// CP11: Sprint 2 — Cognitive Workbench Layout
-// PATCHED: Sprint 5 wiring applied
+// Sprint 6 final — PostCompletionNext replaces dead-end complete state
 //
-// CHANGES FROM CP10:
-//   1. Phase 1 (triage) now renders inside CognitiveWorkbenchShell
-//      - IncidentHUD replaces old ProgressBar + IncidentStatusBar for Phase 1
-//      - Two-pane grid: Terminal (left 68%) + Strategy Pad (right 32%)
-//      - ArjunSocraticChat moves into the Strategy Pad (right pane)
-//      - Data blocks (KPI, Funnel, Cohort) unlock into Terminal (left pane)
-//
-//   2. useTerminalBlocks hook wired to ArjunSocraticChat via onMilestoneComplete
-//      - Called with (milestoneIndex, { conclusion, funnelData }) after each milestone
-//
-//   3. ProgressBar retained for Phase 2 + Phase 3 (deepdive, master)
-//      - Phase 2/3 use old single-column layout (AnalysisWorkbench, StrategyMemo)
-//
-//   4. IncidentHUD live loss counter: ₹19L base, ~₹1,200/sec tick
-//
-// SPRINT 5 CHANGES:
-//   1. Added DecisionLog and TerminalScanline imports
-//   2. Added expertAnalyses + showDecisionLog state, handleExpertAnalysesUpdate callback
-//   3. handleMilestonesComplete now sets showDecisionLog(true)
-//   4. onExpertAnalysesUpdate wired into ArjunSocraticChat
-//   5. investigationLog state + onLogUpdate wired into ArjunSocraticChat
-//   6. DecisionLog rendered in Phase 1 triage block with AnimatePresence
-//   7. TerminalScanline added to CognitiveWorkbenchShell Terminal pane (see shell component)
+// CHANGES:
+//   - PostCompletionNext imported + rendered when phase === 'complete'
+//   - portfolioId state added (set on portfolio save success)
+//   - Phase3Teaser wired (from previous sprint)
+//   - No Razorpay anywhere
 
 import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
-import { useStrategyState } from './hooks/useStrategyState.js';
-import { useTerminalBlocks } from './hooks/useTerminalBlocks.jsx';
-import CognitiveWorkbenchShell, { IncidentHUD, WorkbenchGrid, TerminalStack } from './components/CognitiveWorkbenchShell.jsx';
-import ArjunSocraticChat from './components/ArjunSocraticChat.jsx';
-import AnalysisWorkbench from './components/AnalysisWorkbench.jsx';
-import StrategyMemo from './components/StrategyMemo.jsx';
-import IncidentAlert from './components/IncidentAlert.jsx';
-import DecisionLog from './components/DecisionLog.jsx';
-import TerminalScanline from './components/TerminalScanline.jsx';
+import { useStrategyState }      from './hooks/useStrategyState.js';
+import { useTerminalBlocks }     from './hooks/useTerminalBlocks.jsx';
+import { useIsMobile }           from '../../hooks/useBreakpoint.js';
+import { useSessionCheckpoint, RestorePromptBanner, useExitCapture } from './hooks/useSessionCheckpoint.jsx';
+import CognitiveWorkbenchShell   from './components/CognitiveWorkbenchShell.jsx';
+import ArjunSocraticChat         from './components/ArjunSocraticChat.jsx';
+import AnalysisWorkbench         from './components/AnalysisWorkbench.jsx';
+import StrategyMemo              from './components/StrategyMemo.jsx';
+import IncidentAlert             from './components/IncidentAlert.jsx';
+import DecisionLog               from './components/DecisionLog.jsx';
+import DesktopGate               from './components/DesktopGate.jsx';
+import Phase3Teaser              from './components/Phase3Teaser.jsx';
+import PostCompletionNext        from './components/PostCompletionNext.jsx';
 
 const ORANGE = '#FC8019';
 const BLUE   = '#4F80FF';
 const GREEN  = '#3DD68C';
-const RED    = '#F38BA8';
 
 const PROGRESS = {
   triage:   { pct: 30,  label: 'Phase 1 · Understand the Problem', color: ORANGE },
@@ -52,21 +36,12 @@ const PROGRESS = {
   complete: { pct: 100, label: 'Investigation Complete',             color: GREEN  },
 };
 
-// ── Progress bar — for Phase 2 and Phase 3 ────────────────────────────────────
 function ProgressBar({ phase }) {
   const p = PROGRESS[phase] || PROGRESS.triage;
   return (
-    <div style={{
-      position: 'sticky', top: 0, zIndex: 40,
-      background: 'rgba(8,8,16,0.92)', backdropFilter: 'blur(12px)',
-      borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '0 20px',
-    }}>
+    <div style={{ position: 'sticky', top: 0, zIndex: 40, background: 'rgba(8,8,16,0.92)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '0 20px' }}>
       <div style={{ height: 2, background: 'rgba(255,255,255,0.06)' }}>
-        <motion.div
-          style={{ height: '100%', background: p.color, borderRadius: 1 }}
-          animate={{ width: `${p.pct}%` }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        />
+        <motion.div style={{ height: '100%', background: p.color, borderRadius: 1 }} animate={{ width: `${p.pct}%` }} transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }} />
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0' }}>
         <p style={{ fontFamily: 'var(--mono)', fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--ink3)' }}>{p.label}</p>
@@ -76,7 +51,6 @@ function ProgressBar({ phase }) {
   );
 }
 
-// ── Phase splash screen — shown on phase transitions ──────────────────────────
 function PhaseSplash({ config, onDone }) {
   React.useEffect(() => { const t = setTimeout(onDone, 2000); return () => clearTimeout(t); }, [onDone]);
   return (
@@ -94,7 +68,6 @@ function PhaseSplash({ config, onDone }) {
   );
 }
 
-// ── Phase header — Phase 2 and Phase 3 ───────────────────────────────────────
 function PhaseHeader({ num, title, color, onBack, backLabel }) {
   return (
     <div style={{ marginBottom: 24 }}>
@@ -115,10 +88,9 @@ function PhaseHeader({ num, title, color, onBack, backLabel }) {
   );
 }
 
-// ── Retrieval moment — between Phase 1 and Phase 2 ────────────────────────────
 function RetrievalMoment({ onComplete }) {
-  const [answer, setAnswer]         = useState('');
-  const [submitted, setSubmitted]   = useState(false);
+  const [answer, setAnswer]       = useState('');
+  const [submitted, setSubmitted] = useState(false);
   const [arjunReply, setArjunReply] = useState(null);
   const canSubmit = answer.trim().length >= 40;
 
@@ -155,7 +127,6 @@ function RetrievalMoment({ onComplete }) {
             <p style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--ink3)', lineHeight: 1.55, marginTop: 8 }}>Be specific. This becomes the opening line of your portfolio.</p>
           </div>
         </div>
-
         <AnimatePresence>
           {!submitted && (
             <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.25 }}
@@ -173,7 +144,6 @@ function RetrievalMoment({ onComplete }) {
             </motion.div>
           )}
         </AnimatePresence>
-
         <AnimatePresence>
           {submitted && (
             <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 20 }}>
@@ -183,7 +153,6 @@ function RetrievalMoment({ onComplete }) {
             </motion.div>
           )}
         </AnimatePresence>
-
         <AnimatePresence>
           {arjunReply && (
             <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }} style={{ display: 'flex', gap: 12 }}>
@@ -205,62 +174,57 @@ function RetrievalMoment({ onComplete }) {
 }
 
 const SPLASH_CONFIGS = {
-  phase2:   { icon: '🔍', title: 'Phase 1 complete.',    subtitle: "You've learned the method. Now you lead.", stat: 'Phase 2 → Own the Investigation', color: `var(--phase2)` },
-  phase3:   { icon: '⚡', title: 'Patterns identified.', subtitle: 'You found the friction. Now size it.',    stat: 'Phase 3 → Impact Sizing & Memo',   color: `var(--green)`  },
-  complete: { icon: '🏆', title: 'Investigation complete.', subtitle: 'Your memo is ready.',                 stat: 'Portfolio link generated.',          color: ORANGE },
+  phase2:   { icon: '🔍', title: 'Phase 1 complete.',    subtitle: "You've learned the method. Now you lead.", stat: 'Phase 2 → Own the Investigation', color: BLUE   },
+  phase3:   { icon: '⚡', title: 'Patterns identified.', subtitle: 'You found the friction. Now size it.',    stat: 'Phase 3 → Impact Sizing & Memo',   color: GREEN  },
+  complete: { icon: '🏆', title: 'Investigation complete.', subtitle: 'Your findings are ready.',             stat: 'Building your next steps...',        color: ORANGE },
 };
 
-// ── Main ──────────────────────────────────────────────────────────────────────
 export default function StrategyCase() {
   const navigate = useNavigate();
+
+  // ── All hooks unconditional ───────────────────────────────────────────────
   const { state, advanceTriage, advanceToMaster, update } = useStrategyState();
-  const { terminalBlocks, unlockBlock } = useTerminalBlocks();
+  const { terminalBlocks, unlockBlock }                   = useTerminalBlocks();
+  const isMobile                                          = useIsMobile(768);
+
+  const {
+    savedMilestoneIndex, savedLog,
+    hasSave, saveCheckpoint, clearCheckpoint,
+  } = useSessionCheckpoint();
 
   const [splash, setSplash]                               = useState(null);
   const [milestonesComplete, setMilestonesComplete]       = useState(false);
   const [retrievalComplete, setRetrievalComplete]         = useState(false);
   const [showAlert, setShowAlert]                         = useState(state.phase === 'triage');
   const [currentMilestoneName, setCurrentMilestoneName]  = useState('SCOPE THE PROBLEM');
+  const [currentMilestoneIndex, setCurrentMilestoneIndex] = useState(0);
+  const [expertAnalyses, setExpertAnalyses]               = useState({});
+  const [showDecisionLog, setShowDecisionLog]             = useState(false);
+  const [investigationLog, setInvestigationLog]           = useState([]);
+  const [portfolioGenerated, setPortfolioGenerated]       = useState(false);
+  const [showPhase3Teaser, setShowPhase3Teaser]           = useState(false);
+  const [portfolioId, setPortfolioId]                     = useState(null);
+  const [showP3NotifyModal, setShowP3NotifyModal]         = useState(false);
 
-  // ── Sprint 5: expertAnalyses + DecisionLog state ──────────────────────────
-  const [expertAnalyses, setExpertAnalyses]   = useState({});
-  const [showDecisionLog, setShowDecisionLog] = useState(false);
-  const [investigationLog, setInvestigationLog] = useState([]);
+  const exitCapturePortal = useExitCapture(currentMilestoneIndex, portfolioGenerated);
 
-  // ── Sprint 5: callbacks ───────────────────────────────────────────────────
-  const handleExpertAnalysesUpdate = useCallback((analyses) => {
-    setExpertAnalyses(analyses);
+  const handleExpertAnalysesUpdate = useCallback((analyses) => setExpertAnalyses(analyses), []);
+  const handleAlertEnter           = useCallback(() => setShowAlert(false), []);
+  const handleMilestonesComplete   = useCallback(() => { setMilestonesComplete(true); setShowDecisionLog(true); }, []);
+  const handleRetrievalComplete    = useCallback(() => { setRetrievalComplete(true); setSplash('phase2'); }, []);
+  const handleDeepDiveAdvance      = useCallback(() => setSplash('phase3'), []);
+  const handleMemoComplete         = useCallback((generatedId) => {
+    if (generatedId) setPortfolioId(generatedId);
+    setSplash('complete');
   }, []);
 
-  const handleAlertEnter         = useCallback(() => setShowAlert(false), []);
-
-  // Sprint 5: also set showDecisionLog on milestones complete
-  const handleMilestonesComplete = useCallback(() => {
-    setMilestonesComplete(true);
-    setShowDecisionLog(true);
-  }, []);
-
-  const handleRetrievalComplete  = useCallback(() => { setRetrievalComplete(true); setSplash('phase2'); }, []);
-  const handleDeepDiveAdvance    = useCallback(() => setSplash('phase3'), []);
-  const handleMemoComplete       = useCallback(() => setSplash('complete'), []);
-
-  // CP11: Called by ArjunSocraticChat after each milestone completes.
-  // milestoneIndex = newly active milestone (e.g. 1 = M2 now active = M1 just done)
-  // conclusion = user's synthesis sentence (if any)
   const handleMilestoneAdvance = useCallback((milestoneName, milestoneIndex, conclusion) => {
     setCurrentMilestoneName(milestoneName);
-    // Unlock Terminal block for the COMPLETED milestone (index - 1)
+    setCurrentMilestoneIndex(milestoneIndex);
     const completedIndex = milestoneIndex - 1;
-    if (completedIndex >= 0) {
-      setTimeout(() => {
-        unlockBlock(completedIndex, { conclusion });
-      }, 600);
-    }
-  }, [unlockBlock]);
-
-  // Also unlock M5 block (impact) when M5 completes (index 4)
-  // This is handled by onMilestoneComplete being called for M5 → M6 advance
-  // which triggers handleMilestoneAdvance with milestoneIndex=5 → completedIndex=4
+    if (completedIndex >= 0) setTimeout(() => unlockBlock(completedIndex, { conclusion }), 600);
+    saveCheckpoint(state.phase, milestoneIndex, investigationLog);
+  }, [unlockBlock, saveCheckpoint, state.phase, investigationLog]);
 
   const handleBack = useCallback((fromPhase) => {
     if (fromPhase === 'triage')   navigate('/');
@@ -268,80 +232,53 @@ export default function StrategyCase() {
     if (fromPhase === 'master')   update({ phase: 'deepdive' });
   }, [navigate, update]);
 
-  // ── Phase 1 (triage) renders inside the CognitiveWorkbenchShell ──────────
-  if (state.phase === 'triage' && !showAlert) {
+  const handleRestore = useCallback(() => {
+    if (savedLog?.length) setInvestigationLog(savedLog);
+    if (savedMilestoneIndex !== null) setCurrentMilestoneIndex(savedMilestoneIndex);
+  }, [savedLog, savedMilestoneIndex]);
+
+  const handleNotifyMe = useCallback(({ contact, method }) => {
+    try {
+      localStorage.setItem('osc_p3_intent', JSON.stringify({ contact, method, capturedAt: new Date().toISOString() }));
+    } catch (_) {}
+    setPortfolioGenerated(true);
+    clearCheckpoint();
+  }, [clearCheckpoint]);
+
+  const handleBackFromTeaser = useCallback(() => {
+    setShowPhase3Teaser(false);
+    update({ phase: 'deepdive' });
+  }, [update]);
+
+  // ── Gate ─────────────────────────────────────────────────────────────────
+  if (isMobile) return <DesktopGate />;
+
+  // ── Phase 3 teaser ────────────────────────────────────────────────────────
+  if (showPhase3Teaser) {
     return (
-      <>
-        {/* Full-screen splash overlay */}
-        <AnimatePresence>
-          {splash && (
-            <PhaseSplash config={SPLASH_CONFIGS[splash]} onDone={() => {
-              const s = splash; setSplash(null);
-              if (s === 'phase2') advanceTriage();
-            }} />
-          )}
-        </AnimatePresence>
-
-        {/* Cognitive Workbench Shell — wraps the entire Phase 1 experience */}
-        <CognitiveWorkbenchShell
-          milestoneName={currentMilestoneName}
-          lossAmount={1900000}
-          lossTickRate={1200}
-          terminalBlocks={terminalBlocks}
-          showHUD={true}
-        >
-          {/* Right Pane content: ArjunSocraticChat or RetrievalMoment */}
-          <AnimatePresence mode="wait">
-            {!milestonesComplete && (
-              <motion.div
-                key="chat"
-                initial={{ opacity: 0, y: 14 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-              >
-                {/* Sprint 5: onExpertAnalysesUpdate + onLogUpdate wired in */}
-                <ArjunSocraticChat
-                  phase="triage"
-                  onVizRequest={() => {}}
-                  onAdvance={handleMilestonesComplete}
-                  onMilestoneAdvance={handleMilestoneAdvance}
-                  onExpertAnalysesUpdate={handleExpertAnalysesUpdate}
-                  onLogUpdate={setInvestigationLog}
-                />
-              </motion.div>
-            )}
-
-            {milestonesComplete && !retrievalComplete && (
-              <motion.div
-                key="retrieval"
-                initial={{ opacity: 0, y: 14 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.4 }}
-              >
-                <RetrievalMoment onComplete={handleRetrievalComplete} />
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </CognitiveWorkbenchShell>
-
-        {/* Sprint 5: Decision Log — generated on M6 completion */}
-        <AnimatePresence>
-          {showDecisionLog && (
-            <DecisionLog
-              investigationLog={investigationLog}
-              expertAnalyses={expertAnalyses}
-              scenario={{ company: 'Swiggy', city: 'North Bangalore', period: 'Tuesday WoW', drop: '8.3%', category: 'Biryani' }}
-              onClose={() => setShowDecisionLog(false)}
-            />
-          )}
-        </AnimatePresence>
-      </>
+      <Phase3Teaser
+        investigationSummary={investigationLog}
+        scenario={{ company: 'Swiggy', city: 'North Bangalore', drop: '8.3%', category: 'Biryani' }}
+        onBack={handleBackFromTeaser}
+        onNotifyMe={handleNotifyMe}
+      />
     );
   }
 
-  // ── Phase 1 alert (cold open) ─────────────────────────────────────────────
+  // ── Phase complete → PostCompletionNext ───────────────────────────────────
+  if (state.phase === 'complete') {
+    return (
+      <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
+        {exitCapturePortal}
+        <PostCompletionNext
+          portfolioId={portfolioId}
+          onNotifyClick={() => setShowP3NotifyModal(true)}
+        />
+      </div>
+    );
+  }
+
+  // ── Phase 1 alert ─────────────────────────────────────────────────────────
   if (state.phase === 'triage' && showAlert) {
     return (
       <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
@@ -350,57 +287,72 @@ export default function StrategyCase() {
     );
   }
 
-  // ── Phase 2 + Phase 3 + Complete — single-column layouts ─────────────────
+  // ── Phase 1 workbench ─────────────────────────────────────────────────────
+  if (state.phase === 'triage' && !showAlert) {
+    return (
+      <>
+        {exitCapturePortal}
+        <AnimatePresence>
+          {splash && (
+            <PhaseSplash config={SPLASH_CONFIGS[splash]} onDone={() => {
+              const s = splash; setSplash(null);
+              if (s === 'phase2') advanceTriage();
+              if (s === 'complete') setShowPhase3Teaser(true);
+            }} />
+          )}
+        </AnimatePresence>
+        <RestorePromptBanner hasSave={hasSave} savedMilestoneIndex={savedMilestoneIndex} onResume={handleRestore} onDiscard={clearCheckpoint} />
+        <CognitiveWorkbenchShell milestoneName={currentMilestoneName} lossAmount={1900000} lossTickRate={1200} terminalBlocks={terminalBlocks} showHUD={true}>
+          <AnimatePresence mode="wait">
+            {!milestonesComplete && (
+              <motion.div key="chat" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}>
+                <ArjunSocraticChat phase="triage" onVizRequest={() => {}} onAdvance={handleMilestonesComplete} onMilestoneAdvance={handleMilestoneAdvance} onExpertAnalysesUpdate={handleExpertAnalysesUpdate} onLogUpdate={setInvestigationLog} />
+              </motion.div>
+            )}
+            {milestonesComplete && !retrievalComplete && (
+              <motion.div key="retrieval" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.4 }}>
+                <RetrievalMoment onComplete={handleRetrievalComplete} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </CognitiveWorkbenchShell>
+        <AnimatePresence>
+          {showDecisionLog && (
+            <DecisionLog investigationLog={investigationLog} expertAnalyses={expertAnalyses} scenario={{ company: 'Swiggy', city: 'North Bangalore', period: 'Tuesday WoW', drop: '8.3%', category: 'Biryani' }} onClose={() => setShowDecisionLog(false)} />
+          )}
+        </AnimatePresence>
+      </>
+    );
+  }
+
+  // ── Phase 2 + Phase 3 ─────────────────────────────────────────────────────
   return (
     <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
+      {exitCapturePortal}
       <AnimatePresence>
         {splash && (
           <PhaseSplash config={SPLASH_CONFIGS[splash]} onDone={() => {
             const s = splash; setSplash(null);
             if (s === 'phase3') advanceToMaster();
+            if (s === 'complete') setShowPhase3Teaser(true);
           }} />
         )}
       </AnimatePresence>
-
       <ProgressBar phase={state.phase} />
-
       <div style={{ maxWidth: 1040, margin: '0 auto', padding: '28px 24px 80px' }}>
         <AnimatePresence mode="wait">
-
-          {/* Phase 2 */}
           {state.phase === 'deepdive' && (
             <motion.div key="deepdive" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.35 }}>
               <PhaseHeader num="02" title="Own the Investigation" color={BLUE} onBack={() => handleBack('deepdive')} backLabel="Back to Phase 1" />
               <AnalysisWorkbench onAdvance={handleDeepDiveAdvance} />
             </motion.div>
           )}
-
-          {/* Phase 3 */}
           {state.phase === 'master' && (
             <motion.div key="master" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.35 }}>
               <PhaseHeader num="03" title="Impact Sizing & Strategic Memo" color={GREEN} onBack={() => handleBack('master')} backLabel="Back to Phase 2" />
               <StrategyMemo onComplete={handleMemoComplete} />
             </motion.div>
           )}
-
-          {/* Complete */}
-          {state.phase === 'complete' && (
-            <motion.div key="complete" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }} style={{ textAlign: 'center', padding: '40px 0' }}>
-              <motion.button onClick={() => navigate('/')} whileHover={{ x: -2 }}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 0', marginBottom: 40, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink3)', transition: 'color 0.2s' }}
-                onMouseEnter={e => e.currentTarget.style.color = 'var(--ink2)'}
-                onMouseLeave={e => e.currentTarget.style.color = 'var(--ink3)'}>
-                <ArrowLeft size={13} />Back to home
-              </motion.button>
-              <div style={{ fontSize: 52, marginBottom: 20 }}>🏆</div>
-              <h2 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.03em', color: ORANGE, marginBottom: 10 }}>You think like a Staff Analyst.</h2>
-              <p style={{ fontSize: 15, color: 'var(--ink2)', maxWidth: 420, margin: '0 auto 32px', lineHeight: 1.65 }}>Your investigation memo is ready. Apply to the roles that need exactly this.</p>
-              <a href="/jobs" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '14px 28px', borderRadius: 12, background: ORANGE, color: '#fff', fontFamily: 'var(--sans)', fontSize: 15, fontWeight: 700, textDecoration: 'none' }}>
-                Browse roles that hire for this →
-              </a>
-            </motion.div>
-          )}
-
         </AnimatePresence>
       </div>
     </div>

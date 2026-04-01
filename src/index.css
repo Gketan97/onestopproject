@@ -61,6 +61,36 @@
   --glass-border:     rgba(255, 255, 255, 0.09);
 
   --header-h: 53px;
+
+  [data-theme="dark"] {
+  --bg:           #080810;
+  --bg-raised:    rgba(255,255,255,0.04);
+  --bg-card:      rgba(255,255,255,0.03);
+  --ink:          #F0F0F5;
+  --ink2:         #9090A8;
+  --ink3:         #5A5A72;
+  --border:       rgba(255,255,255,0.08);
+  --border-strong: rgba(255,255,255,0.14);
+  --shadow:       rgba(0,0,0,0.4);
+}
+ 
+[data-theme="light"] {
+  --bg:           #F5F5F7;
+  --bg-raised:    rgba(0,0,0,0.04);
+  --bg-card:      rgba(0,0,0,0.03);
+  --ink:          #111118;
+  --ink2:         #505068;
+  --ink3:         #8888A0;
+  --border:       rgba(0,0,0,0.08);
+  --border-strong: rgba(0,0,0,0.14);
+  --shadow:       rgba(0,0,0,0.12);
+}
+
+html, body {
+  background: var(--bg);
+  color: var(--ink);
+  transition: background 0.2s ease, color 0.2s ease;
+}
 }
 
 /* ── Base document ─────────────────────────────────────────────────────────── */

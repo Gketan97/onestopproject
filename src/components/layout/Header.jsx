@@ -1,5 +1,9 @@
+// src/components/layout/Header.jsx
+// Sprint 6 — ThemeToggle added, hardcoded dark values replaced with CSS vars
+
 import React from 'react';
 import { NavLink } from 'react-router-dom';
+import ThemeToggle from './ThemeToggle.jsx';
 
 const Logo = () => (
   <svg width="30" height="30" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -19,10 +23,10 @@ const Header = () => (
   <header
     className="sticky top-0 z-50 hidden md:block"
     style={{
-      background: 'rgba(8,8,16,0.88)',
+      background: 'rgba(var(--bg-rgb, 8,8,16),0.88)',
       backdropFilter: 'blur(16px)',
       WebkitBackdropFilter: 'blur(16px)',
-      borderBottom: '1px solid rgba(255,255,255,0.07)',
+      borderBottom: '1px solid var(--border)',
     }}
   >
     <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
@@ -52,18 +56,24 @@ const Header = () => (
         ))}
       </nav>
 
-      <NavLink
-        to="/strategy/swiggy"
-        className="px-4 py-2 text-white text-sm font-semibold rounded-lg transition-all hover:-translate-y-px"
-        style={{
-          background: 'var(--accent)',
-          boxShadow: '0 0 0 1px rgba(252,128,25,0.3)',
-        }}
-        onMouseEnter={e => e.currentTarget.style.boxShadow = '0 4px 20px rgba(252,128,25,0.4)'}
-        onMouseLeave={e => e.currentTarget.style.boxShadow = '0 0 0 1px rgba(252,128,25,0.3)'}
-      >
-        Start free →
-      </NavLink>
+      <div className="flex items-center gap-3">
+        {/* Theme toggle */}
+        <ThemeToggle />
+
+        {/* Start CTA */}
+        <NavLink
+          to="/strategy/swiggy"
+          className="px-4 py-2 text-white text-sm font-semibold rounded-lg transition-all hover:-translate-y-px"
+          style={{
+            background: 'var(--accent)',
+            boxShadow: '0 0 0 1px rgba(252,128,25,0.3)',
+          }}
+          onMouseEnter={e => e.currentTarget.style.boxShadow = '0 4px 20px rgba(252,128,25,0.4)'}
+          onMouseLeave={e => e.currentTarget.style.boxShadow = '0 0 0 1px rgba(252,128,25,0.3)'}
+        >
+          Start free →
+        </NavLink>
+      </div>
     </div>
   </header>
 );

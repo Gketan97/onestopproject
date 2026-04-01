@@ -36,6 +36,7 @@ import KpiScorecard from './KpiScorecard.jsx';
 import CohortMatrix from './CohortMatrix.jsx';
 import ArjunQueryTerminal from './ArjunQueryTerminal.jsx';
 import ThinkingReveal from './ThinkingReveal.jsx';
+import PlatformContextBar from './PlatformContextBar.jsx';
 
 const ORANGE = '#FC8019';
 const BLUE   = '#4F80FF';
@@ -1031,6 +1032,9 @@ export default function ArjunSocraticChat({ phase, onVizRequest, onAdvance, onMi
       </AnimatePresence>
 
       <div ref={feedBottomRef} style={{ height: 1 }} />
+
+      {/* Platform context bar — appears after Milestone 2, no reflow */}
+      <PlatformContextBar milestonesCompleted={log.length} />
     </div>
   );
 }

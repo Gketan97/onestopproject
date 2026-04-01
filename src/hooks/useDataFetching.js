@@ -100,6 +100,7 @@ if (Array.isArray(data) && data.length > 0) {
     let referralsData = [];
     try {
       const res = await fetchWithTimeout(CDN_REFERRALS, 7000);
+      console.log('referrals status:', res.status, await res.clone().text().then(t => t.slice(0,100)));
       if (res.ok) referralsData = await res.json();
     } catch {
       // referrals optional — silently fail
