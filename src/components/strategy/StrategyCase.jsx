@@ -9,7 +9,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useStrategyState }      from './hooks/useStrategyState.js';
 import { useTerminalBlocks }     from './hooks/useTerminalBlocks.jsx';
@@ -26,8 +26,8 @@ import Phase3Teaser              from './components/Phase3Teaser.jsx';
 import PostCompletionNext        from './components/PostCompletionNext.jsx';
 import { ErrorBoundary }          from '../ErrorBoundary.jsx';
 import ExpertDebrief              from './components/ExpertDebrief.jsx';
-import { SWIGGY_CASE }            from '../../data/cases/swiggy.js';
 import { track }                  from '../../analytics/posthog.js';
+import { useCase }                 from '../../hooks/useCase.js';
 
 const ORANGE = '#FC8019';
 const BLUE   = '#4F80FF';
@@ -56,7 +56,7 @@ function ProgressBar({ phase }) {
           <ExpertDebrief
             scores={memoScores}
             userMemo={userMemo}
-            caseConfig={SWIGGY_CASE}
+            caseConfig={caseConfig}
             portfolioId={portfolioId}
             onClose={() => { setShowDebrief(false); update({ phase: 'complete' }); }}
           />
@@ -194,8 +194,43 @@ const SPLASH_CONFIGS = {
   complete: { icon: '🏆', title: 'Investigation complete.', subtitle: 'Your findings are ready.',             stat: 'Building your next steps...',        color: ORANGE },
 };
 
-export default function StrategyCase() {
+// ── Case loading states ─────────────────────────────────────────────────────
+function CaseLoadingScreen() {
+  return (
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ display: 'flex', gap: 6, justifyContent: 'center', marginBottom: 16 }}>
+          {[0,1,2].map(i => (
+            <motion.div key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: '#FC8019' }}
+              animate={{ y: [-4, 4, -4] }} transition={{ duration: 0.8, delay: i * 0.15, repeat: Infinity }} />
+          ))}
+        </div>
+        <p style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--ink3)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Loading case...</p>
+      </div>
+    </div>
+  );
+}
+
+function CaseNotFound({ caseId }) {
   const navigate = useNavigate();
+  return (
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ textAlign: 'center', maxWidth: 400, padding: '0 24px' }}>
+        <p style={{ fontFamily: 'var(--mono)', fontSize: 9, fontWeight: 700, color: '#F38BA8', textTransform: 'uppercase', letterSpacing: '0.14em', marginBottom: 12 }}>Case not found</p>
+        <p style={{ fontSize: 15, color: 'var(--ink2)', lineHeight: 1.65, marginBottom: 20 }}>No case study found for "{caseId}". It may not be available yet.</p>
+        <button onClick={() => navigate('/case-studies')}
+          style={{ padding: '9px 20px', borderRadius: 9, background: '#FC8019', color: '#fff', border: 'none', cursor: 'pointer', fontFamily: 'var(--sans)', fontSize: 13, fontWeight: 700 }}>
+          Browse cases
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export default function StrategyCase() {
+  const navigate         = useNavigate();
+  const { caseId = 'swiggy' } = useParams();
+  const { caseConfig, loading: caseLoading, error: caseError } = useCase(caseId);
 
   // ── All hooks unconditional ───────────────────────────────────────────────
   const { state, advanceTriage, advanceToMaster, update } = useStrategyState();
@@ -273,7 +308,9 @@ export default function StrategyCase() {
   }, [update]);
 
   // ── Gate ─────────────────────────────────────────────────────────────────
-  if (isMobile) return <DesktopGate />;
+  if (caseLoading)              return <CaseLoadingScreen />;
+  if (caseError || !caseConfig) return <CaseNotFound caseId={caseId} />;
+  if (isMobile)                 return <DesktopGate />;
 
   // ── Phase 3 teaser ────────────────────────────────────────────────────────
   if (showPhase3Teaser) {
@@ -329,7 +366,7 @@ export default function StrategyCase() {
             {!milestonesComplete && (
               <motion.div key="chat" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}>
                 <ErrorBoundary key="arjun-chat">
-                  <ArjunSocraticChat phase="triage" onVizRequest={() => {}} onAdvance={handleMilestonesComplete} onMilestoneAdvance={handleMilestoneAdvance} onExpertAnalysesUpdate={handleExpertAnalysesUpdate} onLogUpdate={setInvestigationLog} />
+                  <ArjunSocraticChat phase="triage" caseConfig={caseConfig} onVizRequest={() => {}} onAdvance={handleMilestonesComplete} onMilestoneAdvance={handleMilestoneAdvance} onExpertAnalysesUpdate={handleExpertAnalysesUpdate} onLogUpdate={setInvestigationLog} />
                 </ErrorBoundary>
               </motion.div>
             )}
@@ -352,7 +389,7 @@ export default function StrategyCase() {
           <ExpertDebrief
             scores={memoScores}
             userMemo={userMemo}
-            caseConfig={SWIGGY_CASE}
+            caseConfig={caseConfig}
             portfolioId={portfolioId}
             onClose={() => { setShowDebrief(false); update({ phase: 'complete' }); }}
           />
