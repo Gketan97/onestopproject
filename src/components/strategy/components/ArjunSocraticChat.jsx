@@ -13,6 +13,7 @@ import {
   MILESTONES, PREDICTIONS,
 } from '../data/swiggyStrategyData.js';
 import { useArjunStrategy } from '../hooks/useArjunStrategy.js';
+import { track } from '../../../analytics/posthog.js';
 import { SWIGGY_CASE } from '../../../data/cases/swiggy.js';
 import MilestoneRunner   from '../engine/MilestoneRunner.jsx';
 import MilestoneRespond  from '../engine/MilestoneRespond.jsx';
@@ -96,6 +97,12 @@ export default function ArjunSocraticChat({ phase, onVizRequest, onAdvance, onMi
 
   const handleComplete = useCallback((index, conclusion) => {
     setUpdating(true);
+    track('milestone_completed', {
+      caseId:         'swiggy',
+      milestoneId:    MILESTONES[index]?.id,
+      milestoneIndex: index,
+      hasConclusion:  !!conclusion,
+    });
     setTimeout(() => {
       setUpdating(false);
       setLog(prev => {

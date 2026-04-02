@@ -25,6 +25,7 @@ import DesktopGate               from './components/DesktopGate.jsx';
 import Phase3Teaser              from './components/Phase3Teaser.jsx';
 import PostCompletionNext        from './components/PostCompletionNext.jsx';
 import { ErrorBoundary }          from '../ErrorBoundary.jsx';
+import { track }                  from '../../analytics/posthog.js';
 
 const ORANGE = '#FC8019';
 const BLUE   = '#4F80FF';
@@ -210,9 +211,9 @@ export default function StrategyCase() {
   const exitCapturePortal = useExitCapture(currentMilestoneIndex, portfolioGenerated);
 
   const handleExpertAnalysesUpdate = useCallback((analyses) => setExpertAnalyses(analyses), []);
-  const handleAlertEnter           = useCallback(() => setShowAlert(false), []);
-  const handleMilestonesComplete   = useCallback(() => { setMilestonesComplete(true); setShowDecisionLog(true); }, []);
-  const handleRetrievalComplete    = useCallback(() => { setRetrievalComplete(true); setSplash('phase2'); }, []);
+  const handleAlertEnter           = useCallback(() => { setShowAlert(false); track('case_started', { caseId: 'swiggy' }); }, []);
+  const handleMilestonesComplete   = useCallback(() => { setMilestonesComplete(true); setShowDecisionLog(true); track('phase1_complete', { caseId: 'swiggy' }); }, []);
+  const handleRetrievalComplete    = useCallback(() => { setRetrievalComplete(true); setSplash('phase2'); track('phase2_started', { caseId: 'swiggy' }); }, []);
   const handleDeepDiveAdvance      = useCallback(() => setSplash('phase3'), []);
   const handleMemoComplete         = useCallback((generatedId) => {
     if (generatedId) setPortfolioId(generatedId);
