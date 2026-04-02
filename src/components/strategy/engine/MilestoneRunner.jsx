@@ -263,6 +263,50 @@ function VizBlock({ vizType, caseData, pulseColor, queryData, onVizReady }) {
   return null;
 }
 
+// ── ForceAdvanceBeat — ceremony for rescued milestones ──────────────────────
+function ForceAdvanceBeat({ missedConcept, conceptName }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.35 }}
+      style={{
+        display: 'flex', gap: 10, alignItems: 'flex-start',
+        padding: '14px 16px', borderRadius: 12, marginBottom: 16,
+        background: 'rgba(249,226,175,0.06)', border: '1px solid rgba(249,226,175,0.20)',
+      }}
+    >
+      <div style={{
+        width: 32, height: 32, borderRadius: 8, flexShrink: 0,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        background: 'rgba(249,226,175,0.15)', border: '1px solid rgba(249,226,175,0.30)',
+        fontFamily: 'var(--mono)', fontSize: 10, fontWeight: 800, color: '#F9E2AF',
+      }}>AJ</div>
+      <div style={{ flex: 1 }}>
+        <p style={{ fontFamily: 'var(--mono)', fontSize: 9, color: '#F9E2AF', opacity: 0.7, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 5 }}>
+          Arjun — moving on
+        </p>
+        <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--ink)', lineHeight: 1.65, margin: '0 0 6px' }}>
+          Let me anchor this before we continue.
+        </p>
+        {missedConcept && (
+          <p style={{ fontSize: 13, color: 'var(--ink2)', lineHeight: 1.65, margin: '0 0 8px' }}>{missedConcept}</p>
+        )}
+        {conceptName && (
+          <span style={{
+            fontFamily: 'var(--mono)', fontSize: 9, fontWeight: 700,
+            color: '#F9E2AF', padding: '3px 9px', borderRadius: 6,
+            background: 'rgba(249,226,175,0.12)', border: '1px solid rgba(249,226,175,0.22)',
+          }}>
+            Concept: {conceptName}
+          </span>
+        )}
+      </div>
+    </motion.div>
+  );
+}
+
 // ── Main MilestoneRunner ──────────────────────────────────────────────────────
 export default function MilestoneRunner({
   config,
@@ -285,6 +329,7 @@ export default function MilestoneRunner({
   const [vizReady, setVizReady]         = useState(false);
   const [expertAnalysis, setExpertAnalysis] = useState(null);
   const [revealed, setRevealed]         = useState(false);
+  const [showForceBeat, setShowForceBeat] = useState(false);
   const bottomRef = useRef(null);
 
   // Priya ping
@@ -325,7 +370,7 @@ export default function MilestoneRunner({
     setMessages(prev => [...prev, { role: 'user', text: q, isNew: true }]);
     setLoading(true);
 
-    const { text, advance, concept: c, expertAnalysis: ea } =
+    const { text, advance, forceAdvance, concept: c, expertAnalysis: ea } =
       await callArjunMilestone(q, config.id);
 
     setLoading(false);
@@ -336,6 +381,20 @@ export default function MilestoneRunner({
       setMessages(prev => [...prev, { role: 'arjun', text, isNew: true }]);
       if (c) setConcept(c);
       setRevealed(true);
+
+      // ForceAdvance — show beat before proceeding
+      if (forceAdvance && config.forcedAdvanceLesson) {
+        setShowForceBeat(true);
+        setTimeout(() => {
+          setShowForceBeat(false);
+          if (config.synthesisPrompt) {
+            setShowSynthesis(true);
+          } else {
+            onComplete(null);
+          }
+        }, 2800);
+        return;
+      }
 
       // If milestone has synthesis, show it; otherwise complete directly
       if (config.synthesisPrompt) {
@@ -414,6 +473,16 @@ export default function MilestoneRunner({
                 />
               </motion.div>
             )}
+
+            {/* ForceAdvance beat */}
+            <AnimatePresence>
+              {showForceBeat && config.forcedAdvanceLesson && (
+                <ForceAdvanceBeat
+                  missedConcept={config.forcedAdvanceLesson}
+                  conceptName={config.title}
+                />
+              )}
+            </AnimatePresence>
 
             {/* Synthesis prompt */}
             <AnimatePresence>
