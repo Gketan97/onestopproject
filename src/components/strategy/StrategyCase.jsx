@@ -25,6 +25,8 @@ import DesktopGate               from './components/DesktopGate.jsx';
 import Phase3Teaser              from './components/Phase3Teaser.jsx';
 import PostCompletionNext        from './components/PostCompletionNext.jsx';
 import { ErrorBoundary }          from '../ErrorBoundary.jsx';
+import ExpertDebrief              from './components/ExpertDebrief.jsx';
+import { SWIGGY_CASE }            from '../../data/cases/swiggy.js';
 import { track }                  from '../../analytics/posthog.js';
 
 const ORANGE = '#FC8019';
@@ -49,6 +51,17 @@ function ProgressBar({ phase }) {
         <p style={{ fontFamily: 'var(--mono)', fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--ink3)' }}>{p.label}</p>
         <p style={{ fontFamily: 'var(--mono)', fontSize: 9, color: 'var(--ink3)' }}>{p.pct}% complete</p>
       </div>
+      <AnimatePresence>
+        {showDebrief && (
+          <ExpertDebrief
+            scores={memoScores}
+            userMemo={userMemo}
+            caseConfig={SWIGGY_CASE}
+            portfolioId={portfolioId}
+            onClose={() => { setShowDebrief(false); update({ phase: 'complete' }); }}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -207,6 +220,9 @@ export default function StrategyCase() {
   const [showPhase3Teaser, setShowPhase3Teaser]           = useState(false);
   const [portfolioId, setPortfolioId]                     = useState(null);
   const [showP3NotifyModal, setShowP3NotifyModal]         = useState(false);
+  const [showDebrief, setShowDebrief]                     = useState(false);
+  const [memoScores, setMemoScores]                       = useState(null);
+  const [userMemo, setUserMemo]                           = useState('');
 
   const exitCapturePortal = useExitCapture(currentMilestoneIndex, portfolioGenerated);
 
@@ -215,10 +231,14 @@ export default function StrategyCase() {
   const handleMilestonesComplete   = useCallback(() => { setMilestonesComplete(true); setShowDecisionLog(true); track('phase1_complete', { caseId: 'swiggy' }); }, []);
   const handleRetrievalComplete    = useCallback(() => { setRetrievalComplete(true); setSplash('phase2'); track('phase2_started', { caseId: 'swiggy' }); }, []);
   const handleDeepDiveAdvance      = useCallback(() => setSplash('phase3'), []);
-  const handleMemoComplete         = useCallback((generatedId) => {
+  const handleMemoComplete         = useCallback((scores, memoText, generatedId) => {
     if (generatedId) setPortfolioId(generatedId);
-    setSplash('complete');
-  }, []);
+    if (scores)      setMemoScores(scores);
+    if (memoText)    setUserMemo(memoText);
+    setPortfolioGenerated(true);
+    clearCheckpoint();
+    setShowDebrief(true);
+  }, [clearCheckpoint]);
 
   const handleMilestoneAdvance = useCallback((milestoneName, milestoneIndex, conclusion) => {
     setCurrentMilestoneName(milestoneName);
@@ -327,6 +347,17 @@ export default function StrategyCase() {
           </ErrorBoundary>
           )}
         </AnimatePresence>
+      <AnimatePresence>
+        {showDebrief && (
+          <ExpertDebrief
+            scores={memoScores}
+            userMemo={userMemo}
+            caseConfig={SWIGGY_CASE}
+            portfolioId={portfolioId}
+            onClose={() => { setShowDebrief(false); update({ phase: 'complete' }); }}
+          />
+        )}
+      </AnimatePresence>
       </>
     );
   }
