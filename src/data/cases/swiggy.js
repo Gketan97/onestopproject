@@ -85,6 +85,46 @@ export const SWIGGY_CASE = {
   id:   'swiggy',
   seed: SEED,
   data: deriveCaseData(SEED),
+
+  arjunExpertMemo: {
+    sentences: [
+      {
+        text:  "The 8.3% WoW GMV drop in North Bangalore is driven by a supply-side outage in the Biryani category — restaurants are online but Sold Out, causing a 4.8× spike in null search results.",
+        label: "CONCLUSION FIRST",
+        color: "#FC8019",
+      },
+      {
+        text:  "Tuesday funnel data confirms: Add-to-Cart dropped 13.5pp (57.8% → 44.3%) while Browse held flat — users are reaching the category but finding nothing to order.",
+        label: "EVIDENCE",
+        color: "#4F80FF",
+      },
+      {
+        text:  "New users acquired during the outage show 18pp lower D7 retention, putting ₹2.25Cr annualised GMV at risk at a 65% recovery rate.",
+        label: "IMPACT — QUANTIFIED",
+        color: "#A78BFA",
+      },
+      {
+        text:  "Recommend: ops team to contact top 20 Biryani restaurants in North Bangalore zones by 6 PM today; product to suppress null-result pages and surface alternatives; review resolved by Thursday standup.",
+        label: "ACTION — WHO / WHAT / WHEN",
+        color: "#3DD68C",
+      },
+    ],
+  },
+
+  rubric: {
+    feedback: {
+      gotRight: {
+        sizing:        "You quantified the GMV impact precisely with a recovery rate.",
+        actionability: "You named a specific owner and deadline for the fix.",
+        structure:     "You led with the finding — root cause in sentence one.",
+      },
+      sharpen: {
+        sizing:        "Lead with the number — ₹2.25Cr at 65% recovery — before the root cause narrative.",
+        actionability: "'Fix availability' is an ops ticket, not a recommendation. Name who, what, by when.",
+        structure:     "Bury the methodology. A VP needs the conclusion in sentence one, not after context.",
+      },
+    },
+  },
 };
 
 validateCase(SWIGGY_CASE);
