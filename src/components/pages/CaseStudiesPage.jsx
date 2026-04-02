@@ -15,7 +15,7 @@ const YELLOW = '#F9E2AF';
 
 const CASES = [
   { id:'swiggy', company:'Swiggy', slug:'/strategy/swiggy', live:true, tag:'Supply Analytics', tagColor:ORANGE, title:'The SupplyDrop Incident', description:'Orders down 8.3% WoW in North Bangalore. Priya needs answers by EOD. Diagnose a live supply-side collapse across 6 milestones — scope, KPIs, funnel, root cause, impact sizing, and VP memo.', difficulty:'Staff', diffColor:RED, roles:['Product Analyst','Data Scientist','Growth PM'], skills:['Funnel Analysis','Cohort Retention','Impact Sizing','SQL'], time:'45–60 min', mentor:'Arjun · Staff Analyst @ Swiggy', accentColor:ORANGE, industry:'Quick Commerce', badge:'LIVE' },
-  { id:'zomato', company:'Zomato', slug:'/strategy/zomato', live:true, tag:'Growth Analytics', tagColor:RED, title:'The Retention Cliff', description:'D30 retention dropped 12pp after a loyalty program overhaul. Was it the program, or the cohort? Untangle correlation from causation across 50M user records.', difficulty:'Senior', diffColor:ORANGE, roles:['Data Analyst','Product Analyst','Growth PM'], skills:['Cohort Analysis','A/B Testing','Causal Inference'], time:'40–50 min', mentor:'Coming Soon', accentColor:RED, industry:'Food Delivery', badge:'SOON' },
+  { id:'zomato', company:'Zomato', slug:'/strategy/zomato', live:true, tag:'Growth Analytics', tagColor:RED, title:'The Retention Cliff', description:'D30 retention dropped 12pp after a loyalty program overhaul. Was it the program, or the cohort? Untangle correlation from causation across 50M user records.', difficulty:'Senior', diffColor:ORANGE, roles:['Data Analyst','Product Analyst','Growth PM'], skills:['Cohort Analysis','A/B Testing','Causal Inference'], time:'40–50 min', mentor:'Arjun · Staff Analyst @ Zomato', accentColor:RED, industry:'Food Delivery', badge:'LIVE' },
   { id:'meesho', company:'Meesho', slug:null, live:false, tag:'Marketplace Analytics', tagColor:PURPLE, title:'Seller Supply Shock', description:'A pricing policy change caused 18% of top sellers to go inactive overnight. Model the GMV impact and build the recovery playbook before the board meeting.', difficulty:'Staff', diffColor:RED, roles:['Product Analyst','Strategy Analyst','Data Scientist'], skills:['Seller Economics','Impact Modeling','Decision Frameworks'], time:'50–65 min', mentor:'Coming Soon', accentColor:PURPLE, industry:'Social Commerce', badge:'SOON' },
   { id:'phonepe', company:'PhonePe', slug:null, live:false, tag:'Payments Analytics', tagColor:BLUE, title:'The Checkout Bleed', description:'Payment success rate dropped 3.2pp on UPI transactions in Tier 2 cities. Is it infra, UX, or the bank? Triage a payments funnel with ₹40Cr at stake.', difficulty:'Mid', diffColor:BLUE, roles:['Data Analyst','Product Analyst','PM'], skills:['Payments Funnel','RCA','Geo Segmentation'], time:'30–40 min', mentor:'Coming Soon', accentColor:BLUE, industry:'Fintech', badge:'SOON' },
   { id:'razorpay', company:'Razorpay', slug:null, live:false, tag:'B2B Analytics', tagColor:BLUE, title:'The Merchant Churn Signal', description:'Enterprise merchants are quietly downgrading their plans. You have 14 days of behavioral signals. Build a churn prediction framework before the QBR.', difficulty:'Senior', diffColor:ORANGE, roles:['Data Scientist','Product Analyst','RevOps'], skills:['Churn Modeling','Feature Engineering','SQL','Storytelling'], time:'45–55 min', mentor:'Coming Soon', accentColor:BLUE, industry:'B2B Fintech', badge:'SOON' },
@@ -197,7 +197,7 @@ export default function CaseStudiesPage() {
   const navigate = useNavigate();
   const [filter, setFilter] = useState('All');
 
-  const liveCase   = CASES.find(c => c.live);
+  const liveCases  = CASES.filter(c => c.live);
   const comingSoon = CASES.filter(c => !c.live).filter(c => filter === 'All' || c.difficulty === filter);
 
   return (
@@ -233,13 +233,17 @@ export default function CaseStudiesPage() {
         <HowItWorks />
 
         {/* Live case */}
-        {liveCase && (
+        {liveCases.length > 0 && (
           <div style={{ marginBottom:48 }}>
             <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:16 }}>
               <span style={{ fontFamily:'var(--mono)', fontSize:10, fontWeight:700, color:GREEN, textTransform:'uppercase', letterSpacing:'0.1em' }}>Available Now</span>
               <div style={{ flex:1, height:1, background:'var(--border)' }} />
             </div>
-            <LiveCard cs={liveCase} onClick={() => navigate(liveCase.slug)} />
+            <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
+              {liveCases.map(cs => (
+                <LiveCard key={cs.id} cs={cs} onClick={() => navigate(cs.slug)} />
+              ))}
+            </div>
           </div>
         )}
 

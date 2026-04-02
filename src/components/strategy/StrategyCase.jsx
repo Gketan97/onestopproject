@@ -1,11 +1,7 @@
 // src/components/strategy/StrategyCase.jsx
-// Sprint 6 final — PostCompletionNext replaces dead-end complete state
-//
-// CHANGES:
-//   - PostCompletionNext imported + rendered when phase === 'complete'
-//   - portfolioId state added (set on portfolio save success)
-//   - Phase3Teaser wired (from previous sprint)
-//   - No Razorpay anywhere
+// Fixed: ExpertDebrief removed from ProgressBar scope
+// Fixed: Phase3Teaser and DecisionLog use caseConfig instead of hardcoded Swiggy strings
+// Fixed: track() calls use caseId variable not hardcoded 'swiggy'
 
 import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -24,10 +20,10 @@ import DecisionLog               from './components/DecisionLog.jsx';
 import DesktopGate               from './components/DesktopGate.jsx';
 import Phase3Teaser              from './components/Phase3Teaser.jsx';
 import PostCompletionNext        from './components/PostCompletionNext.jsx';
-import { ErrorBoundary }          from '../ErrorBoundary.jsx';
-import ExpertDebrief              from './components/ExpertDebrief.jsx';
-import { track }                  from '../../analytics/posthog.js';
-import { useCase }                 from '../../hooks/useCase.js';
+import { ErrorBoundary }         from '../ErrorBoundary.jsx';
+import ExpertDebrief             from './components/ExpertDebrief.jsx';
+import { track }                 from '../../analytics/posthog.js';
+import { useCase }               from '../../hooks/useCase.js';
 
 const ORANGE = '#FC8019';
 const BLUE   = '#4F80FF';
@@ -40,6 +36,7 @@ const PROGRESS = {
   complete: { pct: 100, label: 'Investigation Complete',             color: GREEN  },
 };
 
+// ── ProgressBar — NO state references from parent ─────────────────────────
 function ProgressBar({ phase }) {
   const p = PROGRESS[phase] || PROGRESS.triage;
   return (
@@ -51,17 +48,6 @@ function ProgressBar({ phase }) {
         <p style={{ fontFamily: 'var(--mono)', fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--ink3)' }}>{p.label}</p>
         <p style={{ fontFamily: 'var(--mono)', fontSize: 9, color: 'var(--ink3)' }}>{p.pct}% complete</p>
       </div>
-      <AnimatePresence>
-        {showDebrief && (
-          <ExpertDebrief
-            scores={memoScores}
-            userMemo={userMemo}
-            caseConfig={caseConfig}
-            portfolioId={portfolioId}
-            onClose={() => { setShowDebrief(false); update({ phase: 'complete' }); }}
-          />
-        )}
-      </AnimatePresence>
     </div>
   );
 }
@@ -194,7 +180,7 @@ const SPLASH_CONFIGS = {
   complete: { icon: '🏆', title: 'Investigation complete.', subtitle: 'Your findings are ready.',             stat: 'Building your next steps...',        color: ORANGE },
 };
 
-// ── Case loading states ─────────────────────────────────────────────────────
+// ── Case loading states ──────────────────────────────────────────────────────
 function CaseLoadingScreen() {
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -227,12 +213,12 @@ function CaseNotFound({ caseId }) {
   );
 }
 
+// ── Main ─────────────────────────────────────────────────────────────────────
 export default function StrategyCase() {
-  const navigate         = useNavigate();
-  const { caseId = 'swiggy' } = useParams();
+  const navigate                      = useNavigate();
+  const { caseId = 'swiggy' }         = useParams();
   const { caseConfig, loading: caseLoading, error: caseError } = useCase(caseId);
 
-  // ── All hooks unconditional ───────────────────────────────────────────────
   const { state, advanceTriage, advanceToMaster, update } = useStrategyState();
   const { terminalBlocks, unlockBlock }                   = useTerminalBlocks();
   const isMobile                                          = useIsMobile(768);
@@ -261,12 +247,24 @@ export default function StrategyCase() {
 
   const exitCapturePortal = useExitCapture(currentMilestoneIndex, portfolioGenerated);
 
+  // ── Derive scenario strings from caseConfig (not hardcoded) ─────────────
+  const scenarioProps = caseConfig ? {
+    company:  caseConfig.seed.company,
+    city:     caseConfig.seed.city,
+    drop:     `${(caseConfig.seed.dropMagnitude * 100).toFixed(1)}%`,
+    category: caseConfig.seed.affectedCategory,
+    period:   caseConfig.seed.period,
+  } : { company: 'Swiggy', city: 'North Bangalore', drop: '8.3%', category: 'Biryani', period: 'Tuesday WoW' };
+
   const handleExpertAnalysesUpdate = useCallback((analyses) => setExpertAnalyses(analyses), []);
-  const handleAlertEnter           = useCallback(() => { setShowAlert(false); track('case_started', { caseId: 'swiggy' }); }, []);
-  const handleMilestonesComplete   = useCallback(() => { setMilestonesComplete(true); setShowDecisionLog(true); track('phase1_complete', { caseId: 'swiggy' }); }, []);
-  const handleRetrievalComplete    = useCallback(() => { setRetrievalComplete(true); setSplash('phase2'); track('phase2_started', { caseId: 'swiggy' }); }, []);
-  const handleDeepDiveAdvance      = useCallback(() => setSplash('phase3'), []);
-  const handleMemoComplete         = useCallback((scores, memoText, generatedId) => {
+
+  // FIX: track() uses caseId variable, not hardcoded 'swiggy'
+  const handleAlertEnter         = useCallback(() => { setShowAlert(false); track('case_started', { caseId }); }, [caseId]);
+  const handleMilestonesComplete = useCallback(() => { setMilestonesComplete(true); setShowDecisionLog(true); track('phase1_complete', { caseId }); }, [caseId]);
+  const handleRetrievalComplete  = useCallback(() => { setRetrievalComplete(true); setSplash('phase2'); track('phase2_started', { caseId }); }, [caseId]);
+  const handleDeepDiveAdvance    = useCallback(() => setSplash('phase3'), []);
+
+  const handleMemoComplete = useCallback((scores, memoText, generatedId) => {
     if (generatedId) setPortfolioId(generatedId);
     if (scores)      setMemoScores(scores);
     if (memoText)    setUserMemo(memoText);
@@ -307,7 +305,7 @@ export default function StrategyCase() {
     update({ phase: 'deepdive' });
   }, [update]);
 
-  // ── Gate ─────────────────────────────────────────────────────────────────
+  // ── Gates ────────────────────────────────────────────────────────────────
   if (caseLoading)              return <CaseLoadingScreen />;
   if (caseError || !caseConfig) return <CaseNotFound caseId={caseId} />;
   if (isMobile)                 return <DesktopGate />;
@@ -317,14 +315,14 @@ export default function StrategyCase() {
     return (
       <Phase3Teaser
         investigationSummary={investigationLog}
-        scenario={{ company: 'Swiggy', city: 'North Bangalore', drop: '8.3%', category: 'Biryani' }}
+        scenario={scenarioProps}          // FIX: was hardcoded Swiggy strings
         onBack={handleBackFromTeaser}
         onNotifyMe={handleNotifyMe}
       />
     );
   }
 
-  // ── Phase complete → PostCompletionNext ───────────────────────────────────
+  // ── Phase complete ────────────────────────────────────────────────────────
   if (state.phase === 'complete') {
     return (
       <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
@@ -336,6 +334,21 @@ export default function StrategyCase() {
       </div>
     );
   }
+
+  // ── Expert debrief overlay — rendered above all phases ────────────────────
+  const debriefOverlay = (
+    <AnimatePresence>
+      {showDebrief && (
+        <ExpertDebrief
+          scores={memoScores}
+          userMemo={userMemo}
+          caseConfig={caseConfig}
+          portfolioId={portfolioId}
+          onClose={() => { setShowDebrief(false); update({ phase: 'complete' }); }}
+        />
+      )}
+    </AnimatePresence>
+  );
 
   // ── Phase 1 alert ─────────────────────────────────────────────────────────
   if (state.phase === 'triage' && showAlert) {
@@ -351,6 +364,7 @@ export default function StrategyCase() {
     return (
       <>
         {exitCapturePortal}
+        {debriefOverlay}
         <AnimatePresence>
           {splash && (
             <PhaseSplash config={SPLASH_CONFIGS[splash]} onDone={() => {
@@ -366,7 +380,15 @@ export default function StrategyCase() {
             {!milestonesComplete && (
               <motion.div key="chat" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}>
                 <ErrorBoundary key="arjun-chat">
-                  <ArjunSocraticChat phase="triage" caseConfig={caseConfig} onVizRequest={() => {}} onAdvance={handleMilestonesComplete} onMilestoneAdvance={handleMilestoneAdvance} onExpertAnalysesUpdate={handleExpertAnalysesUpdate} onLogUpdate={setInvestigationLog} />
+                  <ArjunSocraticChat
+                    phase="triage"
+                    caseConfig={caseConfig}
+                    onVizRequest={() => {}}
+                    onAdvance={handleMilestonesComplete}
+                    onMilestoneAdvance={handleMilestoneAdvance}
+                    onExpertAnalysesUpdate={handleExpertAnalysesUpdate}
+                    onLogUpdate={setInvestigationLog}
+                  />
                 </ErrorBoundary>
               </motion.div>
             )}
@@ -380,21 +402,15 @@ export default function StrategyCase() {
         <AnimatePresence>
           {showDecisionLog && (
             <ErrorBoundary key="decision-log">
-            <DecisionLog investigationLog={investigationLog} expertAnalyses={expertAnalyses} scenario={{ company: 'Swiggy', city: 'North Bangalore', period: 'Tuesday WoW', drop: '8.3%', category: 'Biryani' }} onClose={() => setShowDecisionLog(false)} />
-          </ErrorBoundary>
+              <DecisionLog
+                investigationLog={investigationLog}
+                expertAnalyses={expertAnalyses}
+                scenario={scenarioProps}    // FIX: was hardcoded Swiggy strings
+                onClose={() => setShowDecisionLog(false)}
+              />
+            </ErrorBoundary>
           )}
         </AnimatePresence>
-      <AnimatePresence>
-        {showDebrief && (
-          <ExpertDebrief
-            scores={memoScores}
-            userMemo={userMemo}
-            caseConfig={caseConfig}
-            portfolioId={portfolioId}
-            onClose={() => { setShowDebrief(false); update({ phase: 'complete' }); }}
-          />
-        )}
-      </AnimatePresence>
       </>
     );
   }
@@ -403,6 +419,7 @@ export default function StrategyCase() {
   return (
     <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
       {exitCapturePortal}
+      {debriefOverlay}
       <AnimatePresence>
         {splash && (
           <PhaseSplash config={SPLASH_CONFIGS[splash]} onDone={() => {
