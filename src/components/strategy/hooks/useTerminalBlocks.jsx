@@ -14,6 +14,7 @@ import { useState, useCallback } from 'react';
 import React from 'react';
 import KpiScorecard from '../components/KpiScorecard.jsx';
 import CohortMatrix from '../components/CohortMatrix.jsx';
+import FunnelChart from '../visualisations/FunnelChart.jsx';
 
 const ORANGE = '#FC8019';
 const BLUE   = '#4F80FF';
@@ -205,7 +206,11 @@ function makeFunnelBlock(thisWeek, lastWeek) {
     label: 'M3 · FUNNEL ANALYSIS',
     color: PURPLE,
     component: (
-      <FunnelReadOnly thisWeek={thisWeek} lastWeek={lastWeek} />
+      <FunnelChart
+        thisWeek={thisWeek}
+        lastWeek={lastWeek}
+        title="Conversion funnel · This week vs Last week"
+      />
     ),
   };
 }

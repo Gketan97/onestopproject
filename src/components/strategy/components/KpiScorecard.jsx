@@ -291,8 +291,13 @@ function ArjunReaction({ text }) {
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────
-export default function KpiScorecard({ onMetricClick, interactive = false, clickedMetric = null }) {
-  const kpis    = Object.entries(KPI_DATA); // [key, kpi][]
+export default function KpiScorecard({ kpis: kpisProp, onMetricClick, interactive = false, clickedMetric = null }) {
+  // If kpis prop is passed, use it directly. Otherwise fall back to KPI_DATA.
+  // This keeps all existing callers working without changes.
+  const kpisSource = kpisProp
+    ? (Array.isArray(kpisProp) ? kpisProp.map(k => [k.key, k]) : Object.entries(kpisProp))
+    : Object.entries(KPI_DATA);
+  const kpis = kpisSource; // [key, kpi][]
   const [visibleCount, setVisibleCount] = useState(0);
 
   // Reasoning gate state

@@ -34,6 +34,7 @@ import PredictionPrompt from './PredictionPrompt.jsx';
 import ConceptChip from './ConceptChip.jsx';
 import KpiScorecard from './KpiScorecard.jsx';
 import CohortMatrix from './CohortMatrix.jsx';
+import FunnelChart from '../visualisations/FunnelChart.jsx';
 import ArjunQueryTerminal from './ArjunQueryTerminal.jsx';
 import ThinkingReveal from './ThinkingReveal.jsx';
 import PlatformContextBar from './PlatformContextBar.jsx';
@@ -258,63 +259,15 @@ function SynthesisPrompt({ prompt, placeholder, minChars = 60, onSubmit, color =
   );
 }
 
-// ── Funnel table components ───────────────────────────────────────────────────
-function FunnelComparison({ thisWeek, lastWeek, title }) {
-  return (
-    <div style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.03)', marginBottom: 12 }}>
-      <div style={{ padding: '9px 14px', background: 'rgba(0,0,0,0.2)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-        <p style={{ fontFamily: 'var(--mono)', fontSize: 9, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--ink3)', margin: 0 }}>{title}</p>
-      </div>
-      <div style={{ padding: '12px 14px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px 80px 60px', gap: 8, marginBottom: 8 }}>
-          {['Stage','This week','Last week','Δ'].map(h => <span key={h} style={{ fontFamily: 'var(--mono)', fontSize: 9, fontWeight: 700, textTransform: 'uppercase', color: 'var(--ink3)' }}>{h}</span>)}
-        </div>
-        {thisWeek.map((step, i) => {
-          const last = lastWeek[i];
-          const delta = last ? (step.pct - last.pct).toFixed(1) : null;
-          const isAnomaly = delta !== null && Math.abs(parseFloat(delta)) > 8;
-          return (
-            <div key={step.stage} style={{ display: 'grid', gridTemplateColumns: '1fr 80px 80px 60px', gap: 8, padding: '6px 0', borderBottom: i < thisWeek.length-1 ? '1px solid rgba(255,255,255,0.04)' : 'none', background: isAnomaly ? `${RED}06` : 'transparent', borderRadius: isAnomaly ? 6 : 0 }}>
-              <span style={{ fontSize: 12, color: isAnomaly ? 'var(--ink)' : 'var(--ink2)', fontWeight: isAnomaly ? 600 : 400 }}>{step.stage}{isAnomaly && <span style={{ fontFamily: 'var(--mono)', fontSize: 9, color: RED }}> ⚠</span>}</span>
-              <span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: isAnomaly ? RED : 'var(--ink2)', fontWeight: isAnomaly ? 700 : 400 }}>{step.pct?.toFixed(1)}%</span>
-              <span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink3)' }}>{last?.pct?.toFixed(1)}%</span>
-              <span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: delta && parseFloat(delta) < 0 ? RED : GREEN, fontWeight: isAnomaly ? 700 : 400 }}>{delta !== null ? `${parseFloat(delta) > 0 ? '+' : ''}${delta}` : '—'}</span>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-function SegmentedFunnel() {
-  return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, marginBottom: 12 }}>
-      {[{ label: 'New Users', data: FUNNEL_NEW_USERS, color: RED }, { label: 'Returning Users', data: FUNNEL_RETURNING_USERS, color: GREEN }].map(({ label, data, color }) => (
-        <div key={label} style={{ borderRadius: 10, overflow: 'hidden', border: `1px solid ${color}22`, background: `${color}05` }}>
-          <div style={{ padding: '8px 12px', borderBottom: `1px solid ${color}14`, background: `${color}08` }}>
-            <p style={{ fontFamily: 'var(--mono)', fontSize: 9, fontWeight: 700, color, textTransform: 'uppercase', margin: 0 }}>{label}</p>
-          </div>
-          <div style={{ padding: '10px 12px' }}>
-            {data.slice(0,5).map((s,i) => (
-              <div key={s.stage} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: i < 4 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
-                <span style={{ fontSize: 11, color: 'var(--ink3)' }}>{s.stage}</span>
-                <span style={{ fontFamily: 'var(--mono)', fontSize: 11, fontWeight: s.alert ? 700 : 400, color: s.alert ? RED : 'var(--ink2)' }}>{s.pct?.toFixed(1)}%</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
+// ── Funnel rendering handled by shared FunnelChart component ─────────────────
+// FunnelComparison and SegmentedFunnel removed — use FunnelChart instead.
 
 // ── Collapsed milestone card ───────────────────────────────────────────────────
 function CollapsedMilestoneCard({ milestone, index, conclusion, isExpanded, onToggle }) {
   const color = MILESTONE_COLORS[index % MILESTONE_COLORS.length];
   const DataSnapshot = () => {
     if (index === 1) return <div style={{ marginTop: 12, pointerEvents: 'none', opacity: 0.8 }}><KpiScorecard onMetricClick={() => {}} clickedMetric={null} interactive={false} /></div>;
-    if (index === 2) return <div style={{ marginTop: 12, pointerEvents: 'none', opacity: 0.8 }}><FunnelComparison thisWeek={FUNNEL_THIS_WEEK} lastWeek={FUNNEL_LAST_WEEK} title="Conversion funnel · reference" /><SegmentedFunnel /></div>;
+    if (index === 2) return <div style={{ marginTop: 12, pointerEvents: 'none', opacity: 0.8 }}><FunnelChart thisWeek={FUNNEL_THIS_WEEK} lastWeek={FUNNEL_LAST_WEEK} title="Conversion funnel · reference" showSegmented newUsers={FUNNEL_NEW_USERS} returning={FUNNEL_RETURNING_USERS} /></div>;
     if (index === 3) return <div style={{ marginTop: 12, pointerEvents: 'none', opacity: 0.8 }}><CohortMatrix /></div>;
     return null;
   };
@@ -625,11 +578,11 @@ function MilestoneFunnel({ onComplete, callArjunMilestone, onPriyaPing }) {
             {arjunOpened && <ArjunQueryTerminal queryData={funnelQ} onComplete={() => setFunnelReady(true)} pulseColor={BLUE} />}
             {funnelReady && (
               <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-                <FunnelComparison thisWeek={FUNNEL_THIS_WEEK} lastWeek={FUNNEL_LAST_WEEK} title="Conversion funnel · This week vs Last week" />
+                <FunnelChart thisWeek={FUNNEL_THIS_WEEK} lastWeek={FUNNEL_LAST_WEEK} title="Conversion funnel · This week vs Last week" />
                 <ArjunQueryTerminal queryData={segQ} onComplete={() => setSegmentReady(true)} pulseColor={BLUE} />
               </motion.div>
             )}
-            {segmentReady && <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}><SegmentedFunnel /></motion.div>}
+            {segmentReady && <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}><FunnelChart thisWeek={FUNNEL_NEW_USERS} lastWeek={[]} title="" showSegmented newUsers={FUNNEL_NEW_USERS} returning={FUNNEL_RETURNING_USERS} /></motion.div>}
             <AnimatePresence>{concept && <ConceptChip concept={concept} onDismiss={() => setConcept(null)} />}</AnimatePresence>
             {segmentReady && !showSynthesis && <ChatInput value={input} onChange={setInput} onSend={send} loading={loading} placeholder={MILESTONES[2].hint1} />}
             <AnimatePresence>
