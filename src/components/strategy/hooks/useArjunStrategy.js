@@ -267,8 +267,24 @@ function detectLogicError(text) {
   return null;
 }
 
-function getMilestoneResponse(milestoneId, userMessage, attemptCount) {
+// ── Config-driven milestone routing ──────────────────────────────────────────
+// Reads correctSignals and maxAttempts from milestoneConfig (set in swiggy.js).
+// Falls back to legacy hardcoded routing for milestones not yet in config.
+function getMilestoneResponse(milestoneIdOrConfig, userMessage, attemptCount) {
   const lower = userMessage.toLowerCase();
+
+  // If a config object is passed (new engine path), use config-driven routing
+  if (typeof milestoneIdOrConfig === 'object' && milestoneIdOrConfig !== null) {
+    const config = milestoneIdOrConfig;
+    const caught = config.correctSignals?.some(s => lower.includes(s));
+    if (caught) return { key: config.successKey || 'fallback', advance: true };
+    if (attemptCount >= (config.maxAttempts || 3))
+      return { key: config.successKey || 'fallback', advance: true, forceAdvance: true };
+    return { key: 'fallback', advance: false };
+  }
+
+  // Legacy string-id path — preserved for backward compat during migration
+  const milestoneId = milestoneIdOrConfig;
 
   switch (milestoneId) {
     case 'scope': {
@@ -276,7 +292,6 @@ function getMilestoneResponse(milestoneId, userMessage, attemptCount) {
       const geoSignals  = ['location','city','north bangalore','geography','region','platform-wide','platform wide','local','specific','where','cities','other city'];
       const hasTime = timeSignals.some(s => lower.includes(s));
       const hasGeo  = geoSignals.some(s  => lower.includes(s));
-
       if (hasTime && hasGeo) return { key: 'triage_q1', advance: true, responseOverride: "Good — you're locking down both dimensions before touching data. Geography narrows the hypothesis space, the baseline anchors the severity. That's the minimum viable scope. Let's pull the numbers." };
       if (hasTime && !hasGeo) {
         if (attemptCount >= 2) return { key: 'triage_q1', advance: true, responseOverride: "Fair to question the baseline, but Priya's WoW numbers are firm. The real wildcard is geography — is this North Bangalore or platform-wide? I'll treat it as North Bangalore for now and we can revisit." };
@@ -289,7 +304,6 @@ function getMilestoneResponse(milestoneId, userMessage, attemptCount) {
       if (attemptCount >= 3) return { key: 'triage_q1', advance: true, forceAdvance: true, responseOverride: "Let me anchor the scope for us: the drop is confirmed in North Bangalore specifically, measured WoW against last Tuesday. Those two facts change everything about where we look next." };
       return { key: 'triage_scope_incomplete', advance: false, responseOverride: "Before any data — two things need to be locked down: is this drop isolated to North Bangalore or platform-wide? And are we measuring against last Tuesday or a rolling average? Which of those is less clear to you?" };
     }
-
     case 'dashboard': {
       const goodSignals = ['conversion','lead','indicator','cause'];
       const isGood = goodSignals.some(s => lower.includes(s));
@@ -297,7 +311,6 @@ function getMilestoneResponse(milestoneId, userMessage, attemptCount) {
       if (attemptCount >= 3) return { key: 'triage_hypothesis_right', advance: true, forceAdvance: true };
       return { key: 'triage_hypothesis_wrong', advance: false };
     }
-
     case 'hypothesis': {
       const funnelSignals = ['funnel','conversion','stage','step','journey','drop-off','where'];
       const supplySignals = ['supply','restaurant','availability','biryani','menu'];
@@ -309,7 +322,6 @@ function getMilestoneResponse(milestoneId, userMessage, attemptCount) {
       if (attemptCount >= 3) return { key: 'funnel_shown', advance: true, forceAdvance: true, queryType: 'generic' };
       return { key: 'triage_hypothesis_wrong', advance: false };
     }
-
     case 'funnel': {
       const goodSignals = ['add to cart','cart','44','55','anomal','unusual','drop'];
       const isGood = goodSignals.some(s => lower.includes(s));
@@ -318,7 +330,6 @@ function getMilestoneResponse(milestoneId, userMessage, attemptCount) {
       if (attemptCount >= 2) return { key: 'cart_drop_correct', advance: false };
       return { key: 'wrong_conclusion', advance: false };
     }
-
     case 'rootcause': {
       const whatSignals = ['biryani','restaurant','supply','availability','new user','week 3','week 4','menu','selection'];
       const whySignals  = ['because','which means','causing','leads to','result','since','due to','explains','therefore'];
@@ -330,16 +341,14 @@ function getMilestoneResponse(milestoneId, userMessage, attemptCount) {
       if (attemptCount >= 2) return { key: 'cohort_shown',   advance: false };
       return { key: 'wrong_conclusion', advance: false };
     }
-
     case 'impact': {
-      const hasNumbers  = /[₹\d]/.test(userMessage) && (lower.includes('cr') || lower.includes('lakh') || lower.includes('l'));
+      const hasNumbers  = /[₹d]/.test(userMessage) && (lower.includes('cr') || lower.includes('lakh') || lower.includes('l'));
       const hasRecovery = lower.includes('65') || lower.includes('recovery') || lower.includes('realistic');
       if (hasNumbers && hasRecovery) return { key: 'impact_correct', advance: true };
       if (hasNumbers && !hasRecovery) return { key: 'impact_shown', advance: false, conceptTrigger: 'impact_sizing' };
       if (attemptCount >= 3) return { key: 'impact_correct', advance: true, forceAdvance: true };
       return { key: 'impact_shown', advance: false };
     }
-
     case 'respond': {
       const first100 = lower.slice(0, 100);
       const isGood = ['biryani','supply','availability','restaurant','drop'].some(s => first100.includes(s));
@@ -347,15 +356,13 @@ function getMilestoneResponse(milestoneId, userMessage, attemptCount) {
       if (attemptCount >= 3) return { key: 'memo_ready', advance: true, forceAdvance: true };
       return { key: 'fallback', advance: false, conceptTrigger: 'pyramid_principle' };
     }
-
     case 'p2_dirty': {
-      const catchSignals = ['session','total sessions','partition','zone','east','coverage','missing','sanity','check','sample','population','baseline','weird','suspicious','doesn\'t add','inconsistent','low','small'];
+      const catchSignals = ['session','total sessions','partition','zone','east','coverage','missing','sanity','check','sample','population','baseline','weird','suspicious',"doesn't add",'inconsistent','low','small'];
       const caught = catchSignals.some(s => lower.includes(s));
       if (caught) return { key: 'p2_good_catch', advance: true, responseOverride: "Good catch. That's exactly the kind of sanity check that separates a senior analyst from a data-puller. The session count mismatch was the tell — South Mumbai East zone dropped out of the ETL partition. Reloading the full dataset now." };
       if (attemptCount >= 2) return { key: 'p2_dirty_reveal', advance: true, forceAdvance: true, responseOverride: "I'll flag this before you go further — the dataset has an incomplete partition. South Mumbai East is missing (~23,600 sessions). This is a common ETL bug. Any metric you calculated on the dirty data is off by ~24%. Reloading the full set." };
       return { key: 'p2_dirty_hint', advance: false, responseOverride: "Before you interpret — look at total sessions. 71,200 this Thursday vs 94,100 last Thursday. That's a 24% drop. South Mumbai's population didn't change. What could explain that?" };
     }
-
     default:
       return { key: 'fallback', advance: false };
   }
