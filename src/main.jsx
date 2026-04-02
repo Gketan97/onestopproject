@@ -7,6 +7,9 @@ import { BrowserRouter } from 'react-router-dom';
 import App from './App.jsx';
 import { ThemeProvider } from './hooks/useTheme.jsx';
 import './index.css';
+import { initAnalytics } from './analytics/posthog.js';
+
+initAnalytics();
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
