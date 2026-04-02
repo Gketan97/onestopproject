@@ -14,7 +14,6 @@ import {
 } from '../data/swiggyStrategyData.js';
 import { useArjunStrategy } from '../hooks/useArjunStrategy.js';
 import { track } from '../../../analytics/posthog.js';
-import { SWIGGY_CASE } from '../../../data/cases/swiggy.js';
 import MilestoneRunner   from '../engine/MilestoneRunner.jsx';
 import MilestoneRespond  from '../engine/MilestoneRespond.jsx';
 import MilestoneStrip    from './MilestoneStrip.jsx';
@@ -30,13 +29,16 @@ const MILESTONE_COLORS = [ORANGE, BLUE, PURPLE, GREEN, RED, PURPLE, '#F9E2AF'];
 const MILESTONE_PULSE_COLORS = { 0: ORANGE, 1: ORANGE, 2: BLUE, 3: PURPLE, 4: GREEN, 5: RED };
 
 // Enrich caseData with funnel arrays MilestoneRunner's VizBlock needs
-const CASE_DATA = {
-  ...SWIGGY_CASE.data,
-  funnelThisWeek:  FUNNEL_THIS_WEEK,
-  funnelLastWeek:  FUNNEL_LAST_WEEK,
-  funnelNewUsers:  FUNNEL_NEW_USERS,
-  funnelReturning: FUNNEL_RETURNING_USERS,
-};
+// Falls back to Swiggy data if no caseConfig prop passed (backward compat)
+function buildCaseData(caseConfig) {
+  return {
+    ...(caseConfig?.data || {}),
+    funnelThisWeek:  FUNNEL_THIS_WEEK,
+    funnelLastWeek:  FUNNEL_LAST_WEEK,
+    funnelNewUsers:  FUNNEL_NEW_USERS,
+    funnelReturning: FUNNEL_RETURNING_USERS,
+  };
+}
 
 // ── Log updating animation ────────────────────────────────────────────────────
 function LogUpdating() {
@@ -77,11 +79,15 @@ function CollapsedMilestoneCard({ milestone, index, conclusion, isExpanded, onTo
 }
 
 // ── Main orchestrator ─────────────────────────────────────────────────────────
-export default function ArjunSocraticChat({ phase, onVizRequest, onAdvance, onMilestoneAdvance, onExpertAnalysesUpdate, onLogUpdate }) {
+export default function ArjunSocraticChat({ phase, caseConfig: caseConfigProp, onVizRequest, onAdvance, onMilestoneAdvance, onExpertAnalysesUpdate, onLogUpdate }) {
   const [activeMilestoneIndex, setActiveMilestoneIndex] = useState(0);
   const [log, setLog]                                   = useState([]);
   const [expandedCards, setExpandedCards]               = useState(new Set());
   const [updating, setUpdating]                         = useState(false);
+
+  const caseConfig = caseConfigProp || null;
+  const CASE_DATA  = buildCaseData(caseConfig);
+  const milestones = caseConfig?.milestones || MILESTONES;
 
   const { callArjunMilestone, getExpertAnalyses } = useArjunStrategy();
   const milestoneRefs = useRef([]);
@@ -91,9 +97,9 @@ export default function ArjunSocraticChat({ phase, onVizRequest, onAdvance, onMi
     feedBottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
   }, [log, activeMilestoneIndex, updating]);
 
-  const completedIndices = log.map(e => MILESTONES[e.index]?.id).filter(Boolean);
+  const completedIndices = log.map(e => milestones[e.index]?.id).filter(Boolean);
   const currentPulseColor = MILESTONE_PULSE_COLORS[activeMilestoneIndex] || ORANGE;
-  const currentMilestone  = MILESTONES[activeMilestoneIndex];
+  const currentMilestone  = milestones[activeMilestoneIndex];
 
   const handleComplete = useCallback((index, conclusion) => {
     setUpdating(true);
@@ -111,11 +117,11 @@ export default function ArjunSocraticChat({ phase, onVizRequest, onAdvance, onMi
         onLogUpdate?.(next);
         return next;
       });
-      if (index < MILESTONES.length - 1) {
+      if (index < milestones.length - 1) {
         const nextIndex = index + 1;
         setTimeout(() => {
           setActiveMilestoneIndex(nextIndex);
-          const nextMilestone = MILESTONES[nextIndex];
+          const nextMilestone = milestones[nextIndex];
           if (nextMilestone) onMilestoneAdvance?.(nextMilestone.title.toUpperCase(), nextIndex, conclusion);
         }, 400);
       } else {
@@ -139,7 +145,11 @@ export default function ArjunSocraticChat({ phase, onVizRequest, onAdvance, onMi
     : '# analytics-incident';
 
   // Map milestone index to prediction config
-  const PREDICTION_MAP = { 1: PREDICTIONS.dashboard, 2: PREDICTIONS.funnel, 3: PREDICTIONS.rootcause };
+  const PREDICTION_MAP = {
+    1: caseConfig?.predictions?.dashboard || PREDICTIONS.dashboard,
+    2: caseConfig?.predictions?.funnel    || PREDICTIONS.funnel,
+    3: caseConfig?.predictions?.rootcause || PREDICTIONS.rootcause,
+  };
 
   return (
     <div>
@@ -162,7 +172,7 @@ export default function ArjunSocraticChat({ phase, onVizRequest, onAdvance, onMi
       {log.map((entry) => (
         <div key={entry.index} ref={el => { milestoneRefs.current[entry.index] = el; }}>
           <CollapsedMilestoneCard
-            milestone={MILESTONES[entry.index]}
+            milestone={milestones[entry.index]}
             index={entry.index}
             conclusion={entry.conclusion}
             isExpanded={expandedCards.has(entry.index)}
@@ -196,7 +206,7 @@ export default function ArjunSocraticChat({ phase, onVizRequest, onAdvance, onMi
           {/* Milestones 0–4 via MilestoneRunner */}
           {activeMilestoneIndex <= 4 && (
             <MilestoneRunner
-              config={MILESTONES[activeMilestoneIndex]}
+              config={milestones[activeMilestoneIndex]}
               caseData={CASE_DATA}
               onComplete={(c) => handleComplete(activeMilestoneIndex, c)}
               callArjunMilestone={callArjunMilestone}
