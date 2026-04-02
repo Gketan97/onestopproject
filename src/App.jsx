@@ -6,6 +6,7 @@ import { getAuth, onAuthStateChanged, signInAnonymously } from 'firebase/auth';
 
 // Critical path — loaded immediately
 import HomePage        from './components/pages/HomePage.jsx';
+import { FullPageErrorBoundary } from './components/ErrorBoundary.jsx';
 import Header          from './components/layout/Header.jsx';
 import MobileHeader    from './components/layout/MobileHeader.jsx';
 import MobileNav       from './components/layout/MobileNav.jsx';
@@ -73,8 +74,9 @@ const App = () => {
       {!isFullScreen && <MobileNav />}
 
       <main className="flex-grow">
-        <Suspense fallback={<PageLoader />}>
-          <Routes>
+        <FullPageErrorBoundary>
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
             <Route path="/"                       element={<HomePage />} />
             <Route path="/case-studies"           element={<CaseStudiesPage />} /> 
             <Route path="/jobs"                   element={<JobsPage />} />
@@ -82,8 +84,9 @@ const App = () => {
             <Route path="/strategy/:caseId"       element={<StrategyCase />} />
             <Route path="/become-referrer"        element={<ReferrerForm />} />
             <Route path="/portfolio/:portfolioId" element={<PortfolioPage />} />
-          </Routes>
-        </Suspense>
+            </Routes>
+          </Suspense>
+        </FullPageErrorBoundary>
       </main>
 
       {!isFullScreen && (

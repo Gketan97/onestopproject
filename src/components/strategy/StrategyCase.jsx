@@ -24,6 +24,7 @@ import DecisionLog               from './components/DecisionLog.jsx';
 import DesktopGate               from './components/DesktopGate.jsx';
 import Phase3Teaser              from './components/Phase3Teaser.jsx';
 import PostCompletionNext        from './components/PostCompletionNext.jsx';
+import { ErrorBoundary }          from '../ErrorBoundary.jsx';
 
 const ORANGE = '#FC8019';
 const BLUE   = '#4F80FF';
@@ -306,7 +307,9 @@ export default function StrategyCase() {
           <AnimatePresence mode="wait">
             {!milestonesComplete && (
               <motion.div key="chat" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}>
-                <ArjunSocraticChat phase="triage" onVizRequest={() => {}} onAdvance={handleMilestonesComplete} onMilestoneAdvance={handleMilestoneAdvance} onExpertAnalysesUpdate={handleExpertAnalysesUpdate} onLogUpdate={setInvestigationLog} />
+                <ErrorBoundary key="arjun-chat">
+                  <ArjunSocraticChat phase="triage" onVizRequest={() => {}} onAdvance={handleMilestonesComplete} onMilestoneAdvance={handleMilestoneAdvance} onExpertAnalysesUpdate={handleExpertAnalysesUpdate} onLogUpdate={setInvestigationLog} />
+                </ErrorBoundary>
               </motion.div>
             )}
             {milestonesComplete && !retrievalComplete && (
@@ -318,7 +321,9 @@ export default function StrategyCase() {
         </CognitiveWorkbenchShell>
         <AnimatePresence>
           {showDecisionLog && (
+            <ErrorBoundary key="decision-log">
             <DecisionLog investigationLog={investigationLog} expertAnalyses={expertAnalyses} scenario={{ company: 'Swiggy', city: 'North Bangalore', period: 'Tuesday WoW', drop: '8.3%', category: 'Biryani' }} onClose={() => setShowDecisionLog(false)} />
+          </ErrorBoundary>
           )}
         </AnimatePresence>
       </>

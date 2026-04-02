@@ -25,6 +25,7 @@ import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Sparkles, AlertTriangle, ChevronRight, ArrowRight } from 'lucide-react';
 import { useArjunStrategy } from '../hooks/useArjunStrategy.js';
+import { ErrorBoundary } from '../../ErrorBoundary.jsx';
 import CohortMatrix from './CohortMatrix.jsx';
 import DirtyDataTrap from './DirtyDataTrap.jsx';
 import ExecutiveMemo from './ExecutiveMemo.jsx';
@@ -364,10 +365,12 @@ export default function AnalysisWorkbench({ onAdvance, onImpactSized }) {
 
       {/* ── Gate A: Dirty Data Trap ── */}
       <div style={{ marginBottom: 20 }}>
-        <DirtyDataTrap
-          onDataVerified={handleDataVerified}
-          onHardModeTriggered={(wasTriggered) => setHardModeHit(wasTriggered)}
-        />
+        <ErrorBoundary key="dirty-data-trap">
+          <DirtyDataTrap
+            onDataVerified={handleDataVerified}
+            onHardModeTriggered={(wasTriggered) => setHardModeHit(wasTriggered)}
+          />
+        </ErrorBoundary>
       </div>
 
       {/* ── Gate A unlocked: NL query interface ── */}
@@ -555,11 +558,13 @@ export default function AnalysisWorkbench({ onAdvance, onImpactSized }) {
               </span>
               <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.06)' }} />
             </div>
-            <ExecutiveMemo
-              investigationLog={p2Log}
-              scenario={P2_SCENARIO}
-              onComplete={handleMemoComplete}
-            />
+            <ErrorBoundary key="executive-memo">
+              <ExecutiveMemo
+                investigationLog={p2Log}
+                scenario={P2_SCENARIO}
+                onComplete={handleMemoComplete}
+              />
+            </ErrorBoundary>
           </motion.div>
         )}
       </AnimatePresence>
