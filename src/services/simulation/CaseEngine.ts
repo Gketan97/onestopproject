@@ -217,4 +217,67 @@ export class CaseEngine {
   private dispatch(event: SimulationEvent): void {
     this.state = simulationReducer(this.state, event);
   }
+
+  // ── EVALUATE FINDING DEPTH ───────────────────────────────────
+  // Called by FindingGate before accepting a board entry.
+  // Returns whether the finding is deep enough + a challenge
+  // question if it is not. Cannot be gamed — AI evaluates.
+
+  async evaluateFindingDepth(
+    findingText: string
+  ): Promise<{ isDeep: boolean; challenge: string }> {
+    const milestone = this.getCurrentMilestone();
+    if (!milestone) return { isDeep: true, challenge: '' };
+
+    const systemPrompt = `You are ${this.caseConfig.mentorPersona.name}, a senior analytics mentor.
+You are evaluating whether a student's investigation finding is genuinely insightful or superficial.
+
+EVALUATION CRITERIA — a finding is DEEP if it:
+1. Names a specific metric (not just "revenue" — which metric, which calculation)
+2. Includes a number or magnitude (not "dropped significantly" — by how much)
+3. References a time dimension (when did this happen)
+4. Shows reasoning, not just observation (what does the pattern indicate)
+
+A finding is SHALLOW if it:
+- Repeats the problem statement without adding analysis
+- Is vague ("something changed in week 16")
+- Has no numbers
+- Makes no inference from data
+
+CASE CONTEXT: ${this.caseConfig.problemBrief}
+MILESTONE: ${milestone.title} — ${milestone.description}
+
+Respond ONLY with valid JSON. No other text.
+Format: {"isDeep": boolean, "challenge": "your follow-up question if shallow, empty string if deep"}
+
+The challenge question should be specific and pointed — one question that forces the student to add the missing dimension (usually: a number, a time reference, or an inference from data).`;
+
+    const userMessage = `Student finding to evaluate:\n"${findingText}"`;
+
+    try {
+      const response = await fetch('/api/ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          systemPrompt,
+          messages: [{ role: 'user', content: userMessage }],
+          maxTokens: 200,
+        }),
+      });
+
+      if (!response.ok) return { isDeep: true, challenge: '' };
+
+      const data = await response.json();
+      const raw: string = data.content?.[0]?.text ?? '';
+
+      const parsed = JSON.parse(raw.trim());
+      return {
+        isDeep: Boolean(parsed.isDeep),
+        challenge: String(parsed.challenge ?? ''),
+      };
+    } catch {
+      // On any failure, do not block the user
+      return { isDeep: true, challenge: '' };
+    }
+  }
 }

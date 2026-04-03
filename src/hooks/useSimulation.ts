@@ -1,15 +1,27 @@
 // ============================================================
 // useSimulation HOOK
-// React interface to CaseEngine.
-// Manages engine lifecycle, exposes actions to UI.
+// Manages CaseEngine lifecycle + milestone phase state.
+// Phase state: teach → investigate → commit per milestone.
 // ============================================================
 
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import type { AggregatedMetrics, CaseConfig, SimulationState } from '@/types';
+import type {
+  AggregatedMetrics,
+  CaseConfig,
+  MilestonePhaseState,
+  SimulationState,
+} from '@/types';
 import { CaseEngine } from '@/services/simulation/CaseEngine';
 import type { EngineResponse } from '@/services/simulation/CaseEngine';
+import type { DepthEvaluation } from '@/components/simulator/FindingGate';
+import {
+  createInitialPhaseState,
+  advanceToInvestigate,
+  advanceToCommit,
+  acceptCommit,
+} from '@/services/simulation/stateMachine';
 
 // ─────────────────────────────────────────────────────────────
 // TYPES
@@ -17,17 +29,26 @@ import type { EngineResponse } from '@/services/simulation/CaseEngine';
 
 export interface SimulationHookState {
   simulation: SimulationState | null;
+  // Phase state per milestone ID
+  phaseStates: Record<string, MilestonePhaseState>;
   aiText: string;
   lastMetrics: AggregatedMetrics | null;
   canAdvance: boolean;
   isThinking: boolean;
   isQueryRunning: boolean;
+  isEvaluatingDepth: boolean;
   error: string | null;
   totalTokensUsed: number;
 }
 
 export interface UseSimulationReturn {
   state: SimulationHookState;
+  // Phase transitions
+  handleCheckpointPassed: (milestoneId: string) => void;
+  handleRequestCommit: (milestoneId: string) => void;
+  handleFindingAccepted: (milestoneId: string, text: string) => void;
+  handleEvaluateDepth: (text: string) => Promise<DepthEvaluation>;
+  // Investigation actions
   sendMessage: (text: string) => Promise<void>;
   runQuery: (queryId: string) => Promise<AggregatedMetrics | null>;
   advanceMilestone: () => void;
@@ -45,11 +66,13 @@ export function useSimulation(
 
   const [state, setState] = useState<SimulationHookState>({
     simulation: null,
+    phaseStates: {},
     aiText: '',
     lastMetrics: null,
     canAdvance: false,
     isThinking: false,
     isQueryRunning: false,
+    isEvaluatingDepth: false,
     error: null,
     totalTokensUsed: 0,
   });
@@ -59,10 +82,15 @@ export function useSimulation(
   useEffect(() => {
     if (!caseConfig) return;
 
+    const initialPhaseStates: Record<string, MilestonePhaseState> = {};
+    for (const milestone of caseConfig.milestones) {
+      initialPhaseStates[milestone.id] = createInitialPhaseState();
+    }
+
     const engine = new CaseEngine({
       caseConfig,
-      onStateChange: (newState) => {
-        setState(prev => ({ ...prev, simulation: newState }));
+      onStateChange: (newSimState) => {
+        setState(prev => ({ ...prev, simulation: newSimState }));
       },
     });
 
@@ -71,6 +99,7 @@ export function useSimulation(
     setState(prev => ({
       ...prev,
       simulation: engine.getState(),
+      phaseStates: initialPhaseStates,
       error: null,
     }));
 
@@ -78,6 +107,71 @@ export function useSimulation(
       engineRef.current = null;
     };
   }, [caseConfig]);
+
+  // ── PHASE TRANSITIONS ────────────────────────────────────────
+
+  const handleCheckpointPassed = useCallback((milestoneId: string) => {
+    setState(prev => ({
+      ...prev,
+      phaseStates: {
+        ...prev.phaseStates,
+        [milestoneId]: advanceToInvestigate(
+          prev.phaseStates[milestoneId] ?? createInitialPhaseState()
+        ),
+      },
+    }));
+  }, []);
+
+  const handleRequestCommit = useCallback((milestoneId: string) => {
+    setState(prev => ({
+      ...prev,
+      phaseStates: {
+        ...prev.phaseStates,
+        [milestoneId]: advanceToCommit(
+          prev.phaseStates[milestoneId] ?? createInitialPhaseState()
+        ),
+      },
+    }));
+  }, []);
+
+  const handleFindingAccepted = useCallback(
+    (milestoneId: string, text: string) => {
+      setState(prev => ({
+        ...prev,
+        phaseStates: {
+          ...prev.phaseStates,
+          [milestoneId]: acceptCommit(
+            prev.phaseStates[milestoneId] ?? createInitialPhaseState(),
+            text
+          ),
+        },
+        canAdvance: true,
+      }));
+    },
+    []
+  );
+
+  // ── DEPTH EVALUATION ─────────────────────────────────────────
+
+  const handleEvaluateDepth = useCallback(
+    async (text: string): Promise<DepthEvaluation> => {
+      if (!engineRef.current) {
+        return { isDeep: true, challenge: '' };
+      }
+
+      setState(prev => ({ ...prev, isEvaluatingDepth: true }));
+
+      try {
+        const result = await engineRef.current.evaluateFindingDepth(text);
+        return result;
+      } catch {
+        return { isDeep: true, challenge: '' };
+      } finally {
+        setState(prev => ({ ...prev, isEvaluatingDepth: false }));
+      }
+    },
+    []
+  );
 
   // ── SEND MESSAGE ────────────────────────────────────────────
 
@@ -95,7 +189,6 @@ export function useSimulation(
         simulation: result.state,
         aiText: result.aiText,
         lastMetrics: result.metricsUsed,
-        canAdvance: result.canAdvance,
         isThinking: false,
         totalTokensUsed: prev.totalTokensUsed + result.tokensUsed,
       }));
@@ -142,16 +235,24 @@ export function useSimulation(
   // ── ADVANCE MILESTONE ────────────────────────────────────────
 
   const advanceMilestone = useCallback(() => {
-    if (!engineRef.current) return;
+    if (!engineRef.current || !caseConfig) return;
 
     try {
-      const newState = engineRef.current.advanceMilestone();
+      const newSimState = engineRef.current.advanceMilestone();
+      const nextMilestoneId = newSimState.currentMilestoneId;
+
       setState(prev => ({
         ...prev,
-        simulation: newState,
+        simulation: newSimState,
         canAdvance: false,
         lastMetrics: null,
         aiText: '',
+        // Ensure next milestone has a phase state
+        phaseStates: {
+          ...prev.phaseStates,
+          [nextMilestoneId]:
+            prev.phaseStates[nextMilestoneId] ?? createInitialPhaseState(),
+        },
       }));
     } catch (err) {
       setState(prev => ({
@@ -159,24 +260,43 @@ export function useSimulation(
         error: err instanceof Error ? err.message : 'Cannot advance milestone',
       }));
     }
-  }, []);
+  }, [caseConfig]);
 
   // ── RESET ───────────────────────────────────────────────────
 
   const reset = useCallback(() => {
-    if (!engineRef.current) return;
-    const newState = engineRef.current.reset();
+    if (!engineRef.current || !caseConfig) return;
+
+    const newSimState = engineRef.current.reset();
+
+    const freshPhaseStates: Record<string, MilestonePhaseState> = {};
+    for (const milestone of caseConfig.milestones) {
+      freshPhaseStates[milestone.id] = createInitialPhaseState();
+    }
+
     setState({
-      simulation: newState,
+      simulation: newSimState,
+      phaseStates: freshPhaseStates,
       aiText: '',
       lastMetrics: null,
       canAdvance: false,
       isThinking: false,
       isQueryRunning: false,
+      isEvaluatingDepth: false,
       error: null,
       totalTokensUsed: 0,
     });
-  }, []);
+  }, [caseConfig]);
 
-  return { state, sendMessage, runQuery, advanceMilestone, reset };
+  return {
+    state,
+    handleCheckpointPassed,
+    handleRequestCommit,
+    handleFindingAccepted,
+    handleEvaluateDepth,
+    sendMessage,
+    runQuery,
+    advanceMilestone,
+    reset,
+  };
 }

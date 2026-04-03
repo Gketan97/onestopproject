@@ -333,3 +333,43 @@ export interface MistakePattern {
   trigger: (board: InvestigationBoard, metrics: AggregatedMetrics) => boolean;
   feedback: string;
 }
+
+// ------------------------------------------------------------
+// MILESTONE PHASE SYSTEM
+// Each milestone has 3 phases: teach → investigate → commit
+// User cannot skip phases. Quality gate on commit.
+// ------------------------------------------------------------
+
+export type MilestonePhase = 'teach' | 'investigate' | 'commit';
+
+export interface MCQOption {
+  id: string;
+  text: string;
+  isCorrect: boolean;
+  explanation: string; // shown after selection — right or wrong
+}
+
+export interface TeachingConcept {
+  heading: string;
+  body: string;           // plain text, max 3 sentences
+  analogy?: string;       // optional real-world hook
+}
+
+export interface MilestoneTeachingContent {
+  milestoneType: MilestoneType;
+  arjunIntro: string;     // Arjun's opening in his voice
+  concepts: TeachingConcept[]; // max 3
+  checkpointQuestion: string;
+  options: MCQOption[];   // exactly 3-4
+  investigationNudge: string; // Arjun's first message when investigation opens
+  commitPrompt: string;   // what Arjun asks user to document
+  commitDepthQuestion: string; // follow-up if entry is too shallow
+}
+
+export interface MilestonePhaseState {
+  phase: MilestonePhase;
+  checkpointPassed: boolean;
+  commitText: string;          // user's written finding
+  commitAccepted: boolean;     // passed depth gate
+  depthChallengeShown: boolean; // has Arjun challenged shallow entry
+}

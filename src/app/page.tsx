@@ -1,3 +1,4 @@
+import Link from 'next/link';
 export default function Home() {
   return (
     <main style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '24px', padding: '40px' }}>
@@ -14,9 +15,9 @@ export default function Home() {
         <p style={{ color: 'var(--ink3)', fontSize: '15px', lineHeight: 1.7, marginBottom: '32px' }}>
           Master analytical judgment through real business investigations.
         </p>
-        <a href="/case/makemytrip_revenue_leak" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 24px', background: 'var(--orange)', color: '#fff', borderRadius: 'var(--radius-md)', fontWeight: 600, fontSize: '14px', textDecoration: 'none' }}>
+        <Link href="/case/makemytrip_revenue_leak" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 24px', background: 'var(--orange)', color: '#fff', borderRadius: 'var(--radius-md)', fontWeight: 600, fontSize: '14px', textDecoration: 'none' }}>
           Start MakeMyTrip Case →
-        </a>
+        </Link>
       </div>
     </main>
   );

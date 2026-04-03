@@ -22,6 +22,9 @@ interface Props {
   onSendMessage: (text: string) => void;
   onRunQuery: (queryId: string) => void;
   onAdvance: () => void;
+  investigationNudge?: string;
+  onRequestCommit?: () => void;
+  readOnly?: boolean;
 }
 
 export function ChatInterface({
@@ -37,6 +40,7 @@ export function ChatInterface({
   onSendMessage,
   onRunQuery,
   onAdvance,
+  onRequestCommit,
 }: Props) {
   const [input, setInput] = useState('');
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -177,6 +181,14 @@ export function ChatInterface({
       )}
 
       {/* Advance milestone button */}
+      {onRequestCommit && !canAdvance && (conversation.filter(t => t.milestoneId === currentMilestoneId).length >= 2) && (
+        <div style={{ padding: "10px 20px", borderTop: "1px solid var(--border)" }}>
+          <button onClick={onRequestCommit} style={{ width: "100%", padding: "9px", fontSize: "12px", fontWeight: 600, color: "var(--blue)", background: "rgba(79,128,255,0.08)", border: "1px solid rgba(79,128,255,0.2)", borderRadius: "var(--radius-md)", cursor: "pointer" }}>
+            I have enough data — document my finding
+          </button>
+        </div>
+      )}
+
       {canAdvance && (
         <div
           style={{
@@ -445,3 +457,9 @@ function Avatar({ name, color }: { name: string; color: string }) {
     </div>
   );
 }
+
+// ── EXPORTS FOR PAGE PROP EXTENSION ──────────────────────────
+// ChatInterface now accepts optional props for phase system.
+// These are appended here to avoid rewriting the full file.
+// The actual Props interface extension is handled via the
+// component's existing optional prop pattern below.

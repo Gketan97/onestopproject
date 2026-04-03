@@ -322,3 +322,62 @@ export function getCurrentMilestoneConversation(state: SimulationState): Convers
 function getMilestoneIds(state: SimulationState): string[] {
   return Object.keys(state.milestoneStates);
 }
+
+// ------------------------------------------------------------
+// MILESTONE PHASE TRACKING
+// Tracks teach → investigate → commit phase per milestone.
+// Stored outside SimulationState to keep reducer pure.
+// Managed by CaseEngine, persisted in useSimulation hook.
+// ------------------------------------------------------------
+
+import type { MilestonePhase, MilestonePhaseState } from '@/types';
+
+export function createInitialPhaseState(): MilestonePhaseState {
+  return {
+    phase: 'teach',
+    checkpointPassed: false,
+    commitText: '',
+    commitAccepted: false,
+    depthChallengeShown: false,
+  };
+}
+
+export function advanceToInvestigate(
+  state: MilestonePhaseState
+): MilestonePhaseState {
+  return {
+    ...state,
+    phase: 'investigate',
+    checkpointPassed: true,
+  };
+}
+
+export function advanceToCommit(
+  state: MilestonePhaseState
+): MilestonePhaseState {
+  return {
+    ...state,
+    phase: 'commit',
+  };
+}
+
+export function acceptCommit(
+  state: MilestonePhaseState,
+  text: string
+): MilestonePhaseState {
+  return {
+    ...state,
+    commitText: text,
+    commitAccepted: true,
+    depthChallengeShown: false,
+  };
+}
+
+export function markDepthChallengeShown(
+  state: MilestonePhaseState
+): MilestonePhaseState {
+  return {
+    ...state,
+    depthChallengeShown: true,
+  };
+}
