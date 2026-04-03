@@ -1,33 +1,22 @@
 #!/bin/bash
 
-echo "🚀 OneStop AI Platform — Ship Command"
+echo "🚢 Ship Script — AI Case Platform"
 
-# detect current branch
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
-
-# timestamp for commit message
 TIMESTAMP=$(date "+%Y-%m-%d %H:%M")
 
-echo "📍 Branch: $BRANCH"
-echo ""
+echo "Branch: $BRANCH"
 
-echo "📦 Staging all changes..."
+COMMIT_MSG="ship: AI platform update ($TIMESTAMP)"
+
 git add -A
-
-# if nothing changed
-if git diff-index --quiet HEAD --; then
-  echo "✅ No changes detected. Nothing to ship."
-  exit 0
-fi
-
-echo "💾 Creating commit..."
-git commit -m "ship: platform update ($TIMESTAMP)"
-
-echo "⬆️ Pushing to GitHub..."
-git push origin $BRANCH
+git commit -m "$COMMIT_MSG"
+git push origin $BRANCH || {
+  echo "❌ Push failed."
+  exit 1
+}
 
 echo ""
-echo "🚢 Ship successful!"
-echo "🌐 Netlify will now automatically deploy your site."
-echo ""
-echo "Done."
+echo "🚀 Ship complete!"
+echo "Branch: $BRANCH"
+echo "Netlify should deploy shortly."
