@@ -1,0 +1,380 @@
+{
+  "caseId": "mmt_revenue_drop_v1",
+  "title": "The Revenue Leak",
+  "company": "MakeMyTrip",
+  "domain": "travel",
+  "difficulty": "senior",
+  "estimatedMinutes": 45,
+
+  "problemBrief": "MakeMyTrip's Revenue per Booking (RPB) has declined 18% over the past 6 weeks despite a 12% increase in overall traffic. The Head of Growth wants a root cause investigation and a fix proposal before the board meeting on Friday.",
+
+  "scenarioContext": "MakeMyTrip is India's largest online travel platform. You are a Senior Product Analyst embedded in the Revenue Growth team. Traffic has been climbing since a successful influencer campaign, but monetisation isn't keeping pace. The CEO flagged this in last week's all-hands.",
+
+  "investigationPaths": [
+    "customer_journey",
+    "pricing_changes",
+    "supplier_failures"
+  ],
+
+  "milestones": [
+    {
+      "id": "m1_problem_scoping",
+      "type": "problem_scoping",
+      "title": "Scope the Problem",
+      "description": "Define what is actually declining and over what time window.",
+      "order": 1,
+      "requiredPriorMilestones": [],
+      "availableQueries": ["q_revenue_trend", "q_booking_volume_trend"],
+      "scoringRubric": {
+        "problemFraming": 0.6,
+        "dataInterpretation": 0.3,
+        "hypothesisQuality": 0.1,
+        "solutionImpact": 0.0,
+        "maxScore": 100
+      },
+      "exitCondition": {
+        "minScore": 60,
+        "requiredFields": ["problem"],
+        "maxTurns": 6
+      }
+    },
+    {
+      "id": "m2_kpi_selection",
+      "type": "kpi_selection",
+      "title": "Read the KPI Dashboard",
+      "description": "Identify which KPIs are healthy, which are degraded, and which are lagging indicators.",
+      "order": 2,
+      "requiredPriorMilestones": ["m1_problem_scoping"],
+      "availableQueries": ["q_kpi_snapshot", "q_funnel_overview", "q_session_conversion"],
+      "scoringRubric": {
+        "problemFraming": 0.2,
+        "dataInterpretation": 0.6,
+        "hypothesisQuality": 0.2,
+        "solutionImpact": 0.0,
+        "maxScore": 100
+      },
+      "exitCondition": {
+        "minScore": 65,
+        "requiredFields": ["findings"],
+        "maxTurns": 8
+      }
+    },
+    {
+      "id": "m3_funnel_diagnosis",
+      "type": "funnel_diagnosis",
+      "title": "Diagnose the Funnel",
+      "description": "Identify which funnel stage has the most significant drop-off and when it started.",
+      "order": 3,
+      "requiredPriorMilestones": ["m2_kpi_selection"],
+      "availableQueries": ["q_funnel_stages", "q_funnel_weekly_trend", "q_checkout_drop"],
+      "scoringRubric": {
+        "problemFraming": 0.1,
+        "dataInterpretation": 0.5,
+        "hypothesisQuality": 0.4,
+        "solutionImpact": 0.0,
+        "maxScore": 100
+      },
+      "exitCondition": {
+        "minScore": 65,
+        "requiredFields": ["findings", "hypotheses"],
+        "maxTurns": 8
+      }
+    },
+    {
+      "id": "m4_root_cause",
+      "type": "root_cause",
+      "title": "Identify the Root Cause",
+      "description": "Narrow down to the specific system, feature, or behaviour driving the drop.",
+      "order": 4,
+      "requiredPriorMilestones": ["m3_funnel_diagnosis"],
+      "availableQueries": ["q_pricing_anomaly", "q_supplier_failure_rate", "q_dynamic_pricing_log", "q_price_at_checkout_vs_search"],
+      "scoringRubric": {
+        "problemFraming": 0.1,
+        "dataInterpretation": 0.4,
+        "hypothesisQuality": 0.5,
+        "solutionImpact": 0.0,
+        "maxScore": 100
+      },
+      "exitCondition": {
+        "minScore": 70,
+        "requiredFields": ["hypotheses", "insights"],
+        "maxTurns": 10
+      }
+    },
+    {
+      "id": "m5_impact_sizing",
+      "type": "impact_sizing",
+      "title": "Size the Impact",
+      "description": "Quantify revenue lost and estimate recovery from a fix.",
+      "order": 5,
+      "requiredPriorMilestones": ["m4_root_cause"],
+      "availableQueries": ["q_revenue_lost_estimate", "q_affected_bookings", "q_recovery_projection"],
+      "scoringRubric": {
+        "problemFraming": 0.1,
+        "dataInterpretation": 0.3,
+        "hypothesisQuality": 0.2,
+        "solutionImpact": 0.4,
+        "maxScore": 100
+      },
+      "exitCondition": {
+        "minScore": 65,
+        "requiredFields": ["insights"],
+        "maxTurns": 6
+      }
+    },
+    {
+      "id": "m6_solution_design",
+      "type": "solution_design",
+      "title": "Design the Fix",
+      "description": "Propose a solution, define success metrics, and anticipate trade-offs.",
+      "order": 6,
+      "requiredPriorMilestones": ["m5_impact_sizing"],
+      "availableQueries": [],
+      "scoringRubric": {
+        "problemFraming": 0.1,
+        "dataInterpretation": 0.1,
+        "hypothesisQuality": 0.2,
+        "solutionImpact": 0.6,
+        "maxScore": 100
+      },
+      "exitCondition": {
+        "minScore": 70,
+        "requiredFields": ["solutions"],
+        "maxTurns": 8
+      }
+    },
+    {
+      "id": "m7_stakeholder_review",
+      "type": "stakeholder_review",
+      "title": "Defend Your Analysis",
+      "description": "Present findings to a skeptical stakeholder panel and defend your conclusions.",
+      "order": 7,
+      "requiredPriorMilestones": ["m6_solution_design"],
+      "availableQueries": [],
+      "scoringRubric": {
+        "problemFraming": 0.2,
+        "dataInterpretation": 0.2,
+        "hypothesisQuality": 0.3,
+        "solutionImpact": 0.3,
+        "maxScore": 100
+      },
+      "exitCondition": {
+        "minScore": 65,
+        "requiredFields": ["solutions"],
+        "maxTurns": 10
+      }
+    }
+  ],
+
+  "groundTruth": {
+    "rootCause": "Dynamic pricing algorithm bug introduced in Week 16 causes checkout price to be 22-35% higher than search price, triggering abandonment.",
+    "affectedMetrics": ["revenue_per_booking", "checkout_conversion", "booking_completion_rate"],
+    "anomalyStartWeek": 16,
+    "expectedFindings": [
+      "checkout_drop_off_increased_week16",
+      "price_at_checkout_higher_than_search",
+      "supplier_success_rate_stable",
+      "affected_segments_domestic_hotels"
+    ]
+  },
+
+  "datasetManifest": {
+    "basePath": "/cases/makemytrip_revenue_leak/dataset/",
+    "totalRows": 81200,
+    "tables": [
+      {
+        "name": "users",
+        "file": "users.csv",
+        "rowCount": 4000,
+        "description": "Registered user accounts",
+        "schema": [
+          { "name": "user_id", "type": "VARCHAR", "nullable": false, "description": "Unique user identifier" },
+          { "name": "signup_date", "type": "DATE", "nullable": false, "description": "Account creation date" },
+          { "name": "city", "type": "VARCHAR", "nullable": true, "description": "User home city" },
+          { "name": "device_type", "type": "VARCHAR", "nullable": false, "description": "mobile | desktop | tablet" },
+          { "name": "user_segment", "type": "VARCHAR", "nullable": false, "description": "new | returning | vip" }
+        ]
+      },
+      {
+        "name": "sessions",
+        "file": "sessions.csv",
+        "rowCount": 12000,
+        "description": "User browsing sessions",
+        "schema": [
+          { "name": "session_id", "type": "VARCHAR", "nullable": false, "description": "Unique session identifier" },
+          { "name": "user_id", "type": "VARCHAR", "nullable": false, "description": "FK to users" },
+          { "name": "session_start", "type": "TIMESTAMP", "nullable": false, "description": "Session start time" },
+          { "name": "session_end", "type": "TIMESTAMP", "nullable": true, "description": "Session end time" },
+          { "name": "week_number", "type": "INTEGER", "nullable": false, "description": "ISO week 1-26" },
+          { "name": "channel", "type": "VARCHAR", "nullable": false, "description": "organic | paid | direct | referral" }
+        ]
+      },
+      {
+        "name": "search_events",
+        "file": "search_events.csv",
+        "rowCount": 18000,
+        "description": "Hotel search actions within sessions",
+        "schema": [
+          { "name": "search_id", "type": "VARCHAR", "nullable": false, "description": "Unique search event ID" },
+          { "name": "session_id", "type": "VARCHAR", "nullable": false, "description": "FK to sessions" },
+          { "name": "destination", "type": "VARCHAR", "nullable": false, "description": "Search destination city" },
+          { "name": "check_in_date", "type": "DATE", "nullable": false, "description": "Requested check-in date" },
+          { "name": "check_out_date", "type": "DATE", "nullable": false, "description": "Requested check-out date" },
+          { "name": "search_price_shown", "type": "DOUBLE", "nullable": false, "description": "Price shown at search results (INR)" },
+          { "name": "is_domestic", "type": "BOOLEAN", "nullable": false, "description": "Domestic vs international" },
+          { "name": "week_number", "type": "INTEGER", "nullable": false, "description": "ISO week 1-26" }
+        ]
+      },
+      {
+        "name": "hotel_views",
+        "file": "hotel_views.csv",
+        "rowCount": 15000,
+        "description": "Hotel detail page views",
+        "schema": [
+          { "name": "view_id", "type": "VARCHAR", "nullable": false, "description": "Unique view ID" },
+          { "name": "search_id", "type": "VARCHAR", "nullable": false, "description": "FK to search_events" },
+          { "name": "hotel_id", "type": "VARCHAR", "nullable": false, "description": "FK to suppliers" },
+          { "name": "listed_price", "type": "DOUBLE", "nullable": false, "description": "Price on hotel detail page (INR)" },
+          { "name": "week_number", "type": "INTEGER", "nullable": false, "description": "ISO week 1-26" }
+        ]
+      },
+      {
+        "name": "booking_attempts",
+        "file": "booking_attempts.csv",
+        "rowCount": 6000,
+        "description": "Checkout initiations",
+        "schema": [
+          { "name": "attempt_id", "type": "VARCHAR", "nullable": false, "description": "Unique attempt ID" },
+          { "name": "view_id", "type": "VARCHAR", "nullable": false, "description": "FK to hotel_views" },
+          { "name": "user_id", "type": "VARCHAR", "nullable": false, "description": "FK to users" },
+          { "name": "checkout_price", "type": "DOUBLE", "nullable": false, "description": "Price shown at checkout (INR)" },
+          { "name": "price_delta_pct", "type": "DOUBLE", "nullable": false, "description": "% change vs search price" },
+          { "name": "abandoned", "type": "BOOLEAN", "nullable": false, "description": "True if user did not complete booking" },
+          { "name": "abandonment_reason", "type": "VARCHAR", "nullable": true, "description": "price_shock | timeout | error | null" },
+          { "name": "week_number", "type": "INTEGER", "nullable": false, "description": "ISO week 1-26" }
+        ]
+      },
+      {
+        "name": "bookings",
+        "file": "bookings.csv",
+        "rowCount": 4000,
+        "description": "Completed bookings",
+        "schema": [
+          { "name": "booking_id", "type": "VARCHAR", "nullable": false, "description": "Unique booking ID" },
+          { "name": "attempt_id", "type": "VARCHAR", "nullable": false, "description": "FK to booking_attempts" },
+          { "name": "user_id", "type": "VARCHAR", "nullable": false, "description": "FK to users" },
+          { "name": "hotel_id", "type": "VARCHAR", "nullable": false, "description": "FK to suppliers" },
+          { "name": "booking_value", "type": "DOUBLE", "nullable": false, "description": "Final booking value (INR)" },
+          { "name": "platform_commission_pct", "type": "DOUBLE", "nullable": false, "description": "MMT commission %" },
+          { "name": "revenue", "type": "DOUBLE", "nullable": false, "description": "MMT net revenue (INR)" },
+          { "name": "week_number", "type": "INTEGER", "nullable": false, "description": "ISO week 1-26" },
+          { "name": "is_domestic", "type": "BOOLEAN", "nullable": false, "description": "Domestic vs international" }
+        ]
+      },
+      {
+        "name": "payments",
+        "file": "payments.csv",
+        "rowCount": 4000,
+        "description": "Payment events linked to bookings",
+        "schema": [
+          { "name": "payment_id", "type": "VARCHAR", "nullable": false, "description": "Unique payment ID" },
+          { "name": "booking_id", "type": "VARCHAR", "nullable": false, "description": "FK to bookings" },
+          { "name": "payment_method", "type": "VARCHAR", "nullable": false, "description": "upi | card | netbanking | wallet" },
+          { "name": "payment_status", "type": "VARCHAR", "nullable": false, "description": "success | failed | refunded" },
+          { "name": "amount", "type": "DOUBLE", "nullable": false, "description": "Payment amount (INR)" },
+          { "name": "week_number", "type": "INTEGER", "nullable": false, "description": "ISO week 1-26" }
+        ]
+      },
+      {
+        "name": "suppliers",
+        "file": "suppliers.csv",
+        "rowCount": 120,
+        "description": "Hotel supplier accounts",
+        "schema": [
+          { "name": "hotel_id", "type": "VARCHAR", "nullable": false, "description": "Unique hotel identifier" },
+          { "name": "hotel_name", "type": "VARCHAR", "nullable": false, "description": "Hotel display name" },
+          { "name": "city", "type": "VARCHAR", "nullable": false, "description": "Hotel city" },
+          { "name": "star_rating", "type": "INTEGER", "nullable": false, "description": "1-5 stars" },
+          { "name": "is_domestic", "type": "BOOLEAN", "nullable": false, "description": "Domestic vs international" },
+          { "name": "supplier_tier", "type": "VARCHAR", "nullable": false, "description": "premium | standard | budget" }
+        ]
+      },
+      {
+        "name": "price_logs",
+        "file": "price_logs.csv",
+        "rowCount": 10000,
+        "description": "Dynamic pricing algorithm output log",
+        "schema": [
+          { "name": "log_id", "type": "VARCHAR", "nullable": false, "description": "Unique log entry ID" },
+          { "name": "hotel_id", "type": "VARCHAR", "nullable": false, "description": "FK to suppliers" },
+          { "name": "algorithm_version", "type": "VARCHAR", "nullable": false, "description": "v1.2 | v1.3_buggy" },
+          { "name": "base_price", "type": "DOUBLE", "nullable": false, "description": "Supplier base price (INR)" },
+          { "name": "computed_price", "type": "DOUBLE", "nullable": false, "description": "Price after algorithm (INR)" },
+          { "name": "multiplier", "type": "DOUBLE", "nullable": false, "description": "Pricing multiplier applied" },
+          { "name": "logged_at", "type": "TIMESTAMP", "nullable": false, "description": "Log timestamp" },
+          { "name": "week_number", "type": "INTEGER", "nullable": false, "description": "ISO week 1-26" }
+        ]
+      },
+      {
+        "name": "inventory_logs",
+        "file": "inventory_logs.csv",
+        "rowCount": 8000,
+        "description": "Supplier room availability and booking success/failure",
+        "schema": [
+          { "name": "inv_id", "type": "VARCHAR", "nullable": false, "description": "Unique inventory log ID" },
+          { "name": "hotel_id", "type": "VARCHAR", "nullable": false, "description": "FK to suppliers" },
+          { "name": "rooms_available", "type": "INTEGER", "nullable": false, "description": "Available rooms at log time" },
+          { "name": "booking_success", "type": "BOOLEAN", "nullable": false, "description": "Whether supplier confirmed booking" },
+          { "name": "failure_reason", "type": "VARCHAR", "nullable": true, "description": "timeout | no_inventory | api_error | null" },
+          { "name": "logged_at", "type": "TIMESTAMP", "nullable": false, "description": "Log timestamp" },
+          { "name": "week_number", "type": "INTEGER", "nullable": false, "description": "ISO week 1-26" }
+        ]
+      }
+    ]
+  },
+
+  "mentorPersona": {
+    "name": "Arjun",
+    "role": "Staff Product Analyst",
+    "company": "MakeMyTrip",
+    "tone": "socratic",
+    "traits": [
+      "Never gives direct answers — always asks a question back",
+      "Celebrates good problem framing before data exploration",
+      "Calls out when users jump to conclusions without data",
+      "Uses real analyst frameworks implicitly",
+      "Occasionally references what I saw at Flipkart for credibility"
+    ]
+  },
+
+  "stakeholderPersonas": [
+    {
+      "id": "cfos_challenge",
+      "name": "Kavita Sharma",
+      "role": "CFO",
+      "challengeStyle": "skeptical",
+      "focusAreas": ["revenue_impact_sizing", "fix_cost", "time_to_recovery"]
+    },
+    {
+      "id": "pm_challenge",
+      "name": "Rohan Mehta",
+      "role": "Head of Product",
+      "challengeStyle": "aggressive",
+      "focusAreas": ["root_cause_evidence", "competitor_context", "user_impact"]
+    },
+    {
+      "id": "ds_challenge",
+      "name": "Divya Krishnan",
+      "role": "Data Science Lead",
+      "challengeStyle": "analytical",
+      "focusAreas": ["statistical_significance", "confounding_variables", "model_validity"]
+    }
+  ],
+
+  "skills": [
+    "Dynamic Pricing Analysis",
+    "Conversion Funnel Investigation",
+    "Revenue Leak Diagnosis",
+    "Checkout Drop-off Analysis"
+  ]
+}
