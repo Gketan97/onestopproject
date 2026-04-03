@@ -28,8 +28,24 @@
       "regex": "^(?:/(.*))(?:/)?$"
     }
   ],
-  "dynamicRoutes": [],
-  "staticRoutes": [],
+  "dynamicRoutes": [
+    {
+      "page": "/case/[caseId]",
+      "regex": "^/case/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPcaseId": "nxtPcaseId"
+      },
+      "namedRegex": "^/case/(?<nxtPcaseId>[^/]+?)(?:/)?$"
+    }
+  ],
+  "staticRoutes": [
+    {
+      "page": "/_not-found",
+      "regex": "^/_not\\-found(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_not\\-found(?:/)?$"
+    }
+  ],
   "dataRoutes": [],
   "rsc": {
     "header": "RSC",

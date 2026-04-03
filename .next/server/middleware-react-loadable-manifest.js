@@ -1,1 +1,1 @@
-self.__REACT_LOADABLE_MANIFEST="{}";
+self.__REACT_LOADABLE_MANIFEST='{"services/analytics/DuckDBEngine.ts -> ./types":{"id":8352,"files":["static/chunks/352.551d7fc6e573c992.js"]},"services/analytics/DuckDBEngine.ts -> @duckdb/duckdb-wasm":{"id":4732,"files":["static/chunks/732.e347b78c052a672e.js"]}}';
