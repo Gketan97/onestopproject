@@ -1,0 +1,121 @@
+hotel_id,hotel_name,city,star_rating,is_domestic,supplier_tier
+HTL0001,"Kar, Deo and Chandran Hotel",Delhi,3,True,standard
+HTL0002,Deep-Gill Hotel,Jaipur,3,True,premium
+HTL0003,Krishnan PLC Hotel,Delhi,3,True,standard
+HTL0004,Yogi Ltd Hotel,Bengaluru,2,True,premium
+HTL0005,Gaba LLC Hotel,Pune,4,True,premium
+HTL0006,Bains and Sons Hotel,Delhi,3,True,standard
+HTL0007,Kapoor PLC Hotel,Bengaluru,4,True,standard
+HTL0008,Tripathi-Tak Hotel,Bengaluru,5,True,budget
+HTL0009,"Krishnamurthy, Hans and Devi Hotel",Hyderabad,3,True,standard
+HTL0010,Dhaliwal-Mallick Hotel,Mumbai,3,True,standard
+HTL0011,Bath Inc Hotel,Bengaluru,3,True,standard
+HTL0012,"Brar, Bera and Bath Hotel",Mumbai,3,True,premium
+HTL0013,"Bala, Mann and Wali Hotel",Ahmedabad,4,True,standard
+HTL0014,"Balay, Hegde and Virk Hotel",Ahmedabad,4,True,standard
+HTL0015,"Kadakia, Desai and Balay Hotel",Delhi,3,True,standard
+HTL0016,Ramachandran-Seth Hotel,Kolkata,3,True,budget
+HTL0017,"Rajagopal, Kata and Keer Hotel",Goa,5,True,premium
+HTL0018,Singh LLC Hotel,Mumbai,3,True,premium
+HTL0019,Sekhon-Comar Hotel,Hyderabad,4,True,standard
+HTL0020,"Dhawan, Chad and Bumb Hotel",Mumbai,5,True,standard
+HTL0021,"Kumer, Kulkarni and Bedi Hotel",Ahmedabad,3,True,standard
+HTL0022,Halder Group Hotel,Bengaluru,4,True,budget
+HTL0023,Dara Inc Hotel,Goa,5,True,budget
+HTL0024,Chatterjee Group Hotel,Chennai,4,True,budget
+HTL0025,"Biswas, Bhalla and Yogi Hotel",Goa,3,True,standard
+HTL0026,"Ganesan, Dar and Chaudhary Hotel",Ahmedabad,3,True,standard
+HTL0027,Setty Group Hotel,Kolkata,4,True,standard
+HTL0028,Bhat-Virk Hotel,Mumbai,5,True,standard
+HTL0029,Bir-Krishna Hotel,Ahmedabad,2,True,standard
+HTL0030,"Rana, Varty and Loke Hotel",Chennai,3,True,standard
+HTL0031,Sachdeva Inc Hotel,Jaipur,4,True,budget
+HTL0032,"Badal, Iyengar and Shenoy Hotel",Goa,3,True,budget
+HTL0033,Kade Group Hotel,Goa,5,True,standard
+HTL0034,Krish Inc Hotel,Jaipur,4,True,standard
+HTL0035,Lalla-Shanker Hotel,Mumbai,4,True,standard
+HTL0036,Khosla LLC Hotel,Jaipur,3,True,standard
+HTL0037,"Dugar, Kala and Shan Hotel",Hyderabad,4,True,standard
+HTL0038,Shanker-Ratta Hotel,Hyderabad,4,True,standard
+HTL0039,"Boase, Andra and Vaidya Hotel",Pune,3,True,standard
+HTL0040,"Sachdev, Garde and Mane Hotel",Jaipur,3,True,budget
+HTL0041,Bhat Group Hotel,Ahmedabad,5,True,budget
+HTL0042,Sharaf PLC Hotel,Hyderabad,3,True,budget
+HTL0043,Sundaram LLC Hotel,Pune,5,True,budget
+HTL0044,Bhattacharyya-Magar Hotel,Mumbai,4,True,premium
+HTL0045,Bose-Sibal Hotel,Goa,4,True,premium
+HTL0046,"Lala, Shetty and Goel Hotel",Bengaluru,5,True,standard
+HTL0047,Bumb PLC Hotel,Goa,4,True,standard
+HTL0048,Baral-Raval Hotel,Ahmedabad,5,True,budget
+HTL0049,Bhatt Group Hotel,Bengaluru,5,True,standard
+HTL0050,Ganesan PLC Hotel,Hyderabad,5,True,premium
+HTL0051,Mander-Reddy Hotel,Mumbai,3,True,budget
+HTL0052,Thakkar Ltd Hotel,Chennai,3,True,standard
+HTL0053,"Virk, Zacharia and Goda Hotel",Kolkata,4,True,budget
+HTL0054,Kapoor-Loyal Hotel,Chennai,4,True,budget
+HTL0055,Goswami-Jain Hotel,Delhi,3,True,premium
+HTL0056,Kalita LLC Hotel,Pune,4,True,premium
+HTL0057,Sharma PLC Hotel,Chennai,4,True,budget
+HTL0058,Contractor LLC Hotel,Ahmedabad,3,True,budget
+HTL0059,Krishna-Deshmukh Hotel,Pune,4,True,standard
+HTL0060,Dhawan-Chandran Hotel,Delhi,3,True,budget
+HTL0061,Edwin Inc Hotel,Bengaluru,4,True,budget
+HTL0062,"Khurana, Sampath and Sood Hotel",Kolkata,3,True,standard
+HTL0063,Apte-Wason Hotel,Bengaluru,3,True,budget
+HTL0064,"Sachdeva, Sood and Dar Hotel",Ahmedabad,4,True,standard
+HTL0065,Keer Inc Hotel,Mumbai,3,True,standard
+HTL0066,Mannan-Tara Hotel,Bengaluru,3,True,budget
+HTL0067,Karpe-Guha Hotel,Jaipur,3,True,standard
+HTL0068,Chand-Garg Hotel,Mumbai,2,True,standard
+HTL0069,Manda-Bedi Hotel,Kolkata,4,True,standard
+HTL0070,Johal and Sons Hotel,Chennai,2,True,budget
+HTL0071,"Ramakrishnan, Shroff and Savant Hotel",Delhi,4,True,budget
+HTL0072,Magar PLC Hotel,Bengaluru,3,True,budget
+HTL0073,Yohannan LLC Hotel,Chennai,4,True,standard
+HTL0074,Tara-Chaudhuri Hotel,Pune,4,True,standard
+HTL0075,"Kata, Sawhney and Hayer Hotel",Kolkata,3,True,standard
+HTL0076,Roy-Shenoy Hotel,Jaipur,3,True,budget
+HTL0077,"Sama, Rana and Guha Hotel",Delhi,4,True,premium
+HTL0078,"Kari, Halder and Kaur Hotel",Mumbai,4,True,premium
+HTL0079,Dass-Bhalla Hotel,Bengaluru,5,True,standard
+HTL0080,"Doctor, Bahri and Grover Hotel",Hyderabad,4,True,budget
+HTL0081,"Tandon, Iyengar and Ranganathan Hotel",Ahmedabad,3,True,standard
+HTL0082,Subramanian-Khurana Hotel,Mumbai,3,True,standard
+HTL0083,Kaul LLC Hotel,Pune,3,True,premium
+HTL0084,Banerjee Ltd Hotel,Chennai,4,True,budget
+HTL0085,Sachdev Group Hotel,Pune,3,True,standard
+HTL0086,Kibe LLC Hotel,Pune,4,True,premium
+HTL0087,Balasubramanian Ltd Hotel,Mumbai,3,True,budget
+HTL0088,Gopal-Madan Hotel,Hyderabad,4,True,budget
+HTL0089,Dugar and Sons Hotel,Kolkata,4,True,standard
+HTL0090,"Vohra, Sekhon and Ramakrishnan Hotel",Ahmedabad,2,True,budget
+HTL0091,Sahni Group Hotel,New York,2,False,standard
+HTL0092,Salvi-Bajwa Hotel,Singapore,5,False,budget
+HTL0093,"Gala, Borde and Jaggi Hotel",Dubai,4,False,budget
+HTL0094,Basak-Madan Hotel,Dubai,3,False,standard
+HTL0095,"Vala, Venkatesh and Dara Hotel",New York,2,False,standard
+HTL0096,Shankar-Aurora Hotel,New York,5,False,standard
+HTL0097,Dasgupta-Dalal Hotel,Bangkok,3,False,budget
+HTL0098,Char Inc Hotel,Dubai,3,False,budget
+HTL0099,Khare-Chaudhary Hotel,London,5,False,budget
+HTL0100,Thakkar-Doctor Hotel,London,2,False,budget
+HTL0101,"Jhaveri, Khanna and D’Alia Hotel",London,2,False,budget
+HTL0102,Vaidya LLC Hotel,London,4,False,standard
+HTL0103,Atwal LLC Hotel,London,4,False,premium
+HTL0104,Kaur Group Hotel,Bangkok,4,False,standard
+HTL0105,"Ben, Chawla and Sathe Hotel",Singapore,2,False,budget
+HTL0106,Bath-Bajaj Hotel,London,4,False,standard
+HTL0107,Mannan-Mander Hotel,Singapore,4,False,standard
+HTL0108,Shetty Group Hotel,Bangkok,3,False,premium
+HTL0109,Sinha Group Hotel,London,5,False,standard
+HTL0110,Goel-Yadav Hotel,London,5,False,standard
+HTL0111,Rastogi-Karan Hotel,London,2,False,standard
+HTL0112,Wadhwa Ltd Hotel,London,2,False,premium
+HTL0113,"Gill, Bava and Sawhney Hotel",New York,4,False,standard
+HTL0114,"Ganesan, Gupta and Subramaniam Hotel",Bangkok,4,False,standard
+HTL0115,Roy Inc Hotel,New York,3,False,standard
+HTL0116,Rajagopalan-Choudhry Hotel,Singapore,3,False,standard
+HTL0117,Sampath-Shanker Hotel,Bangkok,4,False,premium
+HTL0118,"Kohli, Thakkar and Bobal Hotel",Singapore,5,False,budget
+HTL0119,Hora LLC Hotel,Singapore,3,False,premium
+HTL0120,Ram Group Hotel,New York,4,False,budget
