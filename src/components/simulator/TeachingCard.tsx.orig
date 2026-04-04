@@ -1,0 +1,912 @@
+// ============================================================
+// TEACHING CARD — Step-by-step guided learning
+// Left sidebar: step timeline, back button always present
+// Steps: brief → mentor → concepts → MCQ → open question
+// Open question: AI-evaluated, 2 attempts then reveal
+// ============================================================
+
+'use client';
+
+import { useState, useRef, useEffect } from 'react';
+import type { MilestoneTeachingContent, MCQOption } from '@/types';
+
+// ── TYPES ────────────────────────────────────────────────────
+
+interface TeachingCardProps {
+  content: MilestoneTeachingContent;
+  milestoneOrder: number;
+  caseTitle: string;
+  problemBrief: string;
+  company: string;
+  onCheckpointPassed: () => void;
+}
+
+type StepType =
+  | { type: 'brief' }
+  | { type: 'mentor_intro' }
+  | { type: 'concept'; index: number }
+  | { type: 'mcq' }
+  | { type: 'open_question' };
+
+type MCQState =
+  | { status: 'unanswered' }
+  | { status: 'wrong'; selectedId: string }
+  | { status: 'correct'; selectedId: string };
+
+type OpenQState =
+  | { status: 'idle' }
+  | { status: 'evaluating'; text: string; attempt: number }
+  | { status: 'submitted'; text: string; attempt: number; feedback: string; passed: boolean }
+  | { status: 'revealed'; text: string };
+
+function buildSteps(content: MilestoneTeachingContent): StepType[] {
+  return [
+    { type: 'brief' },
+    { type: 'mentor_intro' },
+    ...content.concepts.map((_, i) => ({ type: 'concept' as const, index: i })),
+    { type: 'mcq' },
+    { type: 'open_question' },
+  ];
+}
+
+function stepLabel(step: StepType, content: MilestoneTeachingContent): string {
+  switch (step.type) {
+    case 'brief':         return 'The brief';
+    case 'mentor_intro':  return 'Meet Arjun';
+    case 'concept':       return content.concepts[step.index]?.heading?.split('.')[0]?.slice(0, 28) ?? `Concept ${step.index + 1}`;
+    case 'mcq':           return 'Knowledge check';
+    case 'open_question': return 'Your turn';
+  }
+}
+
+// ── COMPONENT ────────────────────────────────────────────────
+
+export function TeachingCard({
+  content, milestoneOrder, caseTitle, problemBrief, company, onCheckpointPassed,
+}: TeachingCardProps) {
+  const steps = buildSteps(content);
+  const [stepIndex, setStepIndex]       = useState(0);
+  const [completedUpTo, setCompletedUpTo] = useState(-1);
+  const [mcqState, setMCQState]         = useState<MCQState>({ status: 'unanswered' });
+  const [openQState, setOpenQState]     = useState<OpenQState>({ status: 'idle' });
+  const [openQText, setOpenQText]       = useState('');
+  const [openQAttempts, setOpenQAttempts] = useState(0);
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  const currentStep = steps[stepIndex];
+  const totalSteps  = steps.length;
+
+  useEffect(() => {
+    contentRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [stepIndex]);
+
+  function goNext() {
+    if (stepIndex < totalSteps - 1) {
+      setCompletedUpTo(prev => Math.max(prev, stepIndex));
+      setStepIndex(stepIndex + 1);
+    }
+  }
+
+  function goBack() {
+    if (stepIndex > 0) setStepIndex(stepIndex - 1);
+  }
+
+  function jumpTo(index: number) {
+    if (index <= completedUpTo + 1) setStepIndex(index);
+  }
+
+  // MCQ
+  function handleMCQSelect(option: MCQOption) {
+    if (mcqState.status === 'correct') return;
+    setMCQState(option.isCorrect
+      ? { status: 'correct', selectedId: option.id }
+      : { status: 'wrong',   selectedId: option.id }
+    );
+  }
+
+  function handleMCQNext() {
+    setCompletedUpTo(prev => Math.max(prev, stepIndex));
+    setStepIndex(stepIndex + 1);
+  }
+
+  // Open question
+  async function handleOpenQSubmit() {
+    const text = openQText.trim();
+    if (text.length < 30) return;
+    const attempt = openQAttempts + 1;
+    setOpenQAttempts(attempt);
+    setOpenQState({ status: 'evaluating', text, attempt });
+
+    try {
+      const systemPrompt = `You are Arjun, a senior analytics mentor. Evaluate if this answer shows genuine analytical thinking.
+RUBRIC: ${content.openQuestion.rubric}
+Respond ONLY with valid JSON: {"passed": boolean, "feedback": "2-3 sentences in Arjun's voice. If wrong, give a hint not the answer."}`;
+
+      const res = await fetch('/api/ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          systemPrompt,
+          messages: [{ role: 'user', content: `Student answer: "${text}"` }],
+          maxTokens: 200,
+        }),
+      });
+
+      if (!res.ok) throw new Error('API error');
+      const data = await res.json();
+      const raw: string = data.content?.[0]?.text ?? '{}';
+      const parsed = JSON.parse(raw.trim());
+      const passed   = Boolean(parsed.passed);
+      const feedback = String(parsed.feedback ?? '');
+
+      setOpenQState({ status: 'submitted', text, attempt, feedback, passed });
+      if (passed) setCompletedUpTo(prev => Math.max(prev, stepIndex));
+    } catch {
+      setOpenQState({ status: 'submitted', text, attempt,
+        feedback: 'Good thinking. Let\'s proceed to the investigation.', passed: true });
+      setCompletedUpTo(prev => Math.max(prev, stepIndex));
+    }
+  }
+
+  function handleReveal() {
+    setOpenQState({ status: 'revealed', text: openQText });
+    setCompletedUpTo(prev => Math.max(prev, stepIndex));
+  }
+
+  const openQPassed =
+    (openQState.status === 'submitted' && openQState.passed) ||
+    openQState.status === 'revealed';
+
+  const showReveal =
+    openQState.status === 'submitted' &&
+    !openQState.passed &&
+    openQState.attempt >= content.openQuestion.revealAfterAttempts;
+
+  const progressPct = Math.round((stepIndex / (totalSteps - 1)) * 100);
+
+  // ── RENDER ────────────────────────────────────────────────
+
+  return (
+    <div style={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
+
+      {/* ── SIDEBAR ── */}
+      <div style={{
+        width: '220px',
+        flexShrink: 0,
+        borderRight: '1px solid var(--border)',
+        display: 'flex',
+        flexDirection: 'column',
+        background: 'var(--surface)',
+        overflow: 'hidden',
+      }}>
+        {/* Progress bar */}
+        <div style={{ padding: '20px 18px 14px', borderBottom: '1px solid var(--border)' }}>
+          <div style={{
+            display: 'flex', justifyContent: 'space-between',
+            alignItems: 'center', marginBottom: '8px',
+          }}>
+            <span style={{ fontSize: '10px', fontWeight: 600, color: 'var(--ink3)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+              Progress
+            </span>
+            <span style={{ fontSize: '11px', color: 'var(--ink4)' }}>
+              {stepIndex + 1}/{totalSteps}
+            </span>
+          </div>
+          <div style={{ height: '2px', background: 'var(--border)', borderRadius: '1px', overflow: 'hidden' }}>
+            <div style={{
+              height: '100%',
+              width: `${progressPct}%`,
+              background: 'var(--orange)',
+              borderRadius: '1px',
+              transition: 'width 0.4s var(--ease)',
+            }} />
+          </div>
+        </div>
+
+        {/* Steps */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '10px 0' }}>
+          {steps.map((step, i) => {
+            const isCompleted = i <= completedUpTo;
+            const isCurrent   = i === stepIndex;
+            const isLocked    = i > completedUpTo + 1;
+            const label       = stepLabel(step, content);
+
+            return (
+              <button
+                key={i}
+                onClick={() => jumpTo(i)}
+                disabled={isLocked}
+                style={{
+                  width: '100%',
+                  padding: '9px 16px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  background: isCurrent ? 'rgba(255,122,47,0.07)' : 'transparent',
+                  border: 'none',
+                  borderLeft: `2px solid ${isCurrent ? 'var(--orange)' : isCompleted ? 'var(--green)' : 'transparent'}`,
+                  cursor: isLocked ? 'default' : 'pointer',
+                  textAlign: 'left',
+                  transition: 'all var(--t-fast)',
+                }}
+              >
+                {/* Dot */}
+                <div style={{
+                  width: '18px', height: '18px',
+                  borderRadius: '50%',
+                  flexShrink: 0,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '9px', fontWeight: 700,
+                  background: isCompleted ? 'var(--green)' : isCurrent ? 'var(--orange)' : 'var(--elevated)',
+                  border: `1px solid ${isCompleted ? 'var(--green)' : isCurrent ? 'var(--orange)' : 'var(--border)'}`,
+                  color: isCompleted || isCurrent ? '#fff' : 'var(--ink4)',
+                  transition: 'all var(--t-base)',
+                }}>
+                  {isCompleted ? '✓' : i + 1}
+                </div>
+
+                <p style={{
+                  fontSize: '11px',
+                  fontWeight: isCurrent ? 600 : 400,
+                  color: isCurrent ? 'var(--orange)' : isCompleted ? 'var(--ink2)' : isLocked ? 'var(--ink4)' : 'var(--ink3)',
+                  lineHeight: 1.35,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  maxWidth: '140px',
+                  letterSpacing: '-0.01em',
+                  transition: 'color var(--t-fast)',
+                }}>
+                  {label}
+                </p>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── MAIN CONTENT ── */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+
+        {/* Top bar: back button + step label */}
+        <div style={{
+          padding: '14px 32px',
+          borderBottom: '1px solid var(--border)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '14px',
+          flexShrink: 0,
+          background: 'var(--surface)',
+        }}>
+          {stepIndex > 0 && (
+            <button
+              onClick={goBack}
+              style={{
+                padding: '5px 12px',
+                background: 'transparent',
+                border: '1px solid var(--border)',
+                borderRadius: 'var(--radius-sm)',
+                color: 'var(--ink3)',
+                fontSize: '12px',
+                cursor: 'pointer',
+                flexShrink: 0,
+                transition: 'all var(--t-fast)',
+                letterSpacing: '-0.01em',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--border-md)'; e.currentTarget.style.color = 'var(--ink2)'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--ink3)'; }}
+            >
+              ← Back
+            </button>
+          )}
+
+          <div style={{ flex: 1 }}>
+            <p style={{ fontSize: '11px', color: 'var(--ink3)', fontWeight: 500, letterSpacing: '-0.01em' }}>
+              {stepLabel(currentStep, content)}
+            </p>
+          </div>
+
+          <span style={{ fontSize: '11px', color: 'var(--ink4)', fontVariantNumeric: 'tabular-nums' }}>
+            Milestone {milestoneOrder} · Step {stepIndex + 1} of {totalSteps}
+          </span>
+        </div>
+
+        {/* Scrollable content */}
+        <div
+          ref={contentRef}
+          style={{ flex: 1, overflowY: 'auto', padding: '44px 52px 60px' }}
+        >
+          <div style={{ maxWidth: '580px', animation: 'slideUp 0.3s var(--ease) both' }}>
+
+            {/* ── BRIEF ── */}
+            {currentStep.type === 'brief' && (
+              <BriefStep
+                company={company}
+                caseTitle={caseTitle}
+                problemBrief={problemBrief}
+                milestoneOrder={milestoneOrder}
+                onNext={goNext}
+              />
+            )}
+
+            {/* ── MENTOR INTRO ── */}
+            {currentStep.type === 'mentor_intro' && (
+              <MentorIntroStep
+                company={company}
+                arjunIntro={content.arjunIntro}
+                onNext={goNext}
+              />
+            )}
+
+            {/* ── CONCEPT ── */}
+            {currentStep.type === 'concept' && (() => {
+              const ci      = currentStep.index;
+              const concept = content.concepts[ci];
+              const isLast  = ci === content.concepts.length - 1;
+              return (
+                <ConceptStep
+                  index={ci}
+                  total={content.concepts.length}
+                  heading={concept.heading}
+                  body={concept.body}
+                  analogy={concept.analogy}
+                  isLast={isLast}
+                  onNext={goNext}
+                />
+              );
+            })()}
+
+            {/* ── MCQ ── */}
+            {currentStep.type === 'mcq' && (
+              <MCQStep
+                question={content.checkpointQuestion}
+                options={content.options}
+                mcqState={mcqState}
+                onSelect={handleMCQSelect}
+                onRetry={() => setMCQState({ status: 'unanswered' })}
+                onNext={handleMCQNext}
+              />
+            )}
+
+            {/* ── OPEN QUESTION ── */}
+            {currentStep.type === 'open_question' && (
+              <OpenQuestionStep
+                question={content.openQuestion.question}
+                placeholder={content.openQuestion.placeholder}
+                revealAnswer={content.openQuestion.correctAnswerReveal}
+                openQText={openQText}
+                openQState={openQState}
+                openQPassed={openQPassed}
+                showReveal={showReveal}
+                onTextChange={setOpenQText}
+                onSubmit={handleOpenQSubmit}
+                onReveal={handleReveal}
+                onProceed={onCheckpointPassed}
+              />
+            )}
+
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── STEP COMPONENTS ──────────────────────────────────────────
+
+function BriefStep({ company, caseTitle, problemBrief, milestoneOrder, onNext }: {
+  company: string; caseTitle: string; problemBrief: string;
+  milestoneOrder: number; onNext: () => void;
+}) {
+  return (
+    <>
+      <div style={{ marginBottom: '28px' }}>
+        <span style={{
+          fontSize: '10px', fontWeight: 600, color: 'var(--orange)',
+          letterSpacing: '0.12em', textTransform: 'uppercase',
+          display: 'block', marginBottom: '10px',
+        }}>
+          Case Study · {company}
+        </span>
+        <h1 style={{
+          fontSize: '30px', fontWeight: 700, color: 'var(--ink1)',
+          letterSpacing: '-0.03em', lineHeight: 1.15, marginBottom: '0',
+        }}>
+          {caseTitle}
+        </h1>
+      </div>
+
+      <div style={{
+        padding: '20px 24px',
+        background: 'rgba(255,122,47,0.05)',
+        border: '1px solid rgba(255,122,47,0.18)',
+        borderRadius: 'var(--radius-lg)',
+        marginBottom: '24px',
+      }}>
+        <p style={{
+          fontSize: '11px', fontWeight: 600, color: 'var(--orange)',
+          letterSpacing: '0.09em', textTransform: 'uppercase', marginBottom: '11px',
+        }}>
+          The business problem
+        </p>
+        <p style={{ fontSize: '15px', color: 'var(--ink1)', lineHeight: 1.8, fontWeight: 400 }}>
+          {problemBrief}
+        </p>
+      </div>
+
+      <div style={{
+        display: 'flex', gap: '28px',
+        padding: '16px 0',
+        borderTop: '1px solid var(--border)',
+        borderBottom: '1px solid var(--border)',
+        marginBottom: '32px',
+      }}>
+        {[
+          { label: 'Company', value: company },
+          { label: 'Difficulty', value: 'Senior' },
+          { label: 'Milestone', value: `${milestoneOrder} of 7` },
+        ].map(({ label, value }) => (
+          <div key={label}>
+            <p style={{ fontSize: '10px', color: 'var(--ink4)', fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '4px' }}>{label}</p>
+            <p style={{ fontSize: '13px', color: 'var(--ink2)', fontWeight: 500 }}>{value}</p>
+          </div>
+        ))}
+      </div>
+
+      <PrimaryButton onClick={onNext} label="Meet your mentor →" color="var(--blue)" />
+    </>
+  );
+}
+
+function MentorIntroStep({ company, arjunIntro, onNext }: {
+  company: string; arjunIntro: string; onNext: () => void;
+}) {
+  return (
+    <>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '28px' }}>
+        <div style={{
+          width: '52px', height: '52px', borderRadius: '50%',
+          background: 'rgba(255,122,47,0.1)',
+          border: '1.5px solid rgba(255,122,47,0.3)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: '20px', fontWeight: 700, color: 'var(--orange)',
+        }}>
+          A
+        </div>
+        <div>
+          <p style={{ fontSize: '17px', fontWeight: 700, color: 'var(--ink1)', letterSpacing: '-0.02em' }}>Arjun</p>
+          <p style={{ fontSize: '12px', color: 'var(--ink3)', marginTop: '2px' }}>
+            Staff Product Analyst · {company}
+          </p>
+        </div>
+      </div>
+
+      <div style={{
+        padding: '22px 26px',
+        background: 'var(--card-bg)',
+        border: '1px solid var(--card-border)',
+        borderRadius: 'var(--radius-lg)',
+        marginBottom: '32px',
+      }}>
+        <p style={{ fontSize: '15px', color: 'var(--ink2)', lineHeight: 1.85 }}>
+          {arjunIntro}
+        </p>
+      </div>
+
+      <PrimaryButton onClick={onNext} label="Let's begin →" color="var(--blue)" />
+    </>
+  );
+}
+
+function ConceptStep({ index, total, heading, body, analogy, isLast, onNext }: {
+  index: number; total: number; heading: string; body: string;
+  analogy?: string; isLast: boolean; onNext: () => void;
+}) {
+  return (
+    <>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '22px' }}>
+        <div style={{
+          width: '28px', height: '28px', borderRadius: '50%',
+          background: 'rgba(76,127,255,0.1)',
+          border: '1px solid rgba(76,127,255,0.25)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: '11px', fontWeight: 700, color: 'var(--blue)',
+        }}>
+          {index + 1}
+        </div>
+        <span style={{
+          fontSize: '10px', fontWeight: 600, color: 'var(--blue)',
+          letterSpacing: '0.09em', textTransform: 'uppercase',
+        }}>
+          Concept {index + 1} of {total}
+        </span>
+      </div>
+
+      <h2 style={{
+        fontSize: '22px', fontWeight: 700, color: 'var(--ink1)',
+        lineHeight: 1.3, letterSpacing: '-0.02em', marginBottom: '18px',
+      }}>
+        {heading}
+      </h2>
+
+      <p style={{
+        fontSize: '15px', color: 'var(--ink2)', lineHeight: 1.85,
+        marginBottom: analogy ? '22px' : '32px',
+      }}>
+        {body}
+      </p>
+
+      {analogy && (
+        <div style={{
+          padding: '16px 20px',
+          background: 'rgba(76,127,255,0.04)',
+          border: '1px solid rgba(76,127,255,0.12)',
+          borderLeft: '2px solid var(--blue)',
+          borderRadius: '0 var(--radius-md) var(--radius-md) 0',
+          marginBottom: '32px',
+        }}>
+          <p style={{ fontSize: '13px', color: 'var(--ink3)', fontStyle: 'italic', lineHeight: 1.75 }}>
+            {analogy}
+          </p>
+        </div>
+      )}
+
+      <PrimaryButton
+        onClick={onNext}
+        label={isLast ? 'Test my understanding →' : 'Next concept →'}
+        color="var(--blue)"
+      />
+    </>
+  );
+}
+
+function MCQStep({ question, options, mcqState, onSelect, onRetry, onNext }: {
+  question: string;
+  options: MCQOption[];
+  mcqState: MCQState;
+  onSelect: (o: MCQOption) => void;
+  onRetry: () => void;
+  onNext: () => void;
+}) {
+  const selected = mcqState.status !== 'unanswered'
+    ? options.find(o => o.id === mcqState.selectedId)
+    : null;
+
+  return (
+    <>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '22px' }}>
+        <div style={{
+          width: '28px', height: '28px', borderRadius: '50%',
+          background: 'rgba(255,122,47,0.1)',
+          border: '1px solid rgba(255,122,47,0.25)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: '13px', fontWeight: 700, color: 'var(--orange)',
+        }}>?</div>
+        <span style={{
+          fontSize: '10px', fontWeight: 600, color: 'var(--orange)',
+          letterSpacing: '0.09em', textTransform: 'uppercase',
+        }}>
+          Knowledge check
+        </span>
+      </div>
+
+      <h2 style={{
+        fontSize: '18px', fontWeight: 600, color: 'var(--ink1)',
+        lineHeight: 1.5, letterSpacing: '-0.015em', marginBottom: '24px',
+      }}>
+        {question}
+      </h2>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
+        {options.map(option => {
+          const isSelected  = mcqState.status !== 'unanswered' && mcqState.selectedId === option.id;
+          const isCorrect   = isSelected && mcqState.status === 'correct';
+          const isWrong     = isSelected && mcqState.status === 'wrong';
+          const isDisabled  = mcqState.status === 'correct';
+
+          return (
+            <button
+              key={option.id}
+              onClick={() => !isDisabled && onSelect(option)}
+              disabled={isDisabled}
+              style={{
+                padding: '14px 16px',
+                background: isCorrect ? 'rgba(62,207,142,0.07)' : isWrong ? 'rgba(255,77,77,0.07)' : 'var(--elevated)',
+                border: `1px solid ${isCorrect ? 'rgba(62,207,142,0.3)' : isWrong ? 'rgba(255,77,77,0.3)' : 'var(--border)'}`,
+                borderRadius: 'var(--radius-md)',
+                color: isCorrect ? 'var(--green)' : isWrong ? 'var(--red)' : 'var(--ink2)',
+                fontSize: '14px', lineHeight: 1.5, letterSpacing: '-0.01em',
+                textAlign: 'left',
+                cursor: isDisabled ? 'default' : 'pointer',
+                display: 'flex', alignItems: 'flex-start', gap: '12px',
+                width: '100%',
+                transition: 'all var(--t-fast)',
+              }}
+            >
+              <span style={{
+                width: '22px', height: '22px', borderRadius: '50%',
+                border: `1.5px solid ${isCorrect ? 'var(--green)' : isWrong ? 'var(--red)' : 'var(--ink4)'}`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '10px', fontWeight: 700, flexShrink: 0, marginTop: '1px',
+                background: isCorrect ? 'var(--green)' : isWrong ? 'var(--red)' : 'transparent',
+                color: isSelected ? '#fff' : 'var(--ink4)',
+                transition: 'all var(--t-fast)',
+              }}>
+                {isCorrect ? '✓' : isWrong ? '✕' : option.id.toUpperCase()}
+              </span>
+              {option.text}
+            </button>
+          );
+        })}
+      </div>
+
+      {selected && mcqState.status !== 'unanswered' && (
+        <div style={{
+          padding: '14px 18px',
+          background: mcqState.status === 'correct' ? 'rgba(62,207,142,0.05)' : 'rgba(255,77,77,0.05)',
+          border: `1px solid ${mcqState.status === 'correct' ? 'rgba(62,207,142,0.2)' : 'rgba(255,77,77,0.2)'}`,
+          borderRadius: 'var(--radius-md)',
+          marginBottom: '18px',
+          animation: 'fadeIn 0.2s ease-out',
+        }}>
+          <p style={{
+            fontSize: '12px', fontWeight: 600, marginBottom: '6px',
+            color: mcqState.status === 'correct' ? 'var(--green)' : 'var(--red)',
+          }}>
+            {mcqState.status === 'correct' ? 'Correct' : 'Not quite'}
+          </p>
+          <p style={{ fontSize: '13px', color: 'var(--ink2)', lineHeight: 1.65 }}>
+            {selected.explanation}
+          </p>
+        </div>
+      )}
+
+      {mcqState.status === 'wrong' && (
+        <button
+          onClick={onRetry}
+          style={{
+            padding: '8px 16px', background: 'transparent',
+            border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)',
+            color: 'var(--ink3)', fontSize: '12px', cursor: 'pointer',
+            marginBottom: '14px', letterSpacing: '-0.01em',
+          }}
+        >
+          Try again
+        </button>
+      )}
+
+      {mcqState.status === 'correct' && (
+        <PrimaryButton onClick={onNext} label="Continue →" color="var(--blue)" />
+      )}
+    </>
+  );
+}
+
+function OpenQuestionStep({
+  question, placeholder, revealAnswer,
+  openQText, openQState, openQPassed, showReveal,
+  onTextChange, onSubmit, onReveal, onProceed,
+}: {
+  question: string; placeholder: string; revealAnswer: string;
+  openQText: string; openQState: OpenQState; openQPassed: boolean; showReveal: boolean;
+  onTextChange: (t: string) => void; onSubmit: () => void;
+  onReveal: () => void; onProceed: () => void;
+}) {
+  return (
+    <>
+      {/* Arjun asks */}
+      <div style={{ display: 'flex', gap: '14px', marginBottom: '26px' }}>
+        <div style={{
+          width: '38px', height: '38px', borderRadius: '50%', flexShrink: 0,
+          background: 'rgba(255,122,47,0.1)',
+          border: '1px solid rgba(255,122,47,0.25)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: '14px', fontWeight: 700, color: 'var(--orange)',
+          marginTop: '2px',
+        }}>
+          A
+        </div>
+        <div style={{
+          padding: '18px 22px',
+          background: 'var(--card-bg)',
+          border: '1px solid var(--card-border)',
+          borderRadius: '4px var(--radius-lg) var(--radius-lg) var(--radius-lg)',
+          flex: 1,
+        }}>
+          <p style={{ fontSize: '15px', color: 'var(--ink2)', lineHeight: 1.8 }}>
+            {question}
+          </p>
+        </div>
+      </div>
+
+      {/* Input */}
+      {openQState.status !== 'revealed' && (
+        <textarea
+          value={openQText}
+          onChange={e => onTextChange(e.target.value)}
+          placeholder={placeholder}
+          disabled={openQState.status === 'evaluating' || openQPassed}
+          rows={5}
+          style={{
+            width: '100%',
+            padding: '14px 16px',
+            background: 'var(--elevated)',
+            border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-md)',
+            color: 'var(--ink1)',
+            fontSize: '14px', lineHeight: 1.65,
+            resize: 'vertical', outline: 'none',
+            fontFamily: 'inherit',
+            marginBottom: '14px',
+            boxSizing: 'border-box',
+            transition: 'border-color var(--t-fast)',
+            opacity: openQPassed ? 0.65 : 1,
+            letterSpacing: '-0.01em',
+          }}
+          onFocus={e => { e.target.style.borderColor = 'rgba(255,122,47,0.4)'; }}
+          onBlur={e => { e.target.style.borderColor = 'var(--border)'; }}
+        />
+      )}
+
+      {/* Evaluating */}
+      {openQState.status === 'evaluating' && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+          <div style={{
+            width: '14px', height: '14px',
+            border: '2px solid var(--border)',
+            borderTop: '2px solid var(--orange)',
+            borderRadius: '50%',
+            animation: 'spin 0.75s linear infinite',
+            flexShrink: 0,
+          }} />
+          <p style={{ fontSize: '13px', color: 'var(--ink3)' }}>Arjun is reading your answer...</p>
+        </div>
+      )}
+
+      {/* Feedback */}
+      {openQState.status === 'submitted' && (
+        <div style={{
+          display: 'flex', gap: '12px', marginBottom: '18px',
+          animation: 'slideUp 0.3s var(--ease)',
+        }}>
+          <div style={{
+            width: '34px', height: '34px', borderRadius: '50%', flexShrink: 0,
+            background: 'rgba(255,122,47,0.1)',
+            border: '1px solid rgba(255,122,47,0.25)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '12px', fontWeight: 700, color: 'var(--orange)',
+            marginTop: '2px',
+          }}>A</div>
+          <div style={{
+            padding: '14px 18px',
+            background: openQState.passed ? 'rgba(62,207,142,0.05)' : 'rgba(255,77,77,0.05)',
+            border: `1px solid ${openQState.passed ? 'rgba(62,207,142,0.18)' : 'rgba(255,77,77,0.18)'}`,
+            borderRadius: '4px var(--radius-lg) var(--radius-lg) var(--radius-lg)',
+            flex: 1,
+          }}>
+            <p style={{
+              fontSize: '11px', fontWeight: 700, marginBottom: '6px',
+              color: openQState.passed ? 'var(--green)' : 'var(--red)',
+              letterSpacing: '0.04em', textTransform: 'uppercase',
+            }}>
+              {openQState.passed ? 'Good thinking' : `Attempt ${openQState.attempt} of ${maxAttempts}`}
+            </p>
+            <p style={{ fontSize: '13px', color: 'var(--ink2)', lineHeight: 1.7 }}>
+              {openQState.feedback}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Revealed answer */}
+      {openQState.status === 'revealed' && (
+        <div style={{
+          padding: '20px 24px',
+          background: 'rgba(76,127,255,0.05)',
+          border: '1px solid rgba(76,127,255,0.18)',
+          borderRadius: 'var(--radius-lg)',
+          marginBottom: '20px',
+          animation: 'slideUp 0.3s var(--ease)',
+        }}>
+          <p style={{
+            fontSize: '10px', fontWeight: 700, color: 'var(--blue)', marginBottom: '12px',
+            letterSpacing: '0.09em', textTransform: 'uppercase',
+          }}>
+            Arjun&apos;s answer
+          </p>
+          <p style={{ fontSize: '14px', color: 'var(--ink2)', lineHeight: 1.8 }}>
+            {revealAnswer}
+          </p>
+          <p style={{ fontSize: '12px', color: 'var(--ink4)', marginTop: '14px' }}>
+            Read this before investigating. This is the framework you will use.
+          </p>
+        </div>
+      )}
+
+      {/* Actions */}
+      <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+        {!openQPassed && openQState.status !== 'evaluating' && openQState.status !== 'revealed' && (
+          <button
+            onClick={onSubmit}
+            disabled={openQText.trim().length < 30}
+            style={{
+              padding: '12px 26px',
+              background: openQText.trim().length >= 30 ? 'var(--orange)' : 'var(--elevated)',
+              border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-md)',
+              color: openQText.trim().length >= 30 ? '#fff' : 'var(--ink4)',
+              fontSize: '14px', fontWeight: 600, letterSpacing: '-0.01em',
+              cursor: openQText.trim().length >= 30 ? 'pointer' : 'default',
+              transition: 'all var(--t-base)',
+              boxShadow: openQText.trim().length >= 30 ? 'var(--glow-orange)' : 'none',
+            }}
+          >
+            {openQState.status === 'submitted' ? 'Try again' : 'Submit answer'}
+          </button>
+        )}
+
+        {showReveal && (
+          <button
+            onClick={onReveal}
+            style={{
+              padding: '12px 22px',
+              background: 'transparent',
+              border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-md)',
+              color: 'var(--ink3)',
+              fontSize: '13px', cursor: 'pointer', letterSpacing: '-0.01em',
+              transition: 'all var(--t-fast)',
+            }}
+          >
+            Show me the answer
+          </button>
+        )}
+
+        {openQPassed && (
+          <PrimaryButton
+            onClick={onProceed}
+            label="Begin investigation →"
+            color="var(--green)"
+          />
+        )}
+      </div>
+    </>
+  );
+}
+
+// The content prop needs to be accessible in OpenQuestionStep
+// We pass it via prop drilling — clean solution
+function OpenQuestionStepWrapper(props: Parameters<typeof OpenQuestionStep>[0] & { content: MilestoneTeachingContent }) {
+  return <OpenQuestionStep {...props} />;
+}
+
+// ── PRIMARY BUTTON ───────────────────────────────────────────
+
+// ── PRIMARY BUTTON ───────────────────────────────────────────
+
+function PrimaryButton({ onClick, label, color }: {
+  onClick: () => void; label: string; color: string;
+}) {
+  const [hov, setHov] = useState(false);
+  return (
+    <button
+      onClick={onClick}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        padding: '12px 28px',
+        background: color,
+        border: 'none',
+        borderRadius: 'var(--radius-md)',
+        color: '#fff',
+        fontSize: '14px', fontWeight: 600, letterSpacing: '-0.01em',
+        cursor: 'pointer',
+        opacity: hov ? 0.88 : 1,
+        transition: 'opacity var(--t-fast)',
+        display: 'inline-flex', alignItems: 'center',
+      }}
+    >
+      {label}
+    </button>
+  );
+}

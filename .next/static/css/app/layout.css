@@ -1,0 +1,211 @@
+/*!*****************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[3]!./src/app/globals.css ***!
+  \*****************************************************************************************************************************************************************************************************************************************************************/
+/* ============================================================
+   ONESTOP CAREERS — DESIGN SYSTEM v2
+   Refined dark intelligence. Geist. No generic AI aesthetics.
+   Every token intentional. Motion is purposeful.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap');
+
+:root {
+  /* ── Backgrounds — layered depth ─────────────────────── */
+  --bg:         #07070E;
+  --surface:    #0B0B16;
+  --elevated:   #0F0F1E;
+  --card-bg:    #131326;
+  --card-hover: #171730;
+
+  /* ── Borders ─────────────────────────────────────────── */
+  --border:        rgba(255,255,255,0.055);
+  --border-md:     rgba(255,255,255,0.10);
+  --border-focus:  rgba(255,255,255,0.18);
+  --card-border:   rgba(255,255,255,0.07);
+
+  /* ── Brand ───────────────────────────────────────────── */
+  --orange:      #FF7A2F;
+  --orange-dim:  rgba(255,122,47,0.13);
+  --orange-glow: rgba(255,122,47,0.08);
+  --blue:        #4C7FFF;
+  --blue-dim:    rgba(76,127,255,0.13);
+  --blue-glow:   rgba(76,127,255,0.08);
+  --green:       #3ECF8E;
+  --green-dim:   rgba(62,207,142,0.13);
+  --green-dark:  #2AAA72;
+  --red:         #FF4D4D;
+  --red-dim:     rgba(255,77,77,0.12);
+  --purple:      #9B7FFF;
+  --purple-dim:  rgba(155,127,255,0.12);
+
+  /* ── Ink — strict hierarchy ──────────────────────────── */
+  --ink1: #EEEEF8;
+  --ink2: #9898B8;
+  --ink3: #5C5C7A;
+  --ink4: #32324A;
+
+  /* ── Typography ──────────────────────────────────────── */
+  --font:      'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'Geist Mono', 'SF Mono', ui-monospace, monospace;
+
+  /* ── Radii ───────────────────────────────────────────── */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 22px;
+
+  /* ── Glows ───────────────────────────────────────────── */
+  --glow-orange: 0 0 28px rgba(255,122,47,0.22);
+  --glow-green:  0 0 28px rgba(62,207,142,0.22);
+  --glow-blue:   0 0 28px rgba(76,127,255,0.22);
+
+  /* ── Transitions ─────────────────────────────────────── */
+  --ease:   cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --t-fast: 130ms;
+  --t-base: 220ms;
+  --t-slow: 380ms;
+}
+
+/* ── RESET ───────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  height: 100%;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--ink1);
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.6;
+  letter-spacing: -0.01em;
+}
+
+/* ── SCROLLBAR ───────────────────────────────────────────── */
+::-webkit-scrollbar { width: 3px; height: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--border-md);
+  border-radius: 2px;
+  -webkit-transition: background var(--t-fast);
+  transition: background var(--t-fast);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--border-focus); }
+
+/* ── FOCUS ───────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ── SELECTION ───────────────────────────────────────────── */
+::-moz-selection { background: var(--blue-dim); color: var(--ink1); }
+::selection { background: var(--blue-dim); color: var(--ink1); }
+
+/* ── ANIMATIONS ──────────────────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.97); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.3; transform: scale(0.85); }
+  50%       { opacity: 1;   transform: scale(1); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+@keyframes breathe {
+  0%, 100% { opacity: 0.5; }
+  50%       { opacity: 1; }
+}
+
+@keyframes progressIn {
+  from { width: 0; }
+  to   { width: 100%; }
+}
+
+/* ── SKELETON ────────────────────────────────────────────── */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--elevated) 25%,
+    var(--card-bg)  50%,
+    var(--elevated) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s infinite;
+  border-radius: var(--radius-md);
+}
+
+/* ── STAGGER ─────────────────────────────────────────────── */
+.stagger > *:nth-child(1) { animation-delay: 0ms; }
+.stagger > *:nth-child(2) { animation-delay: 50ms; }
+.stagger > *:nth-child(3) { animation-delay: 100ms; }
+.stagger > *:nth-child(4) { animation-delay: 150ms; }
+.stagger > *:nth-child(5) { animation-delay: 200ms; }
+.stagger > *:nth-child(6) { animation-delay: 250ms; }
+.stagger > *:nth-child(7) { animation-delay: 300ms; }
+
+/* ── INTERACTIVE BASE ────────────────────────────────────── */
+button, [role="button"] {
+  font-family: var(--font);
+  letter-spacing: -0.01em;
+}
+
+textarea, input {
+  font-family: var(--font);
+  color: var(--ink1);
+  letter-spacing: -0.01em;
+}
+
+textarea::-moz-placeholder, input::-moz-placeholder {
+  color: var(--ink4);
+}
+
+textarea::placeholder, input::placeholder {
+  color: var(--ink4);
+}
+

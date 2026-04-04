@@ -1,0 +1,349 @@
+{
+  "caseId": "mmt_bookings_drop",
+  "title": "The Bookings Crisis",
+  "company": "MakeMyTrip",
+  "domain": "travel",
+  "difficulty": "senior",
+  "estimatedMinutes": 60,
+  "problemBrief": "MakeMyTrip's Bookings per DAU dropped 13% over 60 days. DAU grew 15% to 11.5M. Total bookings are flat at 820K/day. Revenue fell 16.5%. The CEO wants a full root cause brief before Friday's board meeting. Your job: find what is actually broken and propose solutions that move the metric.",
+  "scenarioContext": "MakeMyTrip recently expanded its homestay inventory by 340%, launched an international travel push targeting Vietnam, Japan, and South Korea, and completed a UI refresh that removed several advanced search filters. DAU growth is being driven by a new user acquisition campaign. The product team believes this is a temporary dip. The finance team believes something structural has broken.",
+  "investigationPaths": [
+    "customer_journey",
+    "cohort_analysis",
+    "funnel_drop",
+    "pricing_changes"
+  ],
+  "milestones": [
+    {
+      "id": "m1_problem_scoping",
+      "type": "problem_scoping",
+      "title": "Scope the Problem",
+      "description": "Define what is actually declining, for whom, and over what time window",
+      "order": 1,
+      "requiredPriorMilestones": [],
+      "availableQueries": [
+        "q_north_star_trend",
+        "q_l0_metrics",
+        "q_dau_vs_bookings"
+      ],
+      "scoringRubric": {
+        "problemFraming": 25,
+        "dataInterpretation": 25,
+        "hypothesisQuality": 25,
+        "solutionImpact": 25,
+        "maxScore": 100
+      },
+      "exitCondition": {
+        "minScore": 0,
+        "requiredFields": ["findings"],
+        "maxTurns": 20
+      }
+    },
+    {
+      "id": "m2_kpi_selection",
+      "type": "kpi_selection",
+      "title": "Read the KPI Dashboard",
+      "description": "Identify which cohorts are healthy and which are degraded",
+      "order": 2,
+      "requiredPriorMilestones": ["m1_problem_scoping"],
+      "availableQueries": [
+        "q_cohort_cvr_comparison",
+        "q_session_behavior",
+        "q_review_dwell_time",
+        "q_dimension_gender",
+        "q_dimension_tenure"
+      ],
+      "scoringRubric": {
+        "problemFraming": 20,
+        "dataInterpretation": 30,
+        "hypothesisQuality": 30,
+        "solutionImpact": 20,
+        "maxScore": 100
+      },
+      "exitCondition": {
+        "minScore": 0,
+        "requiredFields": ["findings"],
+        "maxTurns": 20
+      }
+    },
+    {
+      "id": "m3_funnel_diagnosis",
+      "type": "funnel_diagnosis",
+      "title": "Diagnose the Funnel",
+      "description": "Map micro-behaviors at each funnel stage for each cohort",
+      "order": 3,
+      "requiredPriorMilestones": ["m2_kpi_selection"],
+      "availableQueries": [
+        "q_funnel_stage_conversion",
+        "q_serp_behavior",
+        "q_listing_detail_behavior",
+        "q_payment_abandonment",
+        "q_dimension_listing_category"
+      ],
+      "scoringRubric": {
+        "problemFraming": 20,
+        "dataInterpretation": 35,
+        "hypothesisQuality": 30,
+        "solutionImpact": 15,
+        "maxScore": 100
+      },
+      "exitCondition": {
+        "minScore": 0,
+        "requiredFields": ["hypotheses"],
+        "maxTurns": 20
+      }
+    },
+    {
+      "id": "m4_root_cause",
+      "type": "root_cause",
+      "title": "Identify Root Causes",
+      "description": "Confirm all four causes with data and size their contribution",
+      "order": 4,
+      "requiredPriorMilestones": ["m3_funnel_diagnosis"],
+      "availableQueries": [
+        "q_inventory_expansion_impact",
+        "q_review_fatigue_signal",
+        "q_hvt_package_shift",
+        "q_international_visa_signal",
+        "q_root_cause_contribution"
+      ],
+      "scoringRubric": {
+        "problemFraming": 15,
+        "dataInterpretation": 35,
+        "hypothesisQuality": 35,
+        "solutionImpact": 15,
+        "maxScore": 100
+      },
+      "exitCondition": {
+        "minScore": 0,
+        "requiredFields": ["insights"],
+        "maxTurns": 20
+      }
+    },
+    {
+      "id": "m5_impact_sizing",
+      "type": "impact_sizing",
+      "title": "Size the Impact",
+      "description": "Quantify revenue loss per root cause with stated assumptions",
+      "order": 5,
+      "requiredPriorMilestones": ["m4_root_cause"],
+      "availableQueries": [
+        "q_revenue_loss_by_cause",
+        "q_recovery_projection",
+        "q_cohort_abv"
+      ],
+      "scoringRubric": {
+        "problemFraming": 10,
+        "dataInterpretation": 30,
+        "hypothesisQuality": 20,
+        "solutionImpact": 40,
+        "maxScore": 100
+      },
+      "exitCondition": {
+        "minScore": 0,
+        "requiredFields": ["insights"],
+        "maxTurns": 20
+      }
+    },
+    {
+      "id": "m6_solution_design",
+      "type": "solution_design",
+      "title": "Design the Solutions",
+      "description": "Propose one solution per root cause with experiment design",
+      "order": 6,
+      "requiredPriorMilestones": ["m5_impact_sizing"],
+      "availableQueries": [],
+      "scoringRubric": {
+        "problemFraming": 10,
+        "dataInterpretation": 20,
+        "hypothesisQuality": 20,
+        "solutionImpact": 50,
+        "maxScore": 100
+      },
+      "exitCondition": {
+        "minScore": 0,
+        "requiredFields": ["solutions"],
+        "maxTurns": 20
+      }
+    },
+    {
+      "id": "m7_stakeholder_review",
+      "type": "stakeholder_review",
+      "title": "Defend Your Analysis",
+      "description": "Present findings to CFO, Head of Product, and Growth Lead under pressure",
+      "order": 7,
+      "requiredPriorMilestones": ["m6_solution_design"],
+      "availableQueries": [],
+      "scoringRubric": {
+        "problemFraming": 20,
+        "dataInterpretation": 20,
+        "hypothesisQuality": 20,
+        "solutionImpact": 40,
+        "maxScore": 100
+      },
+      "exitCondition": {
+        "minScore": 0,
+        "requiredFields": ["solutions"],
+        "maxTurns": 20
+      }
+    }
+  ],
+  "groundTruth": {
+    "rootCause": "Four compounding causes: (1) Choice overload from homestay expansion causing browsing fatigue — 35% of drop. (2) Review consumption leading to decision paralysis — 28% of drop. (3) HVT behavioral shift to bundled packages — 22% of drop. (4) Visa uncertainty delaying international bookings — 15% of drop.",
+    "affectedMetrics": [
+      "bookings_per_dau",
+      "serp_to_click_rate",
+      "review_dwell_time",
+      "payment_abandonment",
+      "hvt_cvr",
+      "international_search_cvr"
+    ],
+    "anomalyStartWeek": 5,
+    "anomalyEndWeek": 12,
+    "expectedFindings": [
+      "Bookings/DAU 8.2% to 7.1% over 60 days",
+      "DAU +15% driven by low-LTV new users",
+      "HVT CVR 14.2% to 11.1%",
+      "Review dwell time +140% for HVT",
+      "Homestay listings in top-5 results increased from 18% to 41% for vacation searches",
+      "International search CVR dropped from 9.1% to 5.2%",
+      "Visa-related session exits increased 3.1x",
+      "HVT package page visits increased 2.8x"
+    ]
+  },
+  "datasetManifest": {
+    "basePath": "/cases/mmt_bookings_drop/dataset",
+    "tables": [
+      {
+        "name": "users",
+        "file": "users.csv",
+        "schema": [
+          {"name": "user_id", "type": "INTEGER", "nullable": false, "description": "Unique user identifier"},
+          {"name": "cohort", "type": "VARCHAR", "nullable": false, "description": "HVT, Mission, DealSeeker, Explorer"},
+          {"name": "tenure_days", "type": "INTEGER", "nullable": false, "description": "Days since first booking"},
+          {"name": "acquisition_channel", "type": "VARCHAR", "nullable": false, "description": "organic, paid, direct, referral"},
+          {"name": "city_tier", "type": "VARCHAR", "nullable": false, "description": "tier1, tier2, resort"},
+          {"name": "avg_booking_value", "type": "DOUBLE", "nullable": false, "description": "Historical average booking value USD"}
+        ],
+        "rowCount": 11500,
+        "description": "User base with cohort classification and tenure"
+      },
+      {
+        "name": "sessions",
+        "file": "sessions.csv",
+        "schema": [
+          {"name": "session_id", "type": "INTEGER", "nullable": false, "description": "Unique session identifier"},
+          {"name": "user_id", "type": "INTEGER", "nullable": false, "description": "User who created session"},
+          {"name": "week", "type": "INTEGER", "nullable": false, "description": "Week number 1-12"},
+          {"name": "search_query_type", "type": "VARCHAR", "nullable": false, "description": "high_intent, medium_intent, browsing"},
+          {"name": "listing_category", "type": "VARCHAR", "nullable": false, "description": "tourist, vacation, business, budget, international"},
+          {"name": "converted", "type": "BOOLEAN", "nullable": false, "description": "Whether session resulted in booking"},
+          {"name": "review_dwell_seconds", "type": "INTEGER", "nullable": false, "description": "Time spent on reviews section"},
+          {"name": "listings_viewed", "type": "INTEGER", "nullable": false, "description": "Number of listings viewed in session"},
+          {"name": "serp_bounce", "type": "BOOLEAN", "nullable": false, "description": "Left from search results page"},
+          {"name": "opened_external_map", "type": "BOOLEAN", "nullable": false, "description": "Opened Google Maps mid-session"},
+          {"name": "payment_abandoned", "type": "BOOLEAN", "nullable": false, "description": "Reached payment but did not complete"},
+          {"name": "visa_concern_exit", "type": "BOOLEAN", "nullable": false, "description": "Session ended on visa information page"},
+          {"name": "package_page_visited", "type": "BOOLEAN", "nullable": false, "description": "Visited holiday packages during session"}
+        ],
+        "rowCount": 45000,
+        "description": "Session-level behavior across 12 weeks"
+      },
+      {
+        "name": "listings",
+        "file": "listings.csv",
+        "schema": [
+          {"name": "listing_id", "type": "INTEGER", "nullable": false, "description": "Unique listing identifier"},
+          {"name": "category", "type": "VARCHAR", "nullable": false, "description": "hotel, homestay, resort, budget, boutique"},
+          {"name": "tier", "type": "VARCHAR", "nullable": false, "description": "budget, mid, premium, luxury"},
+          {"name": "avg_review_score", "type": "DOUBLE", "nullable": false, "description": "Average review score 1-5"},
+          {"name": "onboarded_week", "type": "INTEGER", "nullable": false, "description": "Week listing was added to platform"},
+          {"name": "city_tier", "type": "VARCHAR", "nullable": false, "description": "tier1, tier2, resort"},
+          {"name": "has_landmark_tag", "type": "BOOLEAN", "nullable": false, "description": "Whether listing has landmark proximity tag"},
+          {"name": "amenities_complete", "type": "BOOLEAN", "nullable": false, "description": "Whether amenity info is complete"}
+        ],
+        "rowCount": 8500,
+        "description": "Listing inventory including homestays added Week 5"
+      },
+      {
+        "name": "search_results",
+        "file": "search_results.csv",
+        "schema": [
+          {"name": "session_id", "type": "INTEGER", "nullable": false, "description": "Session this result belongs to"},
+          {"name": "week", "type": "INTEGER", "nullable": false, "description": "Week of search"},
+          {"name": "rank_1_listing_tier", "type": "VARCHAR", "nullable": false, "description": "Tier of top ranked listing"},
+          {"name": "budget_in_top5_pct", "type": "DOUBLE", "nullable": false, "description": "% of top 5 results that are budget/homestay"},
+          {"name": "time_to_first_click_seconds", "type": "INTEGER", "nullable": false, "description": "Seconds before user clicked any result"},
+          {"name": "scroll_depth_pct", "type": "DOUBLE", "nullable": false, "description": "How far user scrolled before clicking"},
+          {"name": "filters_applied", "type": "INTEGER", "nullable": false, "description": "Number of filters the user applied"},
+          {"name": "premium_filter_available", "type": "BOOLEAN", "nullable": false, "description": "Whether premium filter was shown"}
+        ],
+        "rowCount": 45000,
+        "description": "Search results page behavior per session"
+      },
+      {
+        "name": "bookings",
+        "file": "bookings.csv",
+        "schema": [
+          {"name": "booking_id", "type": "INTEGER", "nullable": false, "description": "Unique booking identifier"},
+          {"name": "user_id", "type": "INTEGER", "nullable": false, "description": "User who booked"},
+          {"name": "listing_id", "type": "INTEGER", "nullable": false, "description": "Listing that was booked"},
+          {"name": "week", "type": "INTEGER", "nullable": false, "description": "Week of booking"},
+          {"name": "revenue_usd", "type": "DOUBLE", "nullable": false, "description": "Revenue from this booking"},
+          {"name": "is_international", "type": "BOOLEAN", "nullable": false, "description": "Whether destination is international"},
+          {"name": "is_package", "type": "BOOLEAN", "nullable": false, "description": "Whether booked as part of a package"}
+        ],
+        "rowCount": 9800,
+        "description": "Completed bookings across 12 weeks"
+      }
+    ],
+    "totalRows": 119800
+  },
+  "mentorPersona": {
+    "name": "Arjun",
+    "role": "Staff Product Analyst",
+    "company": "MakeMyTrip",
+    "tone": "socratic",
+    "traits": [
+      "Never gives the answer directly — asks questions that lead to discovery",
+      "Rewards good exploration, even dead ends",
+      "Always asks: how much of the drop does this explain?",
+      "Uses analogies from everyday life to anchor abstract concepts",
+      "Shifts between teaching and Socratic mode based on how well user is reasoning",
+      "Celebrates when user rules out a hypothesis with data",
+      "Pushes for micro-behavior specificity — never accepts funnel stage description as sufficient"
+    ]
+  },
+  "stakeholderPersonas": [
+    {
+      "id": "cfo",
+      "name": "Kavita Sharma",
+      "role": "CFO",
+      "challengeStyle": "skeptical",
+      "focusAreas": ["revenue impact", "recovery timeline", "ROI of proposed solutions", "cost of inaction"]
+    },
+    {
+      "id": "head_of_product",
+      "name": "Rohan Mehta",
+      "role": "Head of Product",
+      "challengeStyle": "aggressive",
+      "focusAreas": ["solution specificity", "experiment design", "trade-offs", "timeline to ship"]
+    },
+    {
+      "id": "growth_lead",
+      "name": "Priya Nair",
+      "role": "Head of Growth",
+      "challengeStyle": "analytical",
+      "focusAreas": ["user acquisition quality", "cohort mix shift", "DAU composition", "LTV implications"]
+    }
+  ],
+  "skills": [
+    "metric_decomposition",
+    "cohort_analysis",
+    "funnel_diagnosis",
+    "root_cause_analysis",
+    "impact_sizing",
+    "experiment_design",
+    "stakeholder_communication"
+  ]
+}

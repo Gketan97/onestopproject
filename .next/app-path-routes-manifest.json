@@ -1,6 +1,0 @@
-{
-  "/api/ai/route": "/api/ai",
-  "/_not-found/page": "/_not-found",
-  "/case/[caseId]/page": "/case/[caseId]",
-  "/page": "/"
-}

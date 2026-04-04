@@ -355,15 +355,24 @@ export interface TeachingConcept {
   analogy?: string;       // optional real-world hook
 }
 
+export interface OpenQuestion {
+  question: string;         // Arjun asks this after MCQ
+  placeholder: string;      // textarea placeholder
+  rubric: string;           // what a good answer contains (for AI evaluation)
+  revealAfterAttempts: number; // show answer after N wrong attempts (usually 2)
+  correctAnswerReveal: string; // what Arjun reveals after max attempts
+}
+
 export interface MilestoneTeachingContent {
   milestoneType: MilestoneType;
-  arjunIntro: string;     // Arjun's opening in his voice
-  concepts: TeachingConcept[]; // max 3
+  arjunIntro: string;
+  concepts: TeachingConcept[];
   checkpointQuestion: string;
-  options: MCQOption[];   // exactly 3-4
-  investigationNudge: string; // Arjun's first message when investigation opens
-  commitPrompt: string;   // what Arjun asks user to document
-  commitDepthQuestion: string; // follow-up if entry is too shallow
+  options: MCQOption[];
+  openQuestion: OpenQuestion; // user must type answer — AI evaluates depth
+  investigationNudge: string;
+  commitPrompt: string;
+  commitDepthQuestion: string;
 }
 
 export interface MilestonePhaseState {

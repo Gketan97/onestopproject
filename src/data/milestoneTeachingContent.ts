@@ -63,6 +63,14 @@ export const MILESTONE_TEACHING_CONTENT: Record<string, MilestoneTeachingContent
       },
     ],
 
+    openQuestion: {
+      question: `Before we look at any data — what is the single most important clarifying question you would ask your manager to scope this problem properly? Think about what information you need before opening a single dashboard.`,
+      placeholder: `e.g. "I would ask which definition of RPB we are using — net revenue per booking or gross booking value per booking — because..."`,
+      rubric: `A good answer identifies a specific ambiguity in the metric definition, time window, or segment scope. It should NOT be "I would look at the data" — that is investigation, not scoping. It should be a question that clarifies the problem before any data is touched.`,
+      revealAfterAttempts: 2,
+      correctAnswerReveal: `The most important scoping question is: "Which definition of Revenue per Booking are we using — net platform revenue, gross booking value, or commission earned?" This matters because each gives a different number and points to a different root cause. The second most important is: "Is the 18% decline measured on all bookings or only completed bookings?" These two questions alone can change the entire investigation direction.`,
+    },
+
     investigationNudge: `Good — you understand what the metric is measuring. Now let's see what the data actually shows. Run the revenue trend query first. Before you look at the results, tell me: what do you expect to see if RPB is genuinely declining versus if bookings are just growing faster than revenue?`,
 
     commitPrompt: 'Write your problem statement for the Investigation Board. It must include: the specific metric declining, the time window, what is NOT the cause based on what we know, and what remains unknown.',
@@ -122,6 +130,14 @@ export const MILESTONE_TEACHING_CONTENT: Record<string, MilestoneTeachingContent
         explanation: 'We can tell quite a lot. The stable upstream metrics + dropping downstream metric points clearly to the checkout stage. Not knowing everything is different from knowing nothing.',
       },
     ],
+
+    openQuestion: {
+      question: `You have a KPI dashboard in front of you showing 8 metrics. All have changed slightly. What is your process for deciding which 2-3 metrics to focus on first? Walk me through your prioritisation logic.`,
+      placeholder: `e.g. "I would first look at metrics that are furthest from their baseline, then filter for those that are leading indicators rather than lagging..."`,
+      rubric: `A good answer describes a prioritisation framework — not just "look at the biggest change." It should mention: leading vs lagging distinction, change from baseline not absolute value, and narrowing to the stage where the problem is concentrated.`,
+      revealAfterAttempts: 2,
+      correctAnswerReveal: `Strong analysts use this sequence: First, find metrics that changed from their pre-period baseline — not just low absolute values. Second, separate leading indicators (session-to-search, search-to-view) from lagging ones (revenue, bookings). Third, find the earliest leading indicator that shows a break — that is where the investigation should start. In our case: session-to-search is stable, search-to-view is stable, but attempt-to-booking breaks. That tells us exactly where to look.`,
+    },
 
     investigationNudge: `Run the KPI snapshot query. When you see the results, I want you to do one thing before you type anything: rank the KPIs from most changed to least changed. Which one has moved the most? That is where your investigation should focus next.`,
 
@@ -183,6 +199,16 @@ export const MILESTONE_TEACHING_CONTENT: Record<string, MilestoneTeachingContent
       },
     ],
 
+    openQuestion: {
+      question: `You see a 27 percentage point drop in attempt-to-booking rate starting Week 16. Before running any more queries, what are three distinct hypotheses that could explain this specific pattern — a sudden drop at a specific week in a specific funnel stage?`,
+      placeholder: `Hypothesis 1: ...
+Hypothesis 2: ...
+Hypothesis 3: ...`,
+      rubric: `A good answer lists three mechanistically distinct hypotheses — not variations of the same idea. Good hypotheses for a sudden checkout drop: (1) a bug or system change deployed that week, (2) a pricing change that shocked users at checkout, (3) a supplier or payment failure. Each should be specific enough to be falsifiable with data.`,
+      revealAfterAttempts: 2,
+      correctAnswerReveal: `Three strong hypotheses for a sudden Week 16 checkout drop: (1) A system deployment introduced a bug — either in pricing logic, checkout flow, or payment processing. (2) Dynamic pricing changed behaviour — checkout prices became significantly higher than search prices, causing abandonment. (3) Supplier confirmation failures increased — hotels stopped confirming bookings, causing errors at checkout. Each of these is testable with a specific query. Notice that "user behaviour changed" is NOT a strong hypothesis — it is too vague and not falsifiable.`,
+    },
+
     investigationNudge: `Run the funnel weekly trend query. When you see it, I want you to identify two things: the exact week the drop started, and whether it was gradual or sudden. Write those two observations before you form any hypothesis about why.`,
 
     commitPrompt: 'Add a finding to the board. State the exact funnel stage where the problem is concentrated, the magnitude of the change, and the week it started. Be specific with numbers.',
@@ -242,6 +268,14 @@ export const MILESTONE_TEACHING_CONTENT: Record<string, MilestoneTeachingContent
         explanation: 'Investigating eliminated hypotheses wastes time. The discipline of root cause analysis is sequential elimination. Supplier failures are eliminated — move to the next hypothesis.',
       },
     ],
+
+    openQuestion: {
+      question: `You have eliminated supplier failures. The next hypothesis is a pricing bug. What specific data pattern would confirm — not just suggest — that a pricing bug exists? Describe exactly what you would expect to see in the data if this hypothesis is true.`,
+      placeholder: `e.g. "I would expect to see checkout_price consistently higher than search_price_shown starting from Week 16, with the gap being large enough to explain abandonment..."`,
+      rubric: `A good answer is specific and falsifiable. It should identify: (1) the exact columns to compare (checkout_price vs search_price_shown), (2) the expected direction of the gap (checkout higher than search), (3) the timing (starting Week 16), and (4) the magnitude needed to explain 27pp abandonment increase.`,
+      revealAfterAttempts: 2,
+      correctAnswerReveal: `To confirm a pricing bug, you would expect: checkout_price consistently 15-40% higher than search_price_shown starting exactly in Week 16. The gap should be systematic — affecting most attempts, not just a few. It should correlate with abandonment: rows where price_delta_pct is high should have abandoned=true at much higher rates than rows with low delta. And the algorithm_version column in price_logs should show a new version deployed in Week 16. All four of these together constitute confirmation, not just suggestion.`,
+    },
 
     investigationNudge: `Good. Suppliers are eliminated. Now run the pricing anomaly query. Before you look at the result, write down your prediction: if there is a pricing bug deployed in Week 16, what specific pattern would you expect to see in the data between search price and checkout price?`,
 
@@ -303,6 +337,16 @@ export const MILESTONE_TEACHING_CONTENT: Record<string, MilestoneTeachingContent
       },
     ],
 
+    openQuestion: {
+      question: `Before running the impact query, estimate the weekly revenue loss in your head using only what you already know: attempt-to-booking dropped from 65% to 38%, weekly attempts are roughly 230, and average booking value is approximately ₹1,300. Show your working.`,
+      placeholder: `Working: Lost bookings per week = ...
+Revenue per lost booking = ...
+Weekly revenue loss = ...`,
+      rubric: `A good answer shows explicit arithmetic: (65%-38%) × 230 attempts = 62 lost bookings per week. 62 × ₹1,300 = ₹80,600 per week. Over 6 weeks = ₹4.8L approximately. The answer should show the formula, not just a number. Assumptions should be stated.`,
+      revealAfterAttempts: 2,
+      correctAnswerReveal: `Working: Lost conversion = 65% - 38% = 27 percentage points. Lost bookings per week = 27% × 230 attempts = 62 bookings. Revenue per booking = ₹1,300 (average). Weekly revenue loss = 62 × ₹1,300 = ₹80,600. Over 6 weeks = ₹4,83,600 (approximately ₹4.8L). This is a back-of-envelope estimate. The query will give a more precise number using actual data. State your assumptions: (1) weekly attempts stayed constant, (2) average booking value is representative.`,
+    },
+
     investigationNudge: `Run the revenue lost estimate query and the recovery projection query. When you see the numbers, I want you to do something before writing anything: sense-check the output. Does the weekly loss number feel right given what we know about RPB and booking volume? If it feels off, tell me why.`,
 
     commitPrompt: 'Write the impact finding. Include: total estimated revenue loss over the bug period, weekly loss run rate, estimated weekly recovery if fixed, and the two most important assumptions your calculation rests on.',
@@ -362,6 +406,14 @@ export const MILESTONE_TEACHING_CONTENT: Record<string, MilestoneTeachingContent
       },
     ],
 
+    openQuestion: {
+      question: `You are about to recommend rolling back the pricing algorithm to v1.2. Your Head of Engineering pushes back: "We cannot just roll back — v1.3 had important improvements for dynamic pricing accuracy." How do you respond? What is your recommendation now?`,
+      placeholder: `My response to the engineering pushback would be...`,
+      rubric: `A good answer does not simply insist on the rollback. It acknowledges the trade-off, proposes a middle path (e.g. rollback + fast-track fix for v1.3), defines a time-boxed approach, and keeps business impact as the primary decision criterion. It should also propose a hotfix or cap on price delta as an interim measure.`,
+      revealAfterAttempts: 2,
+      correctAnswerReveal: `Strong response: "I understand the concern. Here is what I propose: (1) Immediate: deploy a price delta cap — if checkout price exceeds search price by more than 8%, show the search price. This stops the bleeding without a full rollback. (2) Within 48 hours: rollback to v1.2 in parallel with the engineering team identifying what specifically broke in v1.3. (3) Within 2 weeks: redeploy v1.3 with the specific bug fixed and a price delta monitoring alert in place. The revenue loss is ₹80K per week — every day we delay costs us. The cap is the fastest path to stopping that loss while preserving the v1.3 work."`,
+    },
+
     investigationNudge: `Now write out your solution proposal. Think about three things: the immediate fix, the success metric, and the detection improvement. Do not write about what caused the bug — focus only on what you are proposing and how you will know it worked.`,
 
     commitPrompt: 'Write your solution to the board. Include: immediate fix with rollback plan, primary success metric with target and timeframe, and one monitoring improvement that prevents this class of bug in future.',
@@ -420,6 +472,14 @@ export const MILESTONE_TEACHING_CONTENT: Record<string, MilestoneTeachingContent
         explanation: 'Widening the investigation at the board meeting is the wrong moment. You have strong evidence for your conclusion. The right move is to defend it, not abandon it under first pressure.',
       },
     ],
+
+    openQuestion: {
+      question: `Before you face the stakeholder panel, write your two-sentence executive summary of this investigation. It must be clear enough that a CFO who has not read anything can understand the situation in 15 seconds.`,
+      placeholder: `Executive summary: ...`,
+      rubric: `A good two-sentence summary contains: (1) what happened and the magnitude, (2) why it happened (root cause), and (3) what is being done. It should have no jargon, no qualifications, and no passive voice. Example structure: "X caused Y, resulting in Z. We are fixing it by doing W, and we expect recovery by date."`,
+      revealAfterAttempts: 2,
+      correctAnswerReveal: `Strong executive summary: "A bug in our dynamic pricing algorithm (v1.3), deployed in Week 16, caused checkout prices to appear 22-35% higher than the prices users saw at search — triggering a 27 percentage point drop in checkout completion and approximately ₹4.8L in lost revenue over 6 weeks. We are implementing an immediate price delta cap today and rolling back to v1.2 within 48 hours, with full recovery expected within one week."`,
+    },
 
     investigationNudge: `The stakeholder panel is ready. You will face three challenges — from the CFO on impact sizing, from the Head of Product on root cause evidence, and from the Data Science Lead on methodology. Answer each one using your Investigation Board. Remember: defend the finding, not your ego.`,
 

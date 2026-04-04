@@ -1,6 +1,7 @@
 // ============================================================
-// MILESTONE STRIP
-// Horizontal progress indicator showing all milestones.
+// MILESTONE STRIP — Horizontal progress bar
+// Shows during investigation phase only.
+// Clean, minimal, not overwhelming.
 // ============================================================
 
 'use client';
@@ -12,131 +13,83 @@ interface Props {
   simulation: SimulationState;
 }
 
-const STATUS_COLORS = {
-  completed: 'var(--green)',
-  active:    'var(--orange)',
-  pending:   'var(--ink4)',
-  skipped:   'var(--ink4)',
-};
-
-const STATUS_BG = {
-  completed: 'rgba(61,214,140,0.12)',
-  active:    'rgba(252,128,25,0.12)',
-  pending:   'rgba(255,255,255,0.03)',
-  skipped:   'rgba(255,255,255,0.03)',
-};
-
 export function MilestoneStrip({ caseConfig, simulation }: Props) {
+  const milestones = caseConfig.milestones;
+  const currentId  = simulation.currentMilestoneId;
+
   return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '4px',
-        padding: '12px 20px',
-        borderBottom: '1px solid var(--border)',
-        overflowX: 'auto',
-        scrollbarWidth: 'none',
-      }}
-    >
-      {caseConfig.milestones.map((milestone, index) => {
-        const milestoneState = simulation.milestoneStates[milestone.id];
-        const status = milestoneState?.status ?? 'pending';
-        const isActive = milestone.id === simulation.currentMilestoneId;
-        const score = milestoneState?.score ?? 0;
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      padding: '0 20px',
+      height: '44px',
+      borderBottom: '1px solid var(--border)',
+      background: 'var(--surface)',
+      flexShrink: 0,
+      gap: '0',
+      overflowX: 'auto',
+    }}>
+      {milestones.map((m, i) => {
+        const state      = simulation.milestoneStates[m.id];
+        const isCompleted = state?.status === 'completed';
+        const isCurrent  = m.id === currentId;
+        const isPending  = !isCompleted && !isCurrent;
 
         return (
-          <div key={milestone.id} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            {/* Connector */}
-            {index > 0 && (
-              <div
-                style={{
-                  width: '24px',
-                  height: '1px',
-                  background: status === 'completed'
-                    ? 'var(--green)'
-                    : 'var(--border)',
-                  flexShrink: 0,
-                  transition: 'background 0.3s ease',
-                }}
-              />
-            )}
-
-            {/* Milestone pill */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '5px 10px',
-                background: STATUS_BG[status],
-                border: `1px solid ${isActive
-                  ? 'rgba(252,128,25,0.4)'
-                  : status === 'completed'
-                  ? 'rgba(61,214,140,0.2)'
-                  : 'var(--border)'
-                }`,
-                borderRadius: 'var(--radius-sm)',
+          <div
+            key={m.id}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0',
+              flexShrink: 0,
+            }}
+          >
+            {/* Step */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '7px',
+              padding: '6px 12px',
+              borderRadius: 'var(--radius-md)',
+              background: isCurrent ? 'rgba(255,122,47,0.08)' : 'transparent',
+              border: `1px solid ${isCurrent ? 'rgba(255,122,47,0.2)' : 'transparent'}`,
+              transition: 'all var(--t-base)',
+            }}>
+              <div style={{
+                width: '18px', height: '18px',
+                borderRadius: '50%',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '9px', fontWeight: 700,
+                background: isCompleted ? 'var(--green)' : isCurrent ? 'var(--orange)' : 'var(--elevated)',
+                border: `1px solid ${isCompleted ? 'var(--green)' : isCurrent ? 'var(--orange)' : 'var(--border)'}`,
+                color: isCompleted || isCurrent ? '#fff' : 'var(--ink4)',
                 flexShrink: 0,
-                transition: 'all 0.3s ease',
-                boxShadow: isActive ? 'var(--glow-orange)' : 'none',
-              }}
-            >
-              {/* Step number or checkmark */}
-              <div
-                style={{
-                  width: '16px',
-                  height: '16px',
-                  borderRadius: '50%',
-                  background: STATUS_COLORS[status],
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '9px',
-                  fontWeight: 700,
-                  color: '#fff',
-                  flexShrink: 0,
-                }}
-              >
-                {status === 'completed' ? '✓' : milestone.order}
+                transition: 'all var(--t-base)',
+              }}>
+                {isCompleted ? '✓' : m.order}
               </div>
-
-              {/* Title */}
-              <span
-                style={{
-                  fontSize: '11px',
-                  fontWeight: isActive ? 600 : 400,
-                  color: isActive
-                    ? 'var(--orange)'
-                    : status === 'completed'
-                    ? 'var(--green)'
-                    : 'var(--ink3)',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {milestone.title}
+              <span style={{
+                fontSize: '11px',
+                fontWeight: isCurrent ? 600 : 400,
+                color: isCurrent ? 'var(--orange)' : isCompleted ? 'var(--ink2)' : 'var(--ink4)',
+                whiteSpace: 'nowrap',
+                letterSpacing: '-0.01em',
+                transition: 'color var(--t-fast)',
+              }}>
+                {m.title}
               </span>
-
-              {/* Score badge */}
-              {score > 0 && (
-                <span
-                  style={{
-                    fontSize: '10px',
-                    fontWeight: 600,
-                    color: score >= 70
-                      ? 'var(--green)'
-                      : score >= 50
-                      ? 'var(--orange)'
-                      : 'var(--red)',
-                    background: 'rgba(255,255,255,0.06)',
-                    padding: '1px 5px',
-                    borderRadius: '4px',
-                  }}
-                >
-                  {score}
-                </span>
-              )}
             </div>
+
+            {/* Connector */}
+            {i < milestones.length - 1 && (
+              <div style={{
+                width: '20px', height: '1px',
+                background: isCompleted ? 'var(--green)' : 'var(--border)',
+                flexShrink: 0,
+                transition: 'background var(--t-base)',
+              }} />
+            )}
           </div>
         );
       })}
