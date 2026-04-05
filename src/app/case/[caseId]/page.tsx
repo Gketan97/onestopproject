@@ -20,6 +20,7 @@ import { SkillScorecard }          from '@/components/simulator/SkillScorecard';
 import { TeachingCard }            from '@/components/simulator/TeachingCard';
 import { FindingGate }             from '@/components/simulator/FindingGate';
 import { InvestigationOnboarding } from '@/components/simulator/InvestigationOnboarding';
+import { CaseIntro } from '@/components/simulator/CaseIntro';
 import { DuckDBLoader }            from '@/components/analytics/DuckDBLoader';
 import { useSimulation }           from '@/hooks/useSimulation';
 import { useDuckDB }               from '@/hooks/useDuckDB';
@@ -32,6 +33,7 @@ export default function CasePage() {
   const [caseConfig, setCaseConfig]           = useState<CaseConfig | null>(null);
   const [caseError, setCaseError]             = useState<string | null>(null);
   const [showOnboarding, setShowOnboarding]   = useState(true);
+  const [introComplete, setIntroComplete]       = useState(false);
 
   const {
     state: simState,
@@ -78,6 +80,36 @@ export default function CasePage() {
         tablesLoaded={dbState.tablesLoaded}
         totalTables={caseConfig.datasetManifest.tables.length}
       />
+    );
+  }
+
+  // ── CASE INTRO — shown once before first teach phase ───────
+  if (!introComplete) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', background: 'var(--bg)' }}>
+        {/* Minimal top bar during intro */}
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '0 20px', height: '48px',
+          borderBottom: '1px solid var(--border)',
+          background: 'var(--surface)',
+          flexShrink: 0,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+            <Link href="/" style={{ fontSize: '11px', fontWeight: 700, color: 'var(--ink3)', textDecoration: 'none', letterSpacing: '0.06em' }}>
+              OSC
+            </Link>
+            <div style={{ width: '1px', height: '14px', background: 'var(--border)' }} />
+            <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ink1)', letterSpacing: '-0.015em' }}>
+              {caseConfig.title}
+            </p>
+          </div>
+          <span style={{ fontSize: '10px', color: 'var(--orange)', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+            {caseConfig.difficulty}
+          </span>
+        </div>
+        <CaseIntro caseConfig={caseConfig} onComplete={() => setIntroComplete(true)} />
+      </div>
     );
   }
 
