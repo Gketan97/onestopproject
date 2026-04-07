@@ -276,6 +276,7 @@
     "react-dom": "^18.3.1",
     "react-is": "^16.13.1",
     "react-redux": "^9.2.0",
+    "react-router-dom": "^6.30.3",
     "read-cache": "^1.0.0",
     "readdirp": "^3.6.0",
     "recharts": "^3.8.1",
@@ -364,12 +365,16 @@
     "word-wrap": "^1.2.5",
     "wordwrapjs": "^5.1.1",
     "wrappy": "^1.0.2",
-    "yocto-queue": "^0.1.0"
+    "yocto-queue": "^0.1.0",
+    "zustand": "^4.5.7"
   },
   "scripts": {
-  "dev": "vite",
-  "build": "vite build",
-  "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "vite",
+    "build": "vite build",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "preview": "vite preview",
+    "lint": "tsc --noEmit",
+    "start": "vite preview"
   },
   "repository": {
     "type": "git",
@@ -381,5 +386,11 @@
   "bugs": {
     "url": "https://github.com/Gketan97/onestopproject/issues"
   },
-  "homepage": "https://github.com/Gketan97/onestopproject#readme"
+  "homepage": "https://github.com/Gketan97/onestopproject#readme",
+  "devDependencies": {
+    "@types/node": "^25.5.2",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.1"
+  }
 }

@@ -7,105 +7,63 @@ echo ""
 echo "🚀 Smart Dev Script — V3"
 echo "────────────────────────────"
 
-# ── 1. Ensure correct branch ─────────────────────────
-
 CURRENT_BRANCH=$(git branch --show-current)
-
 if [ "$CURRENT_BRANCH" != "$BRANCH" ]; then
-echo "⚠️ You are on '$CURRENT_BRANCH'. Switching to '$BRANCH'..."
-git checkout $BRANCH || exit 1
+  echo "⚠️ Switching to '$BRANCH'..."
+  git checkout $BRANCH || exit 1
 fi
-
-echo "✅ Working on branch: $BRANCH"
-
-# ── 2. Show changed files ───────────────────────────
+echo "✅ Branch: $BRANCH"
 
 echo ""
 echo "📂 Changed files:"
 git status --short
 
 if [ -z "$(git status --porcelain)" ]; then
-echo "⚠️ No changes detected."
-exit 0
+  echo "⚠️ No changes detected."
+  exit 0
 fi
-
-# ── 3. Clean memory-heavy caches ────────────────────
 
 echo ""
 echo "🧹 Cleaning cache..."
-rm -rf .next
-rm -rf node_modules/.cache
-
-# ── 4. Increase Node memory ─────────────────────────
+rm -rf dist node_modules/.cache
 
 export NODE_OPTIONS="--max-old-space-size=4096"
 
-# ── 5. Install deps if needed ───────────────────────
-
 if [ ! -d "node_modules" ]; then
-echo "📦 Installing dependencies..."
-npm install || exit 1
+  echo "📦 Installing dependencies..."
+  npm install || exit 1
 fi
 
-# ── 6. Run lint (if exists) ─────────────────────────
-
-if npm run | grep -q "lint"; then
-echo ""
-echo "🔍 Running linter..."
-npm run lint || {
-echo "❌ Lint failed"
-exit 1
-}
+if npm run | grep -q " lint"; then
+  echo ""
+  echo "🔍 Linting..."
+  npm run lint || { echo "❌ Lint failed"; exit 1; }
 fi
 
-# ── 7. Run type check (Next.js / TS) ────────────────
-
-if npm run | grep -q "type-check"; then
 echo ""
 echo "🧠 Type checking..."
-npm run type-check || {
-echo "❌ Type errors"
-exit 1
-}
-fi
-
-# ── 8. Build project ───────────────────────────────
+npx tsc --noEmit || { echo "❌ Type errors"; exit 1; }
 
 echo ""
 echo "🔨 Building..."
-npm run build || {
-echo "❌ Build failed"
-exit 1
-}
-
+npm run build || { echo "❌ Build failed"; exit 1; }
 echo "✅ Build success"
 
-# ── 9. Run local preview ───────────────────────────
-
 echo ""
-echo "🌐 Starting preview..."
-
-npm run start &
+echo "🌐 Starting preview on :$PREVIEW_PORT..."
+npm run preview &
 PREVIEW_PID=$!
-
 sleep 3
-
-open "http://localhost:3000" 2>/dev/null || 
-echo "Open http://localhost:3000"
-
-# ── 10. Confirm commit ─────────────────────────────
+open "http://localhost:$PREVIEW_PORT" 2>/dev/null || echo "Open http://localhost:$PREVIEW_PORT"
 
 echo ""
 read -p "Deploy changes? (y/n): " CONFIRM
-
 kill $PREVIEW_PID 2>/dev/null
 
 if [[ "$CONFIRM" != "y" ]]; then
-echo "🛑 Aborted"
-exit 0
+  echo "🛑 Aborted"
+  exit 0
 fi
-
-# ── 11. Commit safely ──────────────────────────────
 
 read -p "Commit message: " MSG
 MSG=${MSG:-"v3 update"}
@@ -116,4 +74,3 @@ git push origin $BRANCH
 
 echo ""
 echo "✅ Done. Pushed to $BRANCH"
-
