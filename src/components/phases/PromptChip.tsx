@@ -1,5 +1,5 @@
 import { Sparkles } from 'lucide-react'
-import { useAIPanelStore, type AIPanelContent } from '@/store/aiPanelStore'
+import { useArjunStore, type AIPanelContent } from '@/store/arjunStore'
 
 interface PromptChipProps {
   label:   string
@@ -7,7 +7,7 @@ interface PromptChipProps {
 }
 
 export function PromptChip({ label, content }: PromptChipProps) {
-  const openWithContent = useAIPanelStore((s) => s.openWithContent)
+  const openWithContent = useArjunStore((s) => s.openWithContent)
 
   return (
     <button

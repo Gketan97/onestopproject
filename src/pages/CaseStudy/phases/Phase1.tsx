@@ -2,7 +2,7 @@ import { useState, useEffect }     from 'react'
 import { useNavigate, useParams }  from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useProgressStore }        from '@/store/progressStore'
-import { useAIPanelStore }         from '@/store/aiPanelStore'
+import { useArjunStore }         from '@/store/arjunStore'
 import { RevealBlock }             from '@/components/phases/RevealBlock'
 import { MetricCard }              from '@/components/phases/MetricCard'
 import { MiniBarChart }            from '@/components/phases/MiniBarChart'
@@ -72,7 +72,7 @@ export default function Phase1() {
   const { slug }       = useParams<{ slug: string }>()
   const navigate        = useNavigate()
   const { completePhase, isCompleted } = useProgressStore()
-  const openWithContent = useAIPanelStore((s) => s.openWithContent)
+  const openWithContent = useArjunStore((s) => s.openWithContent)
   const phaseCompleted  = isCompleted('phase-1')
 
   const [sections, setSections]           = useState<Sections>(INITIAL_SECTIONS)
