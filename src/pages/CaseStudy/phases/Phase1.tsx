@@ -72,7 +72,6 @@ export default function Phase1() {
   const { slug }       = useParams<{ slug: string }>()
   const navigate        = useNavigate()
   const { completePhase, isCompleted } = useProgressStore()
-  const openWithContent = useArjunStore((s) => s.openWithContent)
   const phaseCompleted  = isCompleted('phase-1')
 
   const [sections, setSections]           = useState<Sections>(INITIAL_SECTIONS)
@@ -140,7 +139,6 @@ export default function Phase1() {
     setSanityAnswers(prev => ({ ...prev, [check.id]: currentAnswer }))
 
     if (isGood) {
-      openWithContent({
         type:  'insight',
         title: `Exhibit ${String.fromCharCode(65 + sanityIdx)} — Arjun's take`,
         text:  getSanityFeedbackText(check.id, true),
@@ -154,7 +152,6 @@ export default function Phase1() {
       }
     } else {
       // After 1 wrong answer — show solution and auto-advance
-      openWithContent({
         type:  'insight',
         title: `Exhibit ${String.fromCharCode(65 + sanityIdx)} — Answer revealed`,
         text:  getSanityFeedbackText(check.id, true),
@@ -203,7 +200,6 @@ export default function Phase1() {
       lower.includes('sigma') || lower.includes('sd') || lower.includes('standard') ||
       lower.includes('outside') || lower.includes('6') || lower.includes('5') || lower.includes('beyond')
 
-    openWithContent({
       type:  'insight',
       title: isGood ? 'Correct — statistically significant' : 'Think about the bands',
       text:  isGood
@@ -249,28 +245,24 @@ export default function Phase1() {
     setInsightAttempts(attempts)
 
     if (hasBoth) {
-      openWithContent({
         type:  'insight',
         title: 'Complete insight — seasonality ruled out',
         text:  'Perfect analysis. Two patterns in the chart: (1) Oct–Nov 2024 shows a ~1pp seasonal dip that recovered by December — this is the known post-monsoon travel lull. (2) Jan–Apr 2025 shows a steady structural drop from 11.7% to 10.1% — Jan 2024 was flat at 12.0%, so this is NOT seasonal. Same calendar window, completely different behaviour. Seasonality is definitively ruled out. The drop is structural — something changed in the product, supply, or user behaviour around W25.',
       })
       setSeasonStep('done')
     } else if (!hasStructural && attempts < 2) {
-      openWithContent({
         type:  'insight',
         title: 'Partial — look at Jan–Feb specifically',
         text:  'You identified the seasonal pattern correctly. Now look at the Jan–Feb window. In 2024, what was B/DAU in January? Now look at 2025 January. Are they the same? What does that tell you about whether the current drop is seasonal or structural?',
       })
       setInsightAttempts(attempts)
     } else if (!hasSeasonal && attempts < 2) {
-      openWithContent({
         type:  'insight',
         title: 'Partial — look at Oct–Nov 2024',
         text:  'You correctly identified the Jan–Feb structural drop. But look at Oct–Nov in the 2024 line — there\'s a visible dip there too. What caused it? Why did it recover in December? This is important: not all dips are structural. Identifying the seasonal pattern makes your structural conclusion stronger.',
       })
       setInsightAttempts(attempts)
     } else {
-      openWithContent({
         type:  'insight',
         title: 'Both patterns — complete your insight',
         text:  'Look for two things: (1) Oct–Nov 2024 dip + December recovery = seasonal. (2) Jan–Feb 2025 drop vs Jan–Feb 2024 flat = structural. Your insight needs to address both patterns to be complete.',
