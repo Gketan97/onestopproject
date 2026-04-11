@@ -1,45 +1,66 @@
-import { useParams, Navigate } from 'react-router-dom'
-import { useProgressStore, type Phase } from '@/store/progressStore'
-import { MobileGate } from '@/components/ui/MobileGate'
-import { Layout } from '@/components/layout/Layout'
-import { FadeIn } from '@/components/animations/FadeIn'
-import { Button } from '@/components/ui/Button'
-import { Badge } from '@/components/ui/Badge'
-import { ChevronRight } from 'lucide-react'
+import { useParams, Navigate }  from 'react-router-dom'
+import { motion }               from 'framer-motion'
+import { useProgressStore, PHASES, type PhaseId } from '@/store/progressStore'
+import { Button }               from '@/components/ui/Button'
+import { ChevronRight }         from 'lucide-react'
+import { staggerChildren, staggerItem } from '@/lib/motionVariants'
 
 export default function PhaseView() {
-  const { slug, phase } = useParams<{ slug: string; phase: string }>()
-  const { isPhaseUnlocked, phaseCompleted, currentPhase } = useProgressStore()
-  const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024
+  const { slug, phase }   = useParams<{ slug: string; phase: string }>()
+  const { isUnlocked, isCompleted, completePhase, currentPhaseId } = useProgressStore()
 
-  if (!isDesktop) return <MobileGate />
+  const typedPhase  = phase as PhaseId
+  const phaseConfig = PHASES.find((p) => p.id === typedPhase)
 
-  const typedPhase = phase as Phase
-  if (!isPhaseUnlocked(typedPhase)) {
-    return <Navigate to={`/case-study/${slug}/${currentPhase}`} replace />
+  // Only block truly locked phases (not unlocked, not completed)
+  if (!isUnlocked(typedPhase) && !isCompleted(typedPhase)) {
+    return <Navigate to={`/case-study/${slug}/${currentPhaseId}`} replace />
   }
 
+  const completed = isCompleted(typedPhase)
+
   return (
-    <Layout>
-      <section className="max-w-5xl mx-auto px-6 py-16 space-y-10">
-        <FadeIn className="space-y-2">
-          <Badge variant="blue" className="font-mono text-xs">{slug?.replace(/-/g, ' ')}</Badge>
-          <h1 className="text-3xl font-bold text-ink capitalize">{phase} Phase</h1>
-          <p className="text-ink2">Complete this phase to unlock the next investigation step.</p>
-        </FadeIn>
-        <FadeIn delay={0.1}>
-          <div className="glass border border-border rounded-2xl p-8 min-h-64 flex items-center justify-center">
-            <p className="text-ink3 text-sm font-mono">[ Phase content for "{phase}" loads here ]</p>
-          </div>
-        </FadeIn>
-        <FadeIn delay={0.2}>
-          <div className="flex justify-end">
-            <Button onClick={() => phaseCompleted(typedPhase)} size="lg">
-              Complete Phase <ChevronRight size={18} />
-            </Button>
-          </div>
-        </FadeIn>
-      </section>
-    </Layout>
+    <motion.div
+      variants={staggerChildren}
+      initial="hidden"
+      animate="visible"
+      className="space-y-8"
+    >
+      <motion.div
+        variants={staggerItem}
+        className="rounded-2xl p-8 space-y-4"
+        style={{
+          background: 'var(--bg-surface)',
+          border:     '1px solid var(--border-subtle)',
+        }}
+      >
+        <p className="text-xs uppercase tracking-widest"
+          style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+          Phase content
+        </p>
+        <p style={{ color: 'var(--text-secondary)', lineHeight: 1.7 }}>
+          {phaseConfig?.label} content will be built in P6–P11.
+        </p>
+      </motion.div>
+
+      {!completed && (
+        <motion.div variants={staggerItem} className="flex justify-end">
+          <Button variant="primary" size="lg" onClick={() => completePhase(typedPhase)}>
+            Complete {phaseConfig?.label} <ChevronRight size={18} />
+          </Button>
+        </motion.div>
+      )}
+
+      {completed && (
+        <motion.div variants={staggerItem}
+          className="flex items-center gap-3 px-5 py-4 rounded-xl"
+          style={{ background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.20)' }}>
+          <span style={{ color: 'var(--accent-green)', fontSize: '18px' }}>✓</span>
+          <p className="text-sm font-medium" style={{ color: 'var(--accent-green)' }}>
+            Phase complete — you can revisit this anytime
+          </p>
+        </motion.div>
+      )}
+    </motion.div>
   )
 }

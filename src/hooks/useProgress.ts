@@ -1,5 +1,7 @@
-import { useProgressStore, type Phase } from '@/store/progressStore'
+import { useProgressStore, type PhaseId } from '@/store/progressStore'
+
 export function useProgress() {
   return useProgressStore()
 }
-export type { Phase }
+
+export type { PhaseId }

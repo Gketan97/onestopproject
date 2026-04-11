@@ -1,6 +1,7 @@
 import { Providers } from './Providers'
-import { AppRouter } from './Router'
-import { useTheme } from '@/hooks/useTheme'
+import { AppRouter }  from './Router'
+import { useTheme }   from '@/hooks/useTheme'
+import '@/styles/themes.css'
 import '@/styles/globals.css'
 
 function ThemeSync() { useTheme(); return null }

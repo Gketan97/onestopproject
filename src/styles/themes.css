@@ -1,0 +1,73 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&display=swap');
+@import url('https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,700,800,900&display=swap');
+
+:root, .dark {
+  --bg-base:     #0D0D0D;
+  --bg-surface:  #141414;
+  --bg-elevated: #1C1C1C;
+  --bg-glass:    rgba(255, 255, 255, 0.04);
+
+  --text-primary:   #F5F0E8;
+  --text-secondary: #A09890;
+  --text-muted:     #4A4540;
+
+  --accent-primary:   #FF6B35;
+  --accent-secondary: #818CF8;
+  --accent-purple:    #818CF8;
+  --accent-green:     #10B981;
+  --accent-red:       #F87171;
+  --accent-amber:     #FBBF24;
+
+  --border-subtle:  rgba(255, 255, 255, 0.06);
+  --border-default: rgba(255, 255, 255, 0.10);
+  --border-strong:  rgba(255, 255, 255, 0.18);
+
+  --shadow-sm:   0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md:   0 4px 16px rgba(0, 0, 0, 0.5);
+  --shadow-lg:   0 8px 40px rgba(0, 0, 0, 0.6);
+  --shadow-glow: 0 0 20px rgba(255, 107, 53, 0.15);
+  --shadow-glow-indigo: 0 0 20px rgba(129, 140, 248, 0.15);
+  --shadow-glow-green:  0 0 20px rgba(16, 185, 129, 0.15);
+
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --duration-slow: 450ms;
+
+  --font-display: 'Instrument Serif', Georgia, serif;
+  --font-heading: 'Cabinet Grotesk', system-ui, sans-serif;
+  --font-mono:    'DM Mono', 'SF Mono', monospace;
+  --font-body:    'Cabinet Grotesk', system-ui, sans-serif;
+}
+
+.light {
+  --bg-base:     #F7F7F5;
+  --bg-surface:  #FFFFFF;
+  --bg-elevated: #FFFFFF;
+  --bg-glass:    rgba(255, 255, 255, 0.80);
+
+  --text-primary:   #111111;
+  --text-secondary: #4A4A4A;
+  --text-muted:     #909090;
+
+  --accent-primary:   #E8521A;
+  --accent-secondary: #4F46E5;
+  --accent-purple:    #4F46E5;
+  --accent-green:     #059669;
+  --accent-red:       #DC2626;
+  --accent-amber:     #D97706;
+
+  --border-subtle:  rgba(0, 0, 0, 0.08);
+  --border-default: rgba(0, 0, 0, 0.14);
+  --border-strong:  rgba(0, 0, 0, 0.22);
+
+  --shadow-sm:   0 1px 4px rgba(0, 0, 0, 0.08);
+  --shadow-md:   0 4px 20px rgba(0, 0, 0, 0.10);
+  --shadow-lg:   0 8px 40px rgba(0, 0, 0, 0.12);
+  --shadow-glow: 0 0 20px rgba(232, 82, 26, 0.12);
+}

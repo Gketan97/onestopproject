@@ -1,59 +1,90 @@
-import { Link } from 'react-router-dom'
-import { ArrowRight, Clock, TrendingDown } from 'lucide-react'
-import { Layout } from '@/components/layout/Layout'
-import { Card } from '@/components/ui/Card'
-import { Badge } from '@/components/ui/Badge'
-import { FadeIn } from '@/components/animations/FadeIn'
-
-const CASES = [
-  { slug: 'revenue-leak',    title: 'Revenue Leak Investigation', company: 'E-Commerce Platform', metric: '18% GMV drop in 72hrs',       difficulty: 'intermediate', duration: '45–60 min', tags: ['Revenue','Funnel','SQL'] },
-  { slug: 'makemytrip-dau', title: 'Bookings & DAU Decline',     company: 'MakeMyTrip',           metric: '4 compounding root causes',   difficulty: 'advanced',     duration: '60–90 min', tags: ['DAU','Bookings','Cohort'] },
-] as const
-
-const diffMap = { beginner: 'green', intermediate: 'blue', advanced: 'accent' } as const
+import { motion }          from 'framer-motion'
+import { Layout }          from '@/components/layout/Layout'
+import { CaseStudyCard }   from '@/components/ui/CaseStudyCard'
+import { Badge }           from '@/components/ui/Badge'
+import { CASE_STUDIES }    from '@/data/caseStudies'
+import { staggerChildren, fadeIn } from '@/lib/motionVariants'
 
 export default function CaseStudies() {
+  const available = CASE_STUDIES.filter((c) => c.available).length
+  const total     = CASE_STUDIES.length
+
   return (
     <Layout>
-      <section className="max-w-7xl mx-auto px-6 py-16 space-y-10">
-        <FadeIn>
-          <h1 className="text-3xl font-bold text-ink">Case Library</h1>
-          <p className="text-ink2 mt-2">Real-world metric investigations. Each case unlocks progressively harder phases.</p>
-        </FadeIn>
-        <div className="grid md:grid-cols-2 gap-6">
-          {CASES.map((cs, i) => (
-            <FadeIn key={cs.slug} delay={0.08 * i}>
-              <Link to={`/case-study/${cs.slug}`}>
-                <Card hoverable className="h-full">
-                  <div className="space-y-5">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="text-xs text-ink3 font-mono uppercase tracking-wider">{cs.company}</p>
-                        <h2 className="font-semibold text-ink text-lg">{cs.title}</h2>
-                      </div>
-                      <Badge variant={diffMap[cs.difficulty]}>{cs.difficulty}</Badge>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-accent font-medium">
-                      <TrendingDown size={14} />{cs.metric}
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex gap-2 flex-wrap">
-                        {cs.tags.map((tag) => <Badge key={tag} variant="muted">{tag}</Badge>)}
-                      </div>
-                      <div className="flex items-center gap-1 text-xs text-ink3">
-                        <Clock size={12} />{cs.duration}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-1 text-sm text-blue font-medium">
-                      Investigate <ArrowRight size={14} />
-                    </div>
-                  </div>
-                </Card>
-              </Link>
-            </FadeIn>
+      {/* Ambient glow */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" aria-hidden="true">
+        <div
+          className="absolute -top-48 left-1/2 -translate-x-1/2 w-[700px] h-[400px] rounded-full"
+          style={{
+            background: 'radial-gradient(circle, rgba(0,212,255,0.05) 0%, transparent 70%)',
+            filter:     'blur(80px)',
+          }}
+        />
+      </div>
+
+      <div className="relative z-10 max-w-5xl mx-auto px-6 py-16">
+
+        {/* Page header */}
+        <motion.div
+          variants={fadeIn}
+          initial="hidden"
+          animate="visible"
+          className="mb-12 space-y-4"
+        >
+          <div className="flex items-center gap-3">
+            <Badge variant="cyan" dot pulse size="md">
+              Live
+            </Badge>
+            <span
+              className="text-xs uppercase tracking-widest"
+              style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}
+            >
+              {available} of {total} available
+            </span>
+          </div>
+
+          <h1
+            className="text-4xl font-bold tracking-tight"
+            style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
+          >
+            Case Library
+          </h1>
+
+          <p
+            className="text-base leading-relaxed max-w-xl"
+            style={{ color: 'var(--text-secondary)' }}
+          >
+            Real-world metric investigations. Each case unlocks progressively harder phases —
+            no tutorials, no hand-holding.
+          </p>
+
+          {/* Divider */}
+          <div style={{ height: '1px', background: 'var(--border-subtle)', marginTop: '8px' }} />
+        </motion.div>
+
+        {/* Cards grid */}
+        <motion.div
+          variants={staggerChildren}
+          initial="hidden"
+          animate="visible"
+          className="grid md:grid-cols-2 gap-5"
+        >
+          {CASE_STUDIES.map((cs) => (
+            <CaseStudyCard key={cs.slug} data={cs} />
           ))}
-        </div>
-      </section>
+        </motion.div>
+
+        {/* Footer note */}
+        <motion.p
+          variants={fadeIn}
+          initial="hidden"
+          animate="visible"
+          className="text-center mt-12 text-xs uppercase tracking-widest"
+          style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}
+        >
+          More cases shipping every month
+        </motion.p>
+      </div>
     </Layout>
   )
 }

@@ -1,50 +1,38 @@
-import { useParams, useNavigate } from 'react-router-dom'
-import { MobileGate } from '@/components/ui/MobileGate'
-import { useProgressStore } from '@/store/progressStore'
-import { Layout } from '@/components/layout/Layout'
-import { FadeIn } from '@/components/animations/FadeIn'
-import { Button } from '@/components/ui/Button'
-import { ArrowRight, Lock } from 'lucide-react'
+import { useEffect }                      from 'react'
+import { useParams, useNavigate, Outlet } from 'react-router-dom'
+import { MobileGate }                     from '@/components/ui/MobileGate'
+import { ProgressNav }                    from '@/components/layout/ProgressNav'
+import { CenterPanel }                    from '@/components/layout/CenterPanel'
+import { ArjunModal }                     from '@/components/ai/ArjunModal'
+import { useProgressStore }               from '@/store/progressStore'
+
+const DESKTOP_BREAKPOINT = 1024
 
 export default function CaseStudyShell() {
-  const { slug } = useParams<{ slug: string }>()
-  const navigate = useNavigate()
-  const currentPhase = useProgressStore((s) => s.currentPhase)
-  const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024
+  const { slug, phase } = useParams<{ slug: string; phase?: string }>()
+  const navigate         = useNavigate()
+  const currentPhaseId   = useProgressStore((s) => s.currentPhaseId)
+  const isDesktop        =
+    typeof window !== 'undefined' && window.innerWidth >= DESKTOP_BREAKPOINT
+
+  // Only redirect on initial load when no phase in URL
+  useEffect(() => {
+    if (!phase && slug) {
+      navigate(`/case-study/${slug}/${currentPhaseId}`, { replace: true })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // Empty deps — only run once on mount
 
   if (!isDesktop) return <MobileGate />
 
   return (
-    <Layout>
-      <section className="max-w-3xl mx-auto px-6 py-24 text-center space-y-10">
-        <FadeIn className="space-y-4">
-          <p className="text-xs font-mono text-ink3 uppercase tracking-widest">Incident File</p>
-          <h1 className="text-4xl font-bold text-ink capitalize">{slug?.replace(/-/g, ' ')}</h1>
-          <p className="text-ink2 leading-relaxed">
-            You are about to enter a live strategic incident. Progress through each phase by
-            demonstrating genuine analytical thinking.
-          </p>
-        </FadeIn>
-        <FadeIn delay={0.15}>
-          <div className="glass border border-border rounded-2xl p-6 space-y-3 text-left max-w-sm mx-auto">
-            <p className="text-xs font-mono text-ink3 uppercase tracking-wide">Current Phase</p>
-            <p className="text-ink font-semibold capitalize flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-green animate-pulse" />
-              {currentPhase}
-            </p>
-          </div>
-        </FadeIn>
-        <FadeIn delay={0.25}>
-          <div className="flex items-center justify-center gap-4">
-            <Button size="lg" onClick={() => navigate(`/case-study/${slug}/${currentPhase}`)}>
-              Enter Simulation <ArrowRight size={18} />
-            </Button>
-            <Button variant="ghost" size="lg" onClick={() => navigate('/case-studies')}>
-              <Lock size={16} /> Back
-            </Button>
-          </div>
-        </FadeIn>
-      </section>
-    </Layout>
+    <div className="flex h-screen overflow-hidden" style={{ background: 'var(--bg-base)' }}>
+      <ProgressNav />
+      <div className="flex-1 min-w-0 overflow-hidden">
+        <CenterPanel />
+      </div>
+      {/* Arjun floating modal — always available */}
+      <ArjunModal />
+    </div>
   )
 }
