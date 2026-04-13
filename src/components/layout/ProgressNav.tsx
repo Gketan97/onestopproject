@@ -118,13 +118,13 @@ export function ProgressNav() {
                     : <Lock size={12} style={{ color: 'var(--text-muted)' }} />}
                 </span>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold truncate" style={{
+                  <p className="text-sm font-semibold truncate" style={{
                     color:      completed ? 'var(--accent-green)' : isCurrent ? 'var(--accent-primary)' : accessible ? 'var(--text-secondary)' : 'var(--text-muted)',
                     fontFamily: 'var(--font-heading)',
                   }}>{phase.label}</p>
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
-                  <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: '10px' }}>
+                  <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: '11px' }}>
                     {String(phase.order).padStart(2, '0')}
                   </span>
                   {hasSections && accessible && (
@@ -152,7 +152,7 @@ export function ProgressNav() {
                           className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-left transition-all hover:bg-white/5">
                           <ChevronRight size={10} style={{ color: 'var(--text-muted)' }} />
                           <span className="text-xs truncate"
-                            style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: '11px' }}>
+                            style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: '13px' }}>
                             {section.label}
                           </span>
                         </button>
