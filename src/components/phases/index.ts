@@ -12,3 +12,5 @@ export { YoYChart }        from './YoYChart'
 export { PhaseCard }          from './PhaseCard'
 export { ArjunInline }        from './ArjunInline'
 export { ObservationInput }   from './ObservationInput'
+
+export { TypewriterText } from './TypewriterText'

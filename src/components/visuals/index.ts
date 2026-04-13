@@ -5,3 +5,5 @@ export { FormulaBuilder }   from './FormulaBuilder'
 export { SegmentDonut }     from './SegmentDonut'
 export { CommissionVisual } from './CommissionVisual'
 export { MetricHierarchy }  from './MetricHierarchy'
+
+export { CalloutArrow } from './CalloutArrow'

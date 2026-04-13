@@ -1,3 +1,157 @@
+#!/usr/bin/env bash
+# PHASE 1 — LINEAR DISCOVERY FLOW
+# Pedagogical UX: content earns its place through interaction + timed sequences
+# Hook → Reveal → Proof → Mentorship → Protocol → Investigation
+
+set -euo pipefail
+
+echo "📋 Phase 1 — Linear Discovery Flow"
+echo "────────────────────────────────────"
+
+for contract in UI_CONTRACT.md BUG_AUDIT.md CODE_QUALITY.md DEBT_REGISTER.md; do
+  [ -f "$contract" ] && echo "  ✅ $contract" || { echo "  ❌ $contract missing"; exit 1; }
+done
+
+mkdir -p src/components/phases src/components/visuals
+
+# ── 1. TypewriterText — character by character reveal ────────────────────────
+cat > src/components/phases/TypewriterText.tsx << 'EOF'
+import { useState, useEffect } from 'react'
+
+interface TypewriterTextProps {
+  text:       string
+  speed?:     number      // ms per character
+  delay?:     number      // ms before starting
+  onComplete?: () => void
+  className?: string
+  style?:     React.CSSProperties
+}
+
+export function TypewriterText({
+  text, speed = 28, delay = 0, onComplete, className, style,
+}: TypewriterTextProps) {
+  const [displayed, setDisplayed] = useState('')
+  const [started, setStarted]     = useState(false)
+
+  useEffect(() => {
+    const startTimer = setTimeout(() => setStarted(true), delay)
+    return () => clearTimeout(startTimer)
+  }, [delay])
+
+  useEffect(() => {
+    if (!started) return
+    if (displayed.length >= text.length) {
+      onComplete?.()
+      return
+    }
+    const t = setTimeout(() => {
+      setDisplayed(text.slice(0, displayed.length + 1))
+    }, speed)
+    return () => clearTimeout(t)
+  }, [started, displayed, text, speed, onComplete])
+
+  return (
+    <span className={className} style={style}>
+      {displayed}
+      {displayed.length < text.length && (
+        <span
+          className="inline-block w-0.5 h-4 ml-0.5 align-middle animate-pulse"
+          style={{ background: 'var(--accent-secondary)' }}
+        />
+      )}
+    </span>
+  )
+}
+EOF
+echo "✅ TypewriterText.tsx"
+
+# ── 2. CalloutArrow — SVG annotation that draws onto chart ───────────────────
+cat > src/components/visuals/CalloutArrow.tsx << 'EOF'
+import { motion } from 'framer-motion'
+
+interface CalloutArrowProps {
+  x:      number   // position as % of container width
+  y:      number   // position as % of container height
+  label:  string
+  side?:  'left' | 'right'
+}
+
+export function CalloutArrow({ x, y, label, side = 'right' }: CalloutArrowProps) {
+  const offset = side === 'right' ? 1 : -1
+
+  return (
+    <div
+      className="absolute pointer-events-none"
+      style={{ left: `${x}%`, top: `${y}%`, transform: 'translate(-50%, -50%)' }}
+    >
+      <svg
+        width="160" height="60"
+        viewBox="0 0 160 60"
+        style={{
+          position:  'absolute',
+          left:      side === 'right' ? '8px' : '-168px',
+          top:       '-20px',
+          overflow:  'visible',
+        }}
+      >
+        {/* Arrow line */}
+        <motion.path
+          d={side === 'right'
+            ? 'M 0 30 C 20 30, 30 10, 60 10 L 140 10'
+            : 'M 160 30 C 140 30, 130 10, 100 10 L 20 10'}
+          fill="none"
+          stroke="#F87171"
+          strokeWidth="1.5"
+          strokeDasharray="4,3"
+          initial={{ pathLength: 0, opacity: 0 }}
+          animate={{ pathLength: 1, opacity: 1 }}
+          transition={{ duration: 0.6, ease: 'easeOut', delay: 0.2 }}
+        />
+        {/* Arrowhead */}
+        <motion.polygon
+          points={side === 'right' ? '136,6 144,10 136,14' : '24,6 16,10 24,14'}
+          fill="#F87171"
+          initial={{ opacity: 0, scale: 0 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.7, type: 'spring', stiffness: 400 }}
+          style={{ transformOrigin: side === 'right' ? '140px 10px' : '20px 10px' }}
+        />
+      </svg>
+
+      {/* Dot on chart */}
+      <motion.div
+        className="w-3 h-3 rounded-full border-2"
+        style={{ background: '#F87171', borderColor: '#0D0D0D' }}
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        transition={{ type: 'spring', stiffness: 500, delay: 0.1 }}
+      />
+
+      {/* Label pill */}
+      <motion.div
+        className="absolute px-2.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap"
+        style={{
+          [side === 'right' ? 'left' : 'right']: side === 'right' ? '68px' : '68px',
+          top:        '-26px',
+          background: 'rgba(248,113,113,0.15)',
+          border:     '1px solid rgba(248,113,113,0.40)',
+          color:      '#F87171',
+          fontFamily: 'var(--font-mono)',
+        }}
+        initial={{ opacity: 0, y: -6 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.8, duration: 0.4 }}
+      >
+        {label}
+      </motion.div>
+    </div>
+  )
+}
+EOF
+echo "✅ CalloutArrow.tsx"
+
+# ── 3. Phase 1 — full linear discovery flow ───────────────────────────────────
+cat > src/pages/CaseStudy/phases/Phase1.tsx << 'PHASE1_EOF'
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate, useParams }            from 'react-router-dom'
 import { motion, AnimatePresence }           from 'framer-motion'
@@ -177,8 +331,7 @@ export default function Phase1() {
     if (stage !== 'chart') return
     const t1 = setTimeout(() => setShowCallout(true), 1800)
     const t2 = setTimeout(() => setArjunVisible(true), 3200)
-    const t3 = setTimeout(() => setArjunVisible(true), 3200)
-    const t4 = setTimeout(() => { setStage('protocol'); setProtocolVisible(true) }, 4600)
+    const t3 = setTimeout(() => { setStage('arjun'); setProtocolVisible(true) }, 4400)
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3) }
   }, [stage])
 
@@ -582,7 +735,7 @@ export default function Phase1() {
       {/* ║  MENTORSHIP — Arjun speaks           ║ */}
       {/* ╚══════════════════════════════════════╝ */}
       <AnimatePresence>
-        {arjunVisible && (stage === 'chart' || stage === 'protocol' || stage === 'investigation') && (
+        {arjunVisible && (stage === 'arjun' || stage === 'protocol' || stage === 'investigation') && (
           <motion.div
             key="arjun-reveal"
             initial={{ opacity: 0, y: 16 }}
@@ -1076,3 +1229,64 @@ export default function Phase1() {
     </div>
   )
 }
+PHASE1_EOF
+echo "✅ Phase1.tsx — linear discovery flow"
+
+# ── Update barrel ─────────────────────────────────────────────────────────────
+python3 << 'PYEOF'
+# Add TypewriterText to phases barrel
+with open('src/components/phases/index.ts', 'r') as f:
+    c = f.read()
+if 'TypewriterText' not in c:
+    c += "\nexport { TypewriterText } from './TypewriterText'"
+with open('src/components/phases/index.ts', 'w') as f:
+    f.write(c)
+
+# Add CalloutArrow to visuals barrel
+with open('src/components/visuals/index.ts', 'r') as f:
+    c = f.read()
+if 'CalloutArrow' not in c:
+    c += "\nexport { CalloutArrow } from './CalloutArrow'"
+with open('src/components/visuals/index.ts', 'w') as f:
+    f.write(c)
+print("✅ barrels updated")
+PYEOF
+
+# ── Gates ─────────────────────────────────────────────────────────────────────
+echo ""
+echo "🧠 Gate 1: Type checking..."
+npx tsc --noEmit && echo "✅ Zero errors" || echo "❌ Fix above"
+
+echo ""
+echo "🔨 Gate 2: Build..."
+npm run build && echo "✅ Build passed" || echo "❌ Build failed"
+
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo " Phase 1 — Linear Discovery Flow"
+echo ""
+echo " Stage 1 HOOK: Slack lines appear one by one (typewriter)"
+echo "   Priya's message builds character by character"
+echo "   P0 badge + reactions auto-reveal after last line"
+echo ""
+echo " Stage 2 REVEAL: B/DAU counter animates 12.0% → 10.1%"
+echo "   4 metric pills stagger in after CountUp finishes"
+echo "   CTA: 'I understand the stakes — show me the data'"
+echo "   (user must click to earn the chart)"
+echo ""
+echo " Stage 3 PROOF: WoW chart draws in"
+echo "   After 1.8s: CalloutArrow animates to Week 25"
+echo "   Shape analysis cards appear below callout"
+echo ""
+echo " Stage 4 MENTORSHIP: Arjun message typewriters in"
+echo "   'Every analyst's first instinct is to open a dashboard.'"
+echo "   'That instinct kills investigations.'"
+echo ""
+echo " Stage 5 PROTOCOL: 4 cards slide in one by one"
+echo "   2×2 grid, staggered 150ms apart"
+echo "   CTA: 'Begin the protocol — Definition Clarity →'"
+echo ""
+echo " Stage 6 INVESTIGATION: Full phase unlocks"
+echo "   S1 Definition → S2 Sanity → S3 Timeline → S4 Seasonality"
+echo "   Each section unlocked by ContinueButton"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

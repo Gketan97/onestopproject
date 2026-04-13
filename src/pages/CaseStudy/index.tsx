@@ -17,11 +17,14 @@ export default function CaseStudyShell() {
 
   // Only redirect on initial load when no phase in URL
   useEffect(() => {
-    if (!phase && slug) {
+    // ONLY redirect on first mount when URL has no phase segment
+    // Empty deps [] — never re-runs, so ProgressNav navigation is never overridden
+    const pathParts = window.location.pathname.split('/')
+    const hasPhase  = pathParts.some(p => p.startsWith('phase-'))
+    if (!hasPhase && slug) {
       navigate(`/case-study/${slug}/${currentPhaseId}`, { replace: true })
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []) // Empty deps — only run once on mount
+  }, [])  // ← empty deps: mount-only, never re-fires on store updates // Empty deps — only run once on mount
 
   if (!isDesktop) return <MobileGate />
 
