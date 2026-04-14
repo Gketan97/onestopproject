@@ -7,3 +7,4 @@ export { CommissionVisual } from './CommissionVisual'
 export { MetricHierarchy }  from './MetricHierarchy'
 
 export { CalloutArrow } from './CalloutArrow'
+export { TravelHero } from './TravelHero'
