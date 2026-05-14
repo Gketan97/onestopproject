@@ -152,23 +152,23 @@ export default function Hero() {
         <div ref={ref} className="hero-content">
           <div data-reveal className="hero-eyebrow">
             <span className="hero-eyebrow-dot" />
-            <span className="hero-eyebrow-text">FOR EVERY PROFESSIONAL WHO USES AI AT WORK</span>
+            <span className="hero-eyebrow-text">FOR PROFESSIONALS WHO USE AI AT WORK</span>
           </div>
           <h1 data-reveal className="hero-headline">
-            AI can generate answers, write code, and automate execution.{' '}
-            <span className="hero-gradient-text">But can you make the decision?</span>
+            Everyone has the same AI tools.{' '}
+            <span className="hero-gradient-text">The gap is how you think.</span>
           </h1>
           <p data-reveal className="hero-sub">
-            The future belongs to people who can use AI to navigate ambiguity,
-            solve problems, and make better decisions.{' '}
-            <strong>Test where you actually stand.</strong>
+            Most professionals think they're stronger analytical thinkers than they are.
+            The diagnostic takes 4 minutes.{' '}
+            <strong>Find out where you actually stand.</strong>
           </p>
           <div data-reveal className="hero-cta-group">
             <button className="hero-cta-btn" onClick={() => navigate('/diagnostic')}>
               Test Your Thinking — Free
             </button>
             <span className="hero-trust">
-              Takes 4 minutes · No signup required · 2,400+ attempts
+              4 minutes · No signup · Instant AI evaluation
             </span>
           </div>
           <div data-reveal><div className="hero-scroll-line" /></div>

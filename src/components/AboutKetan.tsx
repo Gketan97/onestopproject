@@ -67,24 +67,11 @@ export default function AboutKetan() {
           font-size: 48px;
           color: var(--text-secondary);
         }
-        .about-pills { display: flex; flex-direction: column; gap: 8px; width: 100%; }
-        .about-pill {
-          font-family: 'DM Mono', monospace;
-          font-size: 11px;
-          color: var(--text-tertiary);
-          letter-spacing: 0.08em;
-          background: var(--bg-elevated);
-          border: 1px solid var(--border-subtle);
-          border-radius: 8px;
-          padding: 8px 14px;
-          text-align: center;
-        }
         .about-stats {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
           gap: 12px;
           width: 100%;
-          margin-top: 8px;
         }
         .about-stat {
           text-align: center;
@@ -107,6 +94,18 @@ export default function AboutKetan() {
           letter-spacing: 0.08em;
           line-height: 1.4;
         }
+        .about-pill {
+          font-family: 'DM Mono', monospace;
+          font-size: 11px;
+          color: var(--text-tertiary);
+          letter-spacing: 0.08em;
+          background: var(--bg-elevated);
+          border: 1px solid var(--border-subtle);
+          border-radius: 8px;
+          padding: 8px 14px;
+          text-align: center;
+          width: 100%;
+        }
         .about-label {
           font-family: 'DM Mono', monospace;
           font-size: 11px;
@@ -119,8 +118,16 @@ export default function AboutKetan() {
           font-size: clamp(32px, 3.5vw, 48px);
           font-weight: 400;
           color: var(--text-primary);
-          margin-bottom: 28px;
+          margin-bottom: 8px;
           line-height: 1.1;
+        }
+        .about-authority {
+          font-family: 'Instrument Serif', serif;
+          font-size: clamp(18px, 2vw, 22px);
+          font-style: italic;
+          color: var(--text-secondary);
+          margin-bottom: 32px;
+          line-height: 1.4;
         }
         .about-bio {
           font-family: 'DM Sans', sans-serif;
@@ -131,6 +138,20 @@ export default function AboutKetan() {
         }
         .about-bio strong { color: var(--text-primary); font-weight: 500; }
         .about-bio em { font-style: italic; color: var(--text-primary); }
+        .about-insight {
+          background: var(--bg-elevated);
+          border-left: 2px solid var(--accent);
+          border-radius: 0 12px 12px 0;
+          padding: 20px 24px;
+          margin: 28px 0;
+        }
+        .about-insight-text {
+          font-family: 'Instrument Serif', serif;
+          font-size: 18px;
+          font-style: italic;
+          color: var(--text-primary);
+          line-height: 1.6;
+        }
         .about-linkedin {
           display: inline-flex;
           align-items: center;
@@ -163,48 +184,44 @@ export default function AboutKetan() {
             <div className="about-avatar">
               <span className="about-avatar-initials">KG</span>
             </div>
-            <div className="about-pills">
-              <span className="about-pill">Analytics Manager · Meesho</span>
-              <span className="about-pill">7 Years in Product Analytics</span>
-              <span className="about-pill">170K LinkedIn Followers</span>
-            </div>
             <div className="about-stats">
               <div className="about-stat">
                 <span className="about-stat-num">170K</span>
-                <span className="about-stat-label">Followers</span>
+                <span className="about-stat-label">LinkedIn followers</span>
               </div>
               <div className="about-stat">
-                <span className="about-stat-num">7</span>
-                <span className="about-stat-label">Years at Meesho</span>
+                <span className="about-stat-num">7yr</span>
+                <span className="about-stat-label">At Meesho</span>
               </div>
               <div className="about-stat">
                 <span className="about-stat-num">500+</span>
                 <span className="about-stat-label">Mentored</span>
               </div>
             </div>
+            <span className="about-pill">Analytics Manager · Meesho</span>
           </div>
 
           <div>
-            <p data-reveal className="about-label">YOUR MENTOR</p>
+            <p data-reveal className="about-label">YOUR EVALUATOR</p>
             <h2 data-reveal className="about-name">Ketan Goel</h2>
-            <p data-reveal className="about-bio">
-              I've spent 7 years at the intersection of data and decisions —
-              most recently as <strong>Analytics Manager at Meesho</strong>, one of
-              India's fastest-growing e-commerce companies.
+            <p data-reveal className="about-authority">
+              He has reviewed more analytical thinking than most people will produce in a career.
             </p>
             <p data-reveal className="about-bio">
-              In that time, I've interviewed hundreds of candidates and worked
-              with analysts at every level. The gap between good and great has
-              almost nothing to do with SQL or Python.
+              7 years at Meesho as an Analytics Manager means Ketan has sat across from hundreds of candidates, reviewed thousands of analyses, and seen exactly where smart people's thinking breaks down under pressure.
             </p>
             <p data-reveal className="about-bio">
-              <em>It's always the thinking.</em>
+              <strong>The pattern is always the same.</strong> Most professionals describe what happened. The ones who get promoted — and get hired — explain why it happened, what it means, and what to do next. In the same breath, with no hand-holding.
             </p>
+
+            <div data-reveal className="about-insight">
+              <p className="about-insight-text">
+                "The gap between good and great has almost nothing to do with SQL or Python. It's always the thinking. That gap is learnable — but only if someone shows you exactly where yours breaks down."
+              </p>
+            </div>
+
             <p data-reveal className="about-bio">
-              Most professionals describe what happened.
-              Great analysts explain <strong>why it happened, what it means,
-              and what to do next</strong> — in the same breath.
-              That's what this lab teaches.
+              The lab is built on what he's seen work: real cases, live evaluation, and honest feedback that tells you precisely where your reasoning falls short — not generic frameworks, but your specific blind spots.
             </p>
             <a
               data-reveal

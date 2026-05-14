@@ -86,6 +86,7 @@ export default function DiagnosticCTA() {
           max-width: 480px;
           margin: 0 auto 40px;
         }
+        .dcta-body strong { color: var(--text-primary); font-weight: 500; }
         .dcta-btn {
           font-family: 'DM Sans', sans-serif;
           font-size: 16px;
@@ -133,16 +134,16 @@ export default function DiagnosticCTA() {
           <div className="dcta-banner">
             <p data-reveal className="dcta-label">THE DIAGNOSTIC</p>
             <h2 data-reveal className="dcta-h2">
-              One question.<br />Real evaluation.
+              Most people think they think well.<br />Most are wrong.
             </h2>
             <p data-reveal className="dcta-body">
-              Answer a single business problem — the same type asked in
-              interviews at Swiggy, Zepto, Blinkit, and Meesho.
-              Our AI evaluates exactly how you think.
+              One business problem. The same type asked in interviews at Swiggy, Zepto, and Meesho.
+              Our AI evaluates your response across 5 dimensions and tells you{' '}
+              <strong>exactly where your reasoning breaks down.</strong>
             </p>
             <div data-reveal>
               <button className="dcta-btn" onClick={() => navigate('/diagnostic')}>
-                Start the Diagnostic →
+                Find Out Where You Stand →
               </button>
             </div>
             <div data-reveal className="dcta-trust">
