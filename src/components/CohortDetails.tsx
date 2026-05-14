@@ -1,4 +1,7 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import InterestForm from './InterestForm'
+
+const WA_URL = 'https://wa.me/919XXXXXXXXX?text=Hi%20Ketan%2C%20I%27d%20like%20to%20reserve%20a%20seat%20for%20the%20Friday%20AI%20Problem%20Solving%20Lab.'
 
 function getNextFriday(): string {
   const today = new Date()
@@ -11,6 +14,7 @@ function getNextFriday(): string {
 
 export default function CohortDetails() {
   const ref = useRef<HTMLDivElement>(null)
+  const [formOpen, setFormOpen] = useState(false)
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -41,10 +45,11 @@ export default function CohortDetails() {
   }, [])
 
   const steps = [
-    { num: '01', title: 'Real business case', body: 'Ambiguous, no clean answer — just like the real world. Same type asked in top Indian tech companies.' },
-    { num: '02', title: 'You solve it. With AI. Live.', body: 'Ketan watches how you think, not just what you answer. The process reveals everything.' },
-    { num: '03', title: 'Structured debrief', body: 'Ketan breaks down the senior analyst approach vs what the group produced. The gap is where you grow.' },
-    { num: '04', title: 'Frameworks you keep', body: 'Real mental models that transfer directly to your actual job, interviews, and stakeholder conversations.' },
+    { num: '01', time: '0:00–0:30', title: 'Context setting', body: 'Ketan walks through the case background, raw data files, and step-by-step methodology. You understand the full problem space before solving.' },
+    { num: '02', time: '0:30–2:00', title: 'Live solving', body: 'The group works through early phases with Ketan in real time. He watches how you think, not just what you answer.' },
+    { num: '03', time: 'That week', title: 'Independent work with AI', body: "You solve remaining phases on your own using AI as a thinking partner. Build a structured report of your findings." },
+    { num: '04', time: 'Before Fri', title: 'Submit your report', body: 'Share your structured analysis with Ketan on WhatsApp before Session 2. This is the work he reviews.' },
+    { num: '05', time: 'Session 2', title: 'Debrief + frameworks', body: 'Ketan reviews each person\'s thinking, surfaces blind spots, and extracts transferable frameworks from the case.' },
   ]
 
   return (
@@ -90,6 +95,11 @@ export default function CohortDetails() {
           font-size: 13px; color: var(--accent);
           letter-spacing: 0.08em; flex-shrink: 0;
           padding-top: 2px; min-width: 28px;
+        }
+        .cohort-step-time {
+          font-family: 'DM Mono', monospace;
+          font-size: 11px; color: var(--text-tertiary);
+          letter-spacing: 0.06em; margin-bottom: 4px;
         }
         .cohort-step-title {
           font-family: 'DM Sans', sans-serif;
@@ -217,6 +227,7 @@ export default function CohortDetails() {
                 <div key={i} className="cohort-step">
                   <span className="cohort-step-num">{s.num}</span>
                   <div>
+                    <div className="cohort-step-time">{s.time}</div>
                     <div className="cohort-step-title">{s.title}</div>
                     <div className="cohort-step-body">{s.body}</div>
                   </div>
@@ -248,10 +259,10 @@ export default function CohortDetails() {
 
             <div className="cohort-card-includes">
               {[
-                '90-minute live problem solving',
-                "Ketan's framework breakdown",
+                '2-hour live session with Ketan',
+                'Independent case work with AI',
+                'Structured report feedback',
                 'Session recording',
-                'Private community access',
                 'Case study materials',
               ].map((item, i) => (
                 <span key={i} className="cohort-card-include">{item}</span>
@@ -260,9 +271,9 @@ export default function CohortDetails() {
 
             <button
               className="cohort-card-btn"
-              onClick={() => window.open('https://rzp.io/l/ketangoel', '_blank')}
+              onClick={() => setFormOpen(true)}
             >
-              Reserve Your Seat →
+              Reserve via WhatsApp →
             </button>
             <div className="cohort-card-trust">
               No auto-renewal · Pay per session
@@ -270,6 +281,8 @@ export default function CohortDetails() {
           </div>
         </div>
       </section>
+
+      <InterestForm open={formOpen} onClose={() => setFormOpen(false)} waUrl={WA_URL} />
     </>
   )
 }

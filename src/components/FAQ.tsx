@@ -25,6 +25,14 @@ const faqs = [
     q: 'Is ₹2,500 per session or a subscription?',
     a: 'Per session. No commitments, no auto-renewals. Book when it works for you.',
   },
+  {
+    q: 'What happens between Session 1 and Session 2?',
+    a: 'After Session 1, you solve the remaining phases of the case independently using AI as a thinking partner. You build a structured report of your analysis and share it with Ketan on WhatsApp before Session 2. This independent work is where real skill gets built.',
+  },
+  {
+    q: 'What should my report include?',
+    a: 'Ketan will share a checklist in Session 1. Typically: your hypotheses, the methodology you followed, key findings per phase, your final recommendation, and which AI prompts you found most useful. Format is flexible — clarity of thinking is what matters.',
+  },
 ]
 
 export default function FAQ() {
