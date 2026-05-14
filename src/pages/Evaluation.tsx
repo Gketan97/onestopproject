@@ -1,8 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import InterestForm from '../components/InterestForm'
-
-const WA_URL = 'https://wa.me/919XXXXXXXXX?text=Hi%20Ketan%2C%20I%27d%20like%20to%20reserve%20a%20seat%20for%20the%20Friday%20AI%20Problem%20Solving%20Lab.'
 
 // ── Types ────────────────────────────────────────────────────
 interface DimScore {
@@ -116,7 +113,6 @@ export default function Evaluation() {
   const [result, setResult] = useState<EvalResult | null>(null)
   const [errorMsg, setErrorMsg] = useState('')
   const [revealed, setRevealed] = useState(false)
-  const [formOpen, setFormOpen] = useState(false)
   const revealRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -537,9 +533,9 @@ export default function Evaluation() {
                 </p>
                 <button
                   className="eval-cta-btn"
-                  onClick={() => setFormOpen(true)}
+                  onClick={() => window.open('https://rzp.io/l/ketangoel', '_blank')}
                 >
-                  Reserve via WhatsApp →
+                  Reserve Your Seat →
                 </button>
                 <p className="eval-cta-trust">₹2,500 per session · No auto-renewal · Pay per session</p>
               </div>
@@ -553,8 +549,6 @@ export default function Evaluation() {
           </div>
         )}
       </div>
-
-      <InterestForm open={formOpen} onClose={() => setFormOpen(false)} waUrl={WA_URL} />
     </>
   )
 }
