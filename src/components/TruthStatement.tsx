@@ -31,28 +31,28 @@ export default function TruthStatement() {
     return () => observer.disconnect()
   }, [])
 
-  const stages = [
+  const realities = [
     {
-      tag: '1–3 years in',
-      quote: '"I used AI to build the whole report. My manager still said it lacked depth. I don\'t know what I\'m missing."',
-      reality: 'The output looked polished. The thinking behind it was shallow. AI made it harder to see the gap.',
+      tag: 'If you\'re 0–3 years in',
+      headline: 'The entry-level job you trained for is disappearing.',
+      body: 'Junior roles existed for one reason: seniors needed help executing their thinking. Research, reports, first drafts, data pulls, coordination — you were hired to extend someone else\'s reach. That\'s exactly what AI does now, faster and cheaper. The pipeline isn\'t slow. It\'s closing.',
+      hard: 'Getting in without a clear ability to think independently is getting harder every month.',
     },
     {
-      tag: '3–6 years in',
-      quote: '"I have more experience than most people in the room. But somehow I still struggle to get my point across when it matters."',
-      reality: 'Experience builds knowledge. It doesn\'t automatically build the ability to reason under pressure and make your case stick.',
+      tag: 'If you\'re 3–6 years in',
+      headline: 'You got promoted for executing well. That\'s no longer enough.',
+      body: 'You\'re good at your job. You hit deadlines, produce solid work, manage up well. But when your manager says "what do you think we should do?" — you feel a gap. You were never taught to own the problem. You were taught to solve the one someone handed you. That worked before. It doesn\'t anymore.',
+      hard: 'The next level requires judgment, not just reliability. Most people at this stage don\'t know the difference.',
     },
     {
-      tag: '6+ years in',
-      quote: '"My title has grown. But the decisions I\'m expected to make now are harder, faster, and with less support than before."',
-      reality: 'The higher you go, the more it\'s about your judgment — not your output. Most people were never taught how to build that.',
+      tag: 'If you\'re 6+ years in',
+      headline: 'Your team is shrinking. Your job just got harder.',
+      body: 'You used to leverage a team of juniors to produce the thinking. That team is half the size it was. Now you\'re expected to produce AND decide — with AI as your only support. The problem is: managing juniors and thinking clearly are completely different skills. Most senior professionals were never taught the second one.',
+      hard: 'The people who thrive aren\'t the most experienced. They\'re the ones who can actually make the call.',
     },
   ]
 
-  const companies = [
-    'Flipkart', 'Zomato', 'Meta', 'American Express',
-    'Meesho', 'Zepto', 'PhonePe', 'McKinsey', 'Goldman Sachs', 'BCG',
-  ]
+  const companies = ['Flipkart', 'Zomato', 'Meta', 'American Express', 'Meesho', 'Zepto', 'PhonePe', 'McKinsey', 'BCG', 'Goldman Sachs']
 
   return (
     <>
@@ -64,7 +64,6 @@ export default function TruthStatement() {
         }
         .truth-inner { max-width: 1100px; margin: 0 auto; }
 
-        /* Heading */
         .truth-label {
           font-family: 'DM Mono', monospace;
           font-size: 11px; letter-spacing: 0.16em;
@@ -72,9 +71,9 @@ export default function TruthStatement() {
         }
         .truth-h2 {
           font-family: 'Instrument Serif', serif;
-          font-size: clamp(28px, 3.5vw, 44px);
-          line-height: 1.2; color: var(--text-primary);
-          font-weight: 400; margin-bottom: 16px; max-width: 680px;
+          font-size: clamp(30px, 4vw, 50px);
+          line-height: 1.15; color: var(--text-primary);
+          font-weight: 400; margin-bottom: 20px; max-width: 720px;
         }
         .truth-h2 em {
           font-style: italic;
@@ -85,93 +84,109 @@ export default function TruthStatement() {
         .truth-intro {
           font-family: 'DM Sans', sans-serif;
           font-size: 17px; line-height: 1.8;
-          color: var(--text-secondary); max-width: 640px; margin-bottom: 64px;
+          color: var(--text-secondary); max-width: 660px; margin-bottom: 72px;
         }
         .truth-intro strong { color: var(--text-primary); font-weight: 500; }
 
-        /* Experience stages */
-        .truth-stages {
-          display: grid; grid-template-columns: repeat(3, 1fr);
-          gap: 16px; margin-bottom: 64px;
-        }
-        .truth-stage {
-          background: var(--bg-elevated);
+        /* Reality cards */
+        .truth-realities {
+          display: flex; flex-direction: column; gap: 0;
+          margin-bottom: 80px;
           border: 1px solid var(--border-subtle);
-          border-radius: 16px; padding: 28px 24px;
-          display: flex; flex-direction: column; gap: 20px;
+          border-radius: 20px; overflow: hidden;
         }
-        .truth-stage-tag {
+        .truth-reality {
+          padding: 40px 44px;
+          border-bottom: 1px solid var(--border-subtle);
+          background: var(--bg-elevated);
+          transition: background 200ms ease;
+        }
+        .truth-reality:last-child { border-bottom: none; }
+        .truth-reality:hover { background: rgba(255,255,255,0.03); }
+        .truth-reality-tag {
           font-family: 'DM Mono', monospace;
-          font-size: 10px; letter-spacing: 0.12em;
-          color: var(--accent); text-transform: uppercase;
+          font-size: 11px; letter-spacing: 0.12em;
+          color: var(--accent); margin-bottom: 12px;
         }
-        .truth-stage-quote {
+        .truth-reality-headline {
           font-family: 'Instrument Serif', serif;
-          font-size: 16px; font-style: italic;
-          color: var(--text-primary); line-height: 1.65; flex: 1;
+          font-size: clamp(20px, 2vw, 26px);
+          color: var(--text-primary); font-weight: 400;
+          margin-bottom: 14px; line-height: 1.3;
         }
-        .truth-stage-reality {
+        .truth-reality-body {
           font-family: 'DM Sans', sans-serif;
-          font-size: 13px; line-height: 1.65;
-          color: var(--text-secondary);
-          padding-top: 16px;
-          border-top: 1px solid var(--border-subtle);
+          font-size: 15px; line-height: 1.8;
+          color: var(--text-secondary); margin-bottom: 16px;
+          max-width: 720px;
+        }
+        .truth-reality-hard {
+          font-family: 'DM Sans', sans-serif;
+          font-size: 14px; line-height: 1.7;
+          color: var(--text-primary); font-weight: 500;
+          padding: 14px 18px;
+          background: rgba(168,85,247,0.07);
+          border: 1px solid rgba(168,85,247,0.15);
+          border-radius: 8px;
+          display: inline-block;
         }
 
-        /* The real shift */
-        .truth-shift {
-          background: var(--bg-elevated);
-          border: 1px solid var(--border-subtle);
-          border-radius: 20px; padding: 48px;
-          margin-bottom: 64px;
+        /* Future section */
+        .truth-future {
           display: grid; grid-template-columns: 1fr 1fr;
           gap: 48px; align-items: start;
+          margin-bottom: 72px;
+          padding: 48px;
+          background: var(--bg-elevated);
+          border: 1px solid var(--border-subtle);
+          border-radius: 20px;
         }
-        .truth-shift-label {
+        .truth-future-label {
           font-family: 'DM Mono', monospace;
           font-size: 11px; letter-spacing: 0.14em;
           color: var(--accent); margin-bottom: 16px;
         }
-        .truth-shift-h3 {
+        .truth-future-h3 {
           font-family: 'Instrument Serif', serif;
-          font-size: clamp(22px, 2.5vw, 30px);
+          font-size: clamp(22px, 2.5vw, 32px);
           color: var(--text-primary); font-weight: 400;
           line-height: 1.3; margin-bottom: 20px;
         }
-        .truth-shift-body {
+        .truth-future-body {
           font-family: 'DM Sans', sans-serif;
           font-size: 15px; line-height: 1.8;
           color: var(--text-secondary); margin-bottom: 14px;
         }
-        .truth-shift-body strong { color: var(--text-primary); font-weight: 500; }
-        .truth-shift-body:last-child { margin-bottom: 0; }
+        .truth-future-body strong { color: var(--text-primary); font-weight: 500; }
+        .truth-future-body:last-child { margin-bottom: 0; }
 
-        /* Before / after */
-        .truth-examples { display: flex; flex-direction: column; gap: 12px; }
-        .truth-example {
-          border-radius: 12px; padding: 20px 22px; border: 1px solid;
+        /* What good looks like */
+        .truth-contrast { display: flex; flex-direction: column; gap: 12px; }
+        .truth-contrast-card {
+          border-radius: 14px; padding: 22px 24px; border: 1px solid;
         }
-        .truth-example.bad {
-          background: rgba(239,68,68,0.05);
-          border-color: rgba(239,68,68,0.15);
+        .truth-contrast-card.bad {
+          background: rgba(239,68,68,0.05); border-color: rgba(239,68,68,0.15);
         }
-        .truth-example.good {
-          background: rgba(34,197,94,0.05);
-          border-color: rgba(34,197,94,0.18);
+        .truth-contrast-card.good {
+          background: rgba(34,197,94,0.05); border-color: rgba(34,197,94,0.18);
         }
-        .truth-example-label {
+        .truth-contrast-label {
           font-family: 'DM Mono', monospace;
-          font-size: 10px; letter-spacing: 0.12em;
-          margin-bottom: 10px;
+          font-size: 10px; letter-spacing: 0.12em; margin-bottom: 12px;
         }
-        .truth-example.bad .truth-example-label { color: #f87171; }
-        .truth-example.good .truth-example-label { color: #4ade80; }
-        .truth-example-text {
+        .truth-contrast-card.bad .truth-contrast-label { color: #f87171; }
+        .truth-contrast-card.good .truth-contrast-label { color: #4ade80; }
+        .truth-contrast-scenario {
+          font-family: 'DM Mono', monospace;
+          font-size: 11px; letter-spacing: 0.06em;
+          color: var(--text-tertiary); margin-bottom: 10px;
+        }
+        .truth-contrast-text {
           font-family: 'DM Sans', sans-serif;
-          font-size: 14px; line-height: 1.6;
-          color: var(--text-secondary);
+          font-size: 14px; line-height: 1.7; color: var(--text-secondary);
         }
-        .truth-example-text strong { color: var(--text-primary); font-weight: 500; }
+        .truth-contrast-text strong { color: var(--text-primary); font-weight: 500; }
 
         /* Companies */
         .truth-companies-wrap { text-align: center; }
@@ -193,13 +208,13 @@ export default function TruthStatement() {
         }
 
         @media (max-width: 960px) {
-          .truth-stages { grid-template-columns: 1fr; }
-          .truth-shift { grid-template-columns: 1fr; gap: 32px; padding: 32px; }
+          .truth-future { grid-template-columns: 1fr; gap: 32px; padding: 32px; }
           .truth-section { padding: 80px 24px; }
         }
-        @media (max-width: 480px) {
+        @media (max-width: 640px) {
+          .truth-reality { padding: 28px 24px; }
           .truth-section { padding: 64px 20px; }
-          .truth-shift { padding: 24px; }
+          .truth-future { padding: 24px; }
         }
       `}</style>
 
@@ -208,69 +223,72 @@ export default function TruthStatement() {
 
           <p data-reveal className="truth-label">WHAT'S ACTUALLY HAPPENING</p>
           <h2 data-reveal className="truth-h2">
-            AI didn't take the jobs.<br />
-            <em>It raised the bar for keeping them.</em>
+            Jobs aren't disappearing.<br />
+            <em>The jobs that don't require real thinking are.</em>
           </h2>
           <p data-reveal className="truth-intro">
-            Every company is doing more with smaller teams. The people who are safe
-            aren't the ones who know the most tools — <strong>they're the ones who can
-            think through a problem, make a clear call, and back it up.</strong> That skill
-            matters whether you're in marketing, finance, operations, product, or consulting.
-            And most people were never taught it.
+            For decades, companies hired people to extend the reach of decision-makers —
+            someone to pull the data, write the report, coordinate the team, prepare the slides.
+            AI does all of that now. <strong>What's left — and what pays well — is the
+            one thing AI can't replace: the ability to look at a messy situation
+            and make a clear, confident call.</strong>
           </p>
 
-          {/* Experience stages — 3 quotes people recognise */}
-          <div data-reveal className="truth-stages">
-            {stages.map((s, i) => (
-              <div key={i} className="truth-stage">
-                <span className="truth-stage-tag">{s.tag}</span>
-                <p className="truth-stage-quote">{s.quote}</p>
-                <p className="truth-stage-reality">{s.reality}</p>
+          {/* The three realities */}
+          <div data-reveal className="truth-realities">
+            {realities.map((r, i) => (
+              <div key={i} className="truth-reality">
+                <div className="truth-reality-tag">{r.tag}</div>
+                <div className="truth-reality-headline">{r.headline}</div>
+                <p className="truth-reality-body">{r.body}</p>
+                <span className="truth-reality-hard">{r.hard}</span>
               </div>
             ))}
           </div>
 
-          {/* The shift + before/after */}
-          <div data-reveal className="truth-shift">
+          {/* What the future looks like */}
+          <div data-reveal className="truth-future">
             <div>
-              <p className="truth-shift-label">THE SKILL THAT SEPARATES THEM</p>
-              <h3 className="truth-shift-h3">
-                It's not about knowing more. It's about thinking better.
+              <p className="truth-future-label">WHAT THE FUTURE LOOKS LIKE</p>
+              <h3 className="truth-future-h3">
+                One person who can think clearly is worth more than a team that can't decide.
               </h3>
-              <p className="truth-shift-body">
-                The people who are getting promoted — and staying employed as teams shrink —
-                all have one thing in common. <strong>They can take a messy, unclear
-                situation and turn it into a sharp, defensible point of view.</strong>
+              <p className="truth-future-body">
+                The roles that are growing — and paying well — are the ones where someone
+                can walk into ambiguity and come out with a decision. Not an analysis.
+                Not a slide deck. <strong>A clear point of view, backed by reasoning,
+                delivered with confidence.</strong>
               </p>
-              <p className="truth-shift-body">
-                That's not an analysis skill. It's not a tool skill.
-                It's the ability to reason clearly and make decisions — using AI
-                to move faster, not to think for you.
+              <p className="truth-future-body">
+                This isn't a product role or an analytics role or a consulting role.
+                It cuts across all of them. It's the person who uses AI to move fast,
+                thinks structurally to avoid blind spots, and makes calls others are afraid to make.
               </p>
-              <p className="truth-shift-body">
-                <strong>This is what companies like Flipkart, Zomato, Meta, and American Express
-                now screen for in every role — not just technical ones.</strong>
+              <p className="truth-future-body">
+                <strong>Companies like Flipkart, Zomato, Meta, and American Express are
+                already hiring for this — in every function, not just tech.</strong>
               </p>
             </div>
-            <div className="truth-examples">
-              <div className="truth-example bad">
-                <div className="truth-example-label">✕ WHAT MOST PEOPLE DO</div>
-                <div className="truth-example-text">
-                  "Sales dropped 12% last quarter. Could be seasonality,
-                  pricing, or competitor activity. Need more data to say for sure."
+            <div className="truth-contrast">
+              <div className="truth-contrast-card bad">
+                <div className="truth-contrast-label">✕ WHAT GETS YOU STUCK</div>
+                <div className="truth-contrast-scenario">SCENARIO: Sales dropped 18% this month.</div>
+                <div className="truth-contrast-text">
+                  "It could be seasonality, pricing, competition, or product issues.
+                  We need to look at all of them and gather more data before drawing conclusions."
                   <br /><br />
-                  <strong>Observations without a point of view. Safe but useless.</strong>
+                  <strong>Safe. Vague. Forgettable. This is most people's default.</strong>
                 </div>
               </div>
-              <div className="truth-example good">
-                <div className="truth-example-label">✓ WHAT GETS YOU AHEAD</div>
-                <div className="truth-example-text">
-                  "The drop is concentrated in our mid-tier segment on weekends.
-                  That points to a pricing or discovery issue, not seasonality.
-                  Here's what I'd test first, and why."
+              <div className="truth-contrast-card good">
+                <div className="truth-contrast-label">✓ WHAT GETS YOU AHEAD</div>
+                <div className="truth-contrast-scenario">SAME SCENARIO.</div>
+                <div className="truth-contrast-text">
+                  "The drop is concentrated in our weekend cohort in metro cities.
+                  That rules out seasonality. My best hypothesis is a pricing change
+                  that hit our price-sensitive segment hardest. Here's what I'd test first."
                   <br /><br />
-                  <strong>A clear position. A reason. A next step. This is what
-                  good judgment looks like.</strong>
+                  <strong>A position. A reason. A next step. This is what good judgment sounds like.</strong>
                 </div>
               </div>
             </div>
@@ -278,7 +296,7 @@ export default function TruthStatement() {
 
           {/* Companies */}
           <div data-reveal className="truth-companies-wrap">
-            <p className="truth-companies-label">THIS THINKING IS NOW EXPECTED AT</p>
+            <p className="truth-companies-label">THIS IS NOW THE BAR AT</p>
             <div className="truth-companies">
               {companies.map((c, i) => (
                 <span key={i} className="truth-company">{c}</span>

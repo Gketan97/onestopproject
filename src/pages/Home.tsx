@@ -6,15 +6,9 @@ import AboutKetan from '../components/AboutKetan'
 import FAQ from '../components/FAQ'
 import Footer from '../components/Footer'
 
-// Page arc:
-// 1. Hero          — The uncomfortable truth: teams are shrinking, thinking is the differentiator
-// 2. TruthStatement — Why this is real, what it looks like at every career stage, what good looks like
-// 3. DiagnosticCTA — Find out where you stand. Free. 4 minutes.
-// 4. AboutKetan    — The person qualified to evaluate you
-// 5. FAQ + Footer
-//
-// Transformation + CohortDetails intentionally absent from landing page.
-// They appear only on /evaluation — after the user has felt their own gaps.
+// Landing page arc:
+// Feel the threat → understand why → challenge yourself → trust who built this
+// Transformation + CohortDetails only on /evaluation — after user feels their gaps
 
 export default function Home() {
   return (

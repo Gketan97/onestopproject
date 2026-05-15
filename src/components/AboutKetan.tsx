@@ -44,21 +44,18 @@ export default function AboutKetan() {
           display: grid; grid-template-columns: 260px 1fr;
           gap: 80px; align-items: start;
         }
-        .about-left {
-          display: flex; flex-direction: column;
-          align-items: center; gap: 20px;
-        }
+        .about-left { display: flex; flex-direction: column; align-items: center; gap: 20px; }
         .about-avatar {
           width: 160px; height: 160px; border-radius: 50%;
           background: var(--bg-elevated);
           border: 2px solid var(--border-default);
           display: flex; align-items: center; justify-content: center;
-          position: relative; overflow: hidden;
+          position: relative;
         }
         .about-avatar::after {
           content: '';
-          position: absolute; inset: -2px; border-radius: 50%;
-          background: linear-gradient(135deg, rgba(255,107,157,0.4), rgba(168,85,247,0.4));
+          position: absolute; inset: -3px; border-radius: 50%;
+          background: linear-gradient(135deg, rgba(255,107,157,0.5), rgba(168,85,247,0.5));
           z-index: -1;
         }
         .about-avatar-initials {
@@ -85,7 +82,7 @@ export default function AboutKetan() {
           letter-spacing: 0.07em; line-height: 1.4;
         }
         .about-pill {
-          font-family: 'DM Sans', monospace;
+          font-family: 'DM Sans', sans-serif;
           font-size: 12px; color: var(--text-tertiary);
           background: var(--bg-elevated);
           border: 1px solid var(--border-subtle);
@@ -103,22 +100,22 @@ export default function AboutKetan() {
           font-weight: 400; color: var(--text-primary);
           margin-bottom: 8px; line-height: 1.1;
         }
-        .about-role-line {
+        .about-title {
           font-family: 'DM Sans', sans-serif;
-          font-size: 15px; color: var(--text-secondary);
+          font-size: 15px; color: var(--text-tertiary);
           margin-bottom: 28px;
         }
         .about-bio {
           font-family: 'DM Sans', sans-serif;
           font-size: 16px; line-height: 1.8;
-          color: var(--text-secondary); margin-bottom: 16px;
+          color: var(--text-secondary); margin-bottom: 18px;
         }
         .about-bio strong { color: var(--text-primary); font-weight: 500; }
         .about-quote {
           background: var(--bg-elevated);
           border-left: 2px solid var(--accent);
-          border-radius: 0 12px 12px 0;
-          padding: 22px 26px; margin: 28px 0;
+          border-radius: 0 14px 14px 0;
+          padding: 24px 28px; margin: 28px 0;
         }
         .about-quote-text {
           font-family: 'Instrument Serif', serif;
@@ -132,12 +129,12 @@ export default function AboutKetan() {
           text-decoration: none; margin-top: 8px;
           transition: gap 200ms ease;
         }
-        .about-linkedin:hover { gap: 12px; }
+        .about-linkedin:hover { gap: 13px; }
         @media (max-width: 860px) {
-          .about-inner { grid-template-columns: 1fr; gap: 48px; }
-          .about-left { flex-direction: row; flex-wrap: wrap; align-items: flex-start; }
-          .about-avatar { width: 120px; height: 120px; }
-          .about-avatar-initials { font-size: 36px; }
+          .about-inner { grid-template-columns: 1fr; gap: 40px; }
+          .about-left { flex-direction: row; flex-wrap: wrap; }
+          .about-avatar { width: 100px; height: 100px; }
+          .about-avatar-initials { font-size: 32px; }
           .about-section { padding: 80px 24px; }
         }
         @media (max-width: 480px) {
@@ -158,7 +155,7 @@ export default function AboutKetan() {
               </div>
               <div className="about-stat">
                 <span className="about-stat-num">7yr</span>
-                <span className="about-stat-label">At Meesho</span>
+                <span className="about-stat-label">Meesho</span>
               </div>
               <div className="about-stat">
                 <span className="about-stat-num">500+</span>
@@ -169,40 +166,39 @@ export default function AboutKetan() {
           </div>
 
           <div>
-            <p data-reveal className="about-label">WHO BUILT THIS</p>
+            <p data-reveal className="about-label">WHY KETAN BUILT THIS</p>
             <h2 data-reveal className="about-name">Ketan Goel</h2>
-            <p data-reveal className="about-role-line">
-              Analytics Manager at Meesho · 7 years in product and business analytics
+            <p data-reveal className="about-title">Analytics Manager, Meesho · 7 years building and evaluating business thinking</p>
+
+            <p data-reveal className="about-bio">
+              Over 7 years at Meesho, Ketan has been on both sides of the table.
+              He's reviewed hundreds of candidates. He's watched smart, hardworking
+              people get stuck — not because they didn't work hard, but because
+              <strong> they were never taught how to think through a problem
+              that nobody handed them on a plate.</strong>
             </p>
 
             <p data-reveal className="about-bio">
-              Ketan has spent 7 years at Meesho — one of India's fastest-growing companies —
-              hiring, mentoring, and evaluating how professionals think through hard problems.
-              He's sat across the table from hundreds of candidates and reviewed thousands of
-              business decisions. <strong>He's seen what separates the ones who grow fast
-              from the ones who plateau.</strong>
-            </p>
-
-            <p data-reveal className="about-bio">
-              It's never about the tools they use or how many years of experience they have.
-              It's always about whether they can take something messy and unclear —
-              a drop in sales, a product decision, a resource conflict —
-              and turn it into a sharp, confident point of view that people trust.
+              He noticed the same pattern over and over. Juniors who were excellent
+              at executing instructions, but froze when asked "what do you think we should do?"
+              Seniors who managed teams well but struggled to own a room when
+              the data was ambiguous. Good people, stuck at the same level for years —
+              not knowing why.
             </p>
 
             <div data-reveal className="about-quote">
               <p className="about-quote-text">
-                "I've seen people with 6 years of experience get outperformed by someone
-                with 18 months — not because the junior worked harder, but because they
-                thought more clearly. That skill is learnable. But you have to know
-                where your gaps are before you can fix them."
+                "I've promoted people with 2 years of experience over people with 6.
+                Not because they knew more — because when things got unclear,
+                they could still make a call and stand behind it.
+                That's not talent. That's a skill. And almost nobody teaches it."
               </p>
             </div>
 
             <p data-reveal className="about-bio">
-              This lab is how Ketan teaches that skill — through real problems,
-              honest evaluation, and feedback that tells you <strong>exactly
-              what a senior leader sees when they look at your thinking.</strong>
+              He built this lab to fix that. Not a course. Not a certification.
+              A place where you work through real problems, get honest feedback,
+              and find out — specifically — <strong>what's holding your thinking back.</strong>
             </p>
 
             <a
