@@ -64,19 +64,12 @@ export default function AboutKetan() {
           width: 100%; aspect-ratio: 1;
           max-width: 220px;
           border-radius: 20px;
-          background: var(--bg-elevated);
-          border: 1px solid var(--border-default);
-          display: flex; align-items: center; justify-content: center;
-          position: relative; overflow: hidden;
+          overflow: hidden;
+          position: relative;
+          box-shadow: 0 0 0 1px var(--border-default), 0 0 0 4px rgba(168,85,247,0.15);
         }
-        .about-avatar-initials {
-          font-family: 'Instrument Serif', serif;
-          font-size: 64px; color: var(--text-secondary);
-        }
-        .about-avatar::after {
-          content: '';
-          position: absolute; inset: 0;
-          background: linear-gradient(135deg, rgba(255,107,157,0.08), rgba(168,85,247,0.08));
+        .about-avatar img {
+          width: 100%; height: 100%; object-fit: cover; display: block;
         }
         .about-stats {
           display: grid; grid-template-columns: 1fr 1fr;
@@ -172,7 +165,7 @@ export default function AboutKetan() {
 
           <div data-reveal className="about-left">
             <div className="about-avatar">
-              <span className="about-avatar-initials">KG</span>
+              <img src="/ketan.jpeg" alt="Ketan Goel" />
             </div>
             <div className="about-stats">
               {stats.map((s, i) => (
