@@ -5,3 +5,4 @@ dist
 build
 # Local Netlify folder
 .netlify
+.env.local
