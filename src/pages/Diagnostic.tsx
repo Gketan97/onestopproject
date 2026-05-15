@@ -1,8 +1,8 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 
 // ── TESTING CONFIG — flip to false before launch ──────────────
-const USE_DEFAULT_ANSWER = true
+const USE_DEFAULT_ANSWER = false
 
 const DEFAULT_ANSWER = `First thing I'd do is not jump to conclusions. A lot of people would immediately say "maybe the restaurant wasn't available" or "maybe prices were high" — but that's just guessing. I'd want to actually think about what we know.
 
@@ -16,8 +16,19 @@ What I'd want to check: where in the flow they dropped. Did they reach the check
 
 export default function Diagnostic() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const isTestMode = new URLSearchParams(location.search).get('test') === '1'
   const [answer, setAnswer] = useState('')
   const [submitting, setSubmitting] = useState(false)
+
+  const DEFAULT_ANSWER = `The user browsed for 5 minutes which means intent was clearly there — they wanted to order something. So the question is not why they did not want to order, but what stopped them after they had already decided to. That reframe matters. I would look at two most likely causes: delivery time being too long for what they wanted in that moment, or an unexpected fee at checkout that broke the value equation. These are the friction points that kill conversion when intent is already present. I would check where in the flow they dropped — did they reach a restaurant page, the cart, or never click anything? That one data point would tell me which hypothesis to pursue first.`
+
+  useEffect(() => {
+    if (isTestMode) {
+      sessionStorage.setItem('signal_answer', DEFAULT_ANSWER)
+      navigate('/evaluation')
+    }
+  }, [isTestMode])
 
   const wordCount = answer.trim() === '' ? 0 : answer.trim().split(/\s+/).length
   const MIN_WORDS = 80
@@ -241,18 +252,14 @@ export default function Diagnostic() {
           <div className="diag-right">
             <div className="diag-right-label">YOUR ANSWER</div>
 
-            {USE_DEFAULT_ANSWER && (
-              <div className="diag-test-banner">
-                ⚠ TESTING MODE — Default answer submits automatically
-              </div>
-            )}
+
 
             <textarea
               className="diag-textarea"
               placeholder={"Just think out loud.\n\nWhat might have happened? What are you considering? What feels most likely to you and why?\n\nWrite like you're thinking, not presenting."}
               value={answer}
               onChange={e => setAnswer(e.target.value)}
-              disabled={submitting || USE_DEFAULT_ANSWER}
+              disabled={submitting}
             />
 
             {!USE_DEFAULT_ANSWER && (
@@ -279,6 +286,17 @@ export default function Diagnostic() {
               {submitting ? 'Evaluating…' : 'Get My Evaluation →'}
             </button>
             <p className="diag-submit-note">~15 seconds · Powered by AI · No signup needed</p>
+            {import.meta.env.DEV && (
+              <button
+                onClick={() => {
+                  sessionStorage.setItem('signal_answer', 'The user browsed for 5 minutes which signals clear intent — they wanted to order. So the question is not why they did not want to order but what stopped them. I would focus on two causes: delivery time too long or unexpected fee at checkout. These kill conversion when intent is already there. I would check where in the flow they dropped to confirm which hypothesis.')
+                  window.location.href = '/evaluation'
+                }}
+                style={{marginTop:12,width:'100%',padding:'10px',background:'rgba(251,191,36,0.1)',border:'1px solid rgba(251,191,36,0.2)',borderRadius:8,color:'#fbbf24',fontFamily:'DM Mono,monospace',fontSize:11,letterSpacing:'0.08em',cursor:'pointer'}}
+              >
+                ⚡ DEV: Skip to Evaluation
+              </button>
+            )}
           </div>
         </div>
       </div>

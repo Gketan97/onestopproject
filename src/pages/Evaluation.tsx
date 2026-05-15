@@ -1,68 +1,35 @@
 import { useState, useEffect, useRef } from 'react'
+import Anthropic from '@anthropic-ai/sdk'
 import { useNavigate } from 'react-router-dom'
 import InterestForm from '../components/InterestForm'
 
 const WA_URL = 'https://wa.me/919XXXXXXXXX?text=Hi%20Ketan%2C%20I%27d%20like%20to%20reserve%20a%20seat%20for%20the%20Saturday%20AI%20Problem%20Solving%20Lab.'
 
 // ── System prompt ─────────────────────────────────────────────
-const SYSTEM = `You are Ketan Goel — Analytics Manager at Meesho with 7 years evaluating how professionals think through business problems. You have reviewed hundreds of responses to analytical questions and know exactly what separates sharp thinkers from average ones.
+const SYSTEM = `You are a senior analytics hiring manager with 10 years evaluating problem-solving ability. You have a precise benchmark for what a great answer looks like and you evaluate every response against it — not against abstract criteria.
 
-The person was asked:
+THE QUESTION ASKED:
 "You opened the Swiggy app, browsed through restaurants for about 5 minutes, and then closed it without ordering anything. What do you think happened?"
 
-This question tests analytical thinking, not knowledge of Swiggy. A strong response:
-- Structures the problem space before listing causes
-- Distinguishes between user-side reasons and product/business-side reasons  
-- Prioritises the most likely hypotheses rather than listing everything equally
-- Shows curiosity about data — what would they look at to confirm their hypothesis?
-- Reaches a point of view rather than staying neutral
+BENCHMARK — what a 5/5 answer looks like:
+The strongest responses do four things in order: (1) Use the 5-minute browse as evidence of intent — the user was not browsing randomly, they wanted food, so the question becomes "what stopped them after they decided to order?" not "why didn't they want to order?" — this reframe is the key insight most people miss. (2) Separate causes into two buckets: user-side (changed mind, got distracted, decision fatigue from too many options) and product-side (delivery time too long, unexpected fees at checkout, their preferred restaurant unavailable). (3) Commit to one most-likely hypothesis with a reason — e.g. "delivery time or price shock at checkout, because these are friction points that kill conversion when intent is already there" — not a list of equal possibilities. (4) Name one data point that would confirm or refute it — e.g. "I'd check where in the flow they dropped: did they reach a restaurant page? The cart? Or never click anything?"
 
-A weak response:
-- Lists 5-8 possible reasons with equal weight and no prioritisation
-- Stays only on the surface (price, time, mood) without going deeper
-- Has no hypothesis — just a list of guesses
-- Makes no attempt to distinguish likely from unlikely
+WHAT DISQUALIFIES A RESPONSE:
+- Written by AI: overly structured, bullet points, phrases like "it is important to consider" or "from a business perspective", no personal voice, covers every angle equally
+- Off-topic: does not engage with the Swiggy scenario at all
+- Too short: under 50 words, not enough to evaluate
 
-Evaluate what they wrote. Be direct. Be specific to what they actually said. Sound like a mentor, not a teacher.
+SCORING AGAINST BENCHMARK:
+5 — Hits all four benchmark elements. Sharp reframe, two-bucket structure, committed hypothesis, data curiosity.
+4 — Hits three elements. Missing one but the thinking is clearly structured.
+3 — Hits the reframe OR has a committed hypothesis, but not both. Partial structure.
+2 — Lists possibilities without committing. No reframe. Surface level.
+1 — Vague, scattered, no structure, no hypothesis.
 
-Return ONLY valid JSON with no markdown, no backticks, no explanation outside the JSON:
+Evaluate efficiently. Be direct. Sound like a mentor giving feedback after an interview, not a teacher grading a paper.
 
-{
-  "verdict": "<5-7 words. The single most accurate description of how this person thinks. E.g: 'Good breadth. No prioritisation.' or 'Lists causes, avoids committing to one.' or 'Strong structure. Sharp hypothesis.' Make it feel like a real read of this specific person.>",
-  "overall": <integer 1 to 5>,
-  "passed": <boolean — true only if overall >= 4>,
-  "summary": "<3 sentences. Specific to what they wrote. Start with the most accurate observation about their thinking style. Name the single biggest strength. Then name the single biggest gap. Be direct, not harsh.>",
-  "dimensions": [
-    {
-      "name": "Problem Structuring",
-      "score": <1-5>,
-      "observation": "<One sharp, specific sentence about what you saw in their response — or what was missing.>"
-    },
-    {
-      "name": "Hypothesis Quality",
-      "score": <1-5>,
-      "observation": "<Did they commit to a most-likely cause with reasoning, or list possibilities equally?>"
-    },
-    {
-      "name": "Depth of Thinking",
-      "score": <1-5>,
-      "observation": "<Did they go beyond the surface? Did they think about what data would tell them more?>"
-    },
-    {
-      "name": "Prioritisation",
-      "score": <1-5>,
-      "observation": "<Did they rank or filter their ideas, or give everything equal weight?>"
-    },
-    {
-      "name": "Business Lens",
-      "score": <1-5>,
-      "observation": "<Did they think about why this matters to the business, not just to the user?>"
-    }
-  ],
-  "what_strong_looks_like": "<2-3 sentences. Paint a vivid, specific picture of what a strong response to this question looks like. Don't lecture — show. Make the reader feel the gap and want to close it.>",
-  "one_thing": "<One sentence. The single most impactful thinking habit this person should build. Make it specific to what they wrote, not generic advice.>",
-  "ketan_note": "<1-2 sentences in Ketan's voice — personal, direct, encouraging without being soft. Something he would actually say to this person if they were sitting across from him.>"
-}`
+Return ONLY this JSON — no markdown, no backticks, nothing else:
+{"ai_detected":false,"off_topic":false,"verdict":"<5-6 words — the single most accurate read of this person's thinking>","overall":<1-5>,"passed":<true if 4+>,"summary":"<2 sentences. What their answer reveals about how they think. Name the strongest thing they did and the single biggest gap. Specific to what they wrote.>","dimensions":[{"name":"Problem Reframe","score":<1-5>,"observation":"<Did they notice that 5 mins = intent, reframing the question? One sentence.>"},{"name":"Hypothesis Commitment","score":<1-5>,"observation":"<Did they pick one most-likely cause and defend it, or list equally? One sentence.>"},{"name":"Structure","score":<1-5>,"observation":"<Did they separate user-side from product-side causes? One sentence.>"},{"name":"Data Curiosity","score":<1-5>,"observation":"<Did they ask what data would confirm their hypothesis? One sentence.>"},{"name":"Decision Clarity","score":<1-5>,"observation":"<Did their thinking stay sharp throughout, or trail off / contradict itself? One sentence.>"}],"what_strong_looks_like":"<1-2 sentences showing the benchmark answer concretely. Make the reader feel the gap.>","one_thing":"<One sentence. The single habit that would most improve their thinking. Specific to what they wrote.>","ketan_note":"<1 sentence in Ketan's voice. Direct, personal, not soft.>"}`
 
 // ── Types ─────────────────────────────────────────────────────
 interface Dim { name: string; score: number; observation: string }
@@ -123,26 +90,24 @@ export default function Evaluation() {
     const answer = sessionStorage.getItem('signal_answer')
     if (!answer) { navigate('/diagnostic'); return }
 
-    // BYPASS — mock result for UI testing
-    setTimeout(() => {
-      setResult({
-        verdict: 'Good breadth. No prioritisation.',
-        overall: 2,
-        passed: false,
-        summary: 'The response covers a wide range of possible reasons with genuine curiosity. The biggest strength is noticing that 5 minutes of browsing signals intent — most people miss that. The core gap: all possibilities are listed with equal weight and there is no commitment to a most-likely cause.',
-        dimensions: [
-          { name: 'Problem Structuring', score: 2, observation: 'Listed causes without first breaking the problem into a logical structure.' },
-          { name: 'Hypothesis Quality', score: 2, observation: 'Many possibilities raised but no single hypothesis committed to with reasoning.' },
-          { name: 'Depth of Thinking', score: 3, observation: 'The intent signal observation was sharp — 5 minutes of browsing means they wanted to order.' },
-          { name: 'Prioritisation', score: 1, observation: 'All reasons given equal weight. No filtering applied.' },
-          { name: 'Business Lens', score: 2, observation: 'Stayed mostly on the user side without connecting to what the business should do.' },
-        ],
-        what_strong_looks_like: 'A strong response uses the 5-minute browse as the anchor — intent was clearly there. From that, it narrows to 2 high-probability causes (delivery time or price shock at checkout) and picks the most likely one with a reason. It ends with what one data point would confirm or refute it.',
-        one_thing: 'Pick the single most likely reason and defend it — listing everything equally is not analysis, it is description.',
-        ketan_note: 'You caught the intent signal — that is actually a strong instinct that most people skip. Now train yourself to use that observation to narrow down, not open up.',
+    const client = new Anthropic({
+      apiKey: import.meta.env.VITE_ANTHROPIC_API_KEY ?? '',
+      dangerouslyAllowBrowser: true,
+    })
+
+    client.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1200,
+      system: SYSTEM,
+      messages: [{ role: 'user', content: answer }],
+    })
+      .then(data => {
+        const text = data.content?.find(b => b.type === 'text')?.text ?? ''
+        const parsed = JSON.parse(text.replace(/```json|```/g, '').trim()) as EvalResult
+        setResult(parsed)
+        setPhase('result')
       })
-      setPhase('result')
-    }, 1500)
+      .catch(e => { console.error(e); setPhase('error') })
   }, [])
 
   useEffect(() => {
@@ -527,8 +492,8 @@ export default function Evaluation() {
                 </p>
                 <div className="eval-lab-stats">
                   <div className="eval-lab-stat">
-                    <span className="eval-lab-stat-val">₹2,500</span>
-                    <span className="eval-lab-stat-label">PER SESSION</span>
+                    <span className="eval-lab-stat-val">₹2,999</span>
+                    <span className="eval-lab-stat-label">PER PERSON</span>
                   </div>
                   <div className="eval-lab-sep" />
                   <div className="eval-lab-stat">
@@ -544,7 +509,7 @@ export default function Evaluation() {
                 <button className="eval-lab-btn" onClick={() => setFormOpen(true)}>
                   Reserve My Seat →
                 </button>
-                <p className="eval-lab-trust">No auto-renewal · Pay per session · Ketan confirms within 24hrs</p>
+                <p className="eval-lab-trust">No auto-renewal · Pay per person · full cohort · Ketan confirms within 24hrs</p>
               </div>
 
 

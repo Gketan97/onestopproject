@@ -8,7 +8,7 @@ export default function Nav() {
   const [menuOpen, setMenuOpen] = useState(false)
 
   useEffect(() => {
-    const handler = () => setScrolled(window.scrollY > 20)
+    const handler = () => setScrolled(window.scrollY > 24)
     window.addEventListener('scroll', handler, { passive: true })
     return () => window.removeEventListener('scroll', handler)
   }, [])
@@ -17,8 +17,12 @@ export default function Nav() {
 
   const scrollTo = (id: string) => {
     setMenuOpen(false)
-    if (location.pathname !== '/') { navigate('/'); setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' }), 100) }
-    else document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
+    if (location.pathname !== '/') {
+      navigate('/')
+      setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' }), 150)
+    } else {
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
+    }
   }
 
   const isHome = location.pathname === '/'
@@ -28,12 +32,11 @@ export default function Nav() {
       <style>{`
         .nav-root {
           position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-          transition: background 300ms ease, border-color 300ms ease, backdrop-filter 300ms ease;
         }
         .nav-root.scrolled {
-          background: rgba(8,8,12,0.85);
-          backdrop-filter: blur(16px);
-          -webkit-backdrop-filter: blur(16px);
+          background: rgba(8,8,12,0.88);
+          backdrop-filter: blur(18px);
+          -webkit-backdrop-filter: blur(18px);
           border-bottom: 1px solid var(--border-subtle);
         }
         .nav-inner {
@@ -42,16 +45,11 @@ export default function Nav() {
           padding: 0 32px; height: 68px;
         }
         /* Brand */
-        .nav-brand {
-          display: flex; flex-direction: column;
-          cursor: pointer; gap: 1px;
-          text-decoration: none;
-        }
+        .nav-brand { cursor: pointer; text-decoration: none; display: flex; flex-direction: column; gap: 2px; }
         .nav-brand-name {
           font-family: 'DM Mono', monospace;
-          font-size: 14px; letter-spacing: 0.14em;
-          color: var(--text-primary); font-weight: 500;
-          line-height: 1;
+          font-size: 15px; letter-spacing: 0.1em;
+          color: var(--text-primary); font-weight: 500; line-height: 1;
         }
         .nav-brand-name span {
           background: linear-gradient(135deg, #FF6B9D, #A855F7);
@@ -59,41 +57,34 @@ export default function Nav() {
           background-clip: text;
         }
         .nav-brand-sub {
-          font-family: 'DM Mono', monospace;
-          font-size: 9px; letter-spacing: 0.12em;
-          color: var(--text-tertiary);
+          font-family: 'DM Mono', monospace; font-size: 10px;
+          letter-spacing: 0.1em; color: var(--text-tertiary); line-height: 1;
         }
         /* Desktop links */
-        .nav-links {
-          display: flex; align-items: center; gap: 32px;
-        }
+        .nav-links { display: flex; align-items: center; gap: 28px; }
         .nav-link {
-          font-family: 'DM Sans', sans-serif;
-          font-size: 14px; color: var(--text-secondary);
-          background: none; border: none; cursor: pointer;
-          transition: color 150ms ease; padding: 0;
+          font-family: 'DM Sans', sans-serif; font-size: 14px;
+          color: var(--text-secondary); background: none; border: none;
+          cursor: pointer; transition: color 150ms ease; padding: 0;
         }
         .nav-link:hover { color: var(--text-primary); }
         /* CTA */
         .nav-cta {
-          font-family: 'DM Sans', sans-serif;
-          font-size: 14px; font-weight: 600;
+          font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600;
           color: #fff; background: var(--accent);
           border: none; border-radius: 100px;
-          padding: 10px 24px; cursor: pointer;
-          transition: all 180ms ease; letter-spacing: 0.01em;
+          padding: 10px 22px; cursor: pointer;
+          transition: all 180ms ease; letter-spacing: 0.01em; white-space: nowrap;
         }
         .nav-cta:hover { filter: brightness(1.1); transform: scale(1.02); }
         /* Hamburger */
         .nav-hamburger {
-          display: none; flex-direction: column;
-          gap: 5px; background: none; border: none;
-          cursor: pointer; padding: 4px;
+          display: none; flex-direction: column; gap: 5px;
+          background: none; border: none; cursor: pointer; padding: 4px;
         }
         .nav-ham-line {
           width: 22px; height: 2px; border-radius: 1px;
-          background: var(--text-secondary);
-          transition: all 200ms ease;
+          background: var(--text-secondary); transition: all 200ms ease;
         }
         .nav-hamburger.open .nav-ham-line:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
         .nav-hamburger.open .nav-ham-line:nth-child(2) { opacity: 0; }
@@ -102,32 +93,30 @@ export default function Nav() {
         .nav-mobile {
           display: none;
           position: fixed; top: 68px; left: 0; right: 0;
-          background: rgba(8,8,12,0.96);
+          background: rgba(8,8,12,0.97);
           backdrop-filter: blur(20px);
           border-bottom: 1px solid var(--border-subtle);
-          padding: 24px 32px 32px;
-          flex-direction: column; gap: 4px;
+          padding: 16px 24px 28px;
+          flex-direction: column; gap: 0;
         }
         .nav-mobile.open { display: flex; }
         .nav-mobile-link {
-          font-family: 'DM Sans', sans-serif;
-          font-size: 16px; color: var(--text-secondary);
-          background: none; border: none; cursor: pointer;
-          text-align: left; padding: 12px 0;
+          font-family: 'DM Sans', sans-serif; font-size: 16px;
+          color: var(--text-secondary); background: none; border: none;
+          cursor: pointer; text-align: left; padding: 14px 0;
           border-bottom: 1px solid var(--border-subtle);
-          transition: color 150ms ease;
+          transition: color 150ms ease; width: 100%;
         }
-        .nav-mobile-link:last-child { border-bottom: none; }
         .nav-mobile-link:hover { color: var(--text-primary); }
         .nav-mobile-cta {
-          margin-top: 16px;
-          font-family: 'DM Sans', sans-serif;
+          margin-top: 20px; font-family: 'DM Sans', sans-serif;
           font-size: 16px; font-weight: 600;
           color: #fff; background: var(--accent);
           border: none; border-radius: 100px;
-          padding: 14px; cursor: pointer;
-          transition: all 180ms ease; text-align: center;
+          padding: 15px; cursor: pointer; text-align: center;
+          transition: all 180ms ease; width: 100%;
         }
+        .nav-mobile-cta:hover { filter: brightness(1.1); }
 
         @media (max-width: 768px) {
           .nav-links { display: none; }
@@ -140,9 +129,7 @@ export default function Nav() {
       <nav className={`nav-root${scrolled ? ' scrolled' : ''}`}>
         <div className="nav-inner">
           <div className="nav-brand" onClick={() => navigate('/')}>
-            <span className="nav-brand-name">
-              onestop<span>careers</span>
-            </span>
+            <span className="nav-brand-name">onestop<span>careers</span></span>
             <span className="nav-brand-sub">AI PROBLEM SOLVING LAB</span>
           </div>
 
@@ -150,7 +137,7 @@ export default function Nav() {
             <div className="nav-links">
               <button className="nav-link" onClick={() => scrollTo('truth')}>Why This</button>
               <button className="nav-link" onClick={() => scrollTo('about')}>About Ketan</button>
-              <button className="nav-link" onClick={() => scrollTo('cohort')}>The Lab</button>
+              <button className="nav-link" onClick={() => scrollTo('testimonials')}>Reviews</button>
               <button className="nav-link" onClick={() => scrollTo('faq')}>FAQ</button>
             </div>
           )}
@@ -162,7 +149,7 @@ export default function Nav() {
           <button
             className={`nav-hamburger${menuOpen ? ' open' : ''}`}
             onClick={() => setMenuOpen(o => !o)}
-            aria-label="Menu"
+            aria-label="Toggle menu"
           >
             <span className="nav-ham-line" />
             <span className="nav-ham-line" />
@@ -171,16 +158,14 @@ export default function Nav() {
         </div>
       </nav>
 
-      {/* Spacer */}
       <div style={{ height: 68 }} />
 
-      {/* Mobile menu */}
       <div className={`nav-mobile${menuOpen ? ' open' : ''}`}>
         {isHome && (
           <>
             <button className="nav-mobile-link" onClick={() => scrollTo('truth')}>Why This</button>
             <button className="nav-mobile-link" onClick={() => scrollTo('about')}>About Ketan</button>
-            <button className="nav-mobile-link" onClick={() => scrollTo('cohort')}>The Lab</button>
+            <button className="nav-mobile-link" onClick={() => scrollTo('testimonials')}>Reviews</button>
             <button className="nav-mobile-link" onClick={() => scrollTo('faq')}>FAQ</button>
           </>
         )}

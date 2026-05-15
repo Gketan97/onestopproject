@@ -349,6 +349,17 @@ export default function CohortDetails() {
           transition: all 200ms ease; margin-bottom: 12px; letter-spacing: 0.01em;
         }
         .cohort-btn:hover { filter: brightness(1.1); transform: scale(1.01); }
+        .cohort-refund {
+          background: rgba(34,197,94,0.07);
+          border: 1px solid rgba(34,197,94,0.18);
+          border-radius: 10px; padding: 12px 16px;
+          margin-bottom: 14px; text-align: center;
+        }
+        .cohort-refund-text {
+          font-family: 'DM Sans', sans-serif; font-size: 13px;
+          color: #4ade80; line-height: 1.5;
+        }
+        .cohort-refund-text strong { font-weight: 600; }
         .cohort-trust {
           font-family: 'DM Mono', monospace; font-size: 10px;
           color: var(--text-tertiary); text-align: center; letter-spacing: 0.06em;
@@ -592,8 +603,8 @@ export default function CohortDetails() {
                 <span className="cohort-seats-dot" />
                 <span className="cohort-seats-text">3 of 5 seats remaining</span>
               </div>
-              <div className="cohort-price">₹2,500</div>
-              <div className="cohort-price-per">PER SESSION</div>
+              <div className="cohort-price">₹2,999</div>
+              <div className="cohort-price-per">PER PERSON</div>
               <div className="cohort-includes">
                 {[
                   'Full case pre-read material over email',
@@ -613,8 +624,13 @@ export default function CohortDetails() {
               <button className="cohort-btn" onClick={() => setFormOpen(true)}>
                 Reserve via WhatsApp →
               </button>
+              <div className="cohort-refund">
+                <p className="cohort-refund-text">
+                  <strong>No questions asked refund.</strong> If you are not satisfied after Session 1, we refund you in full.
+                </p>
+              </div>
               <p className="cohort-trust">
-                No auto-renewal · Pay per session<br />
+                No auto-renewal · Pay per person · full cohort<br />
                 Ketan confirms your seat within 24 hrs
               </p>
             </div>
