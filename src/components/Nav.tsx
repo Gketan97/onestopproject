@@ -135,7 +135,7 @@ export default function Nav() {
 
           {isHome && (
             <div className="nav-links">
-              <button className="nav-link" onClick={() => scrollTo('truth')}>Why This</button>
+              <button className="nav-link" onClick={() => scrollTo('truth')}>The Problem</button>
               <button className="nav-link" onClick={() => scrollTo('about')}>About Ketan</button>
               <button className="nav-link" onClick={() => scrollTo('testimonials')}>Reviews</button>
               <button className="nav-link" onClick={() => scrollTo('faq')}>FAQ</button>
@@ -163,7 +163,7 @@ export default function Nav() {
       <div className={`nav-mobile${menuOpen ? ' open' : ''}`}>
         {isHome && (
           <>
-            <button className="nav-mobile-link" onClick={() => scrollTo('truth')}>Why This</button>
+            <button className="nav-mobile-link" onClick={() => scrollTo('truth')}>The Problem</button>
             <button className="nav-mobile-link" onClick={() => scrollTo('about')}>About Ketan</button>
             <button className="nav-mobile-link" onClick={() => scrollTo('testimonials')}>Reviews</button>
             <button className="nav-mobile-link" onClick={() => scrollTo('faq')}>FAQ</button>

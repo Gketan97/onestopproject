@@ -118,27 +118,6 @@ export default function Hero() {
           font-family: 'DM Mono', monospace;
           font-size: 12px; color: var(--text-tertiary); letter-spacing: 0.05em;
         }
-        .hero-roles {
-          display: flex; align-items: center; justify-content: center;
-          flex-wrap: wrap; gap: 8px;
-          padding: 16px 24px;
-          background: rgba(255,255,255,0.03);
-          border: 1px solid var(--border-subtle);
-          border-radius: 14px; max-width: 640px;
-        }
-        .hero-roles-label {
-          font-family: 'DM Mono', monospace;
-          font-size: 10px; letter-spacing: 0.14em;
-          color: var(--text-tertiary); width: 100%;
-          text-align: center; margin-bottom: 10px;
-        }
-        .hero-role {
-          font-family: 'DM Sans', sans-serif;
-          font-size: 13px; color: var(--text-secondary);
-          background: rgba(255,255,255,0.05);
-          border: 1px solid var(--border-subtle);
-          border-radius: 6px; padding: 5px 13px;
-        }
         .hero-scroll-line {
           margin-top: 72px; width: 1px; height: 56px;
           background: linear-gradient(to bottom, var(--border-default), transparent);
@@ -190,14 +169,6 @@ export default function Hero() {
             </button>
             <span className="hero-trust">4 minutes · No signup · Brutally honest result</span>
           </div>
-
-          <div data-reveal className="hero-roles">
-            <span className="hero-roles-label">FOR EVERY BUSINESS ROLE — NOT JUST TECH</span>
-            {['Product', 'Marketing', 'Operations', 'Finance', 'Consulting', 'HR', 'Sales', 'Strategy', 'Growth', 'Category'].map((r, i) => (
-              <span key={i} className="hero-role">{r}</span>
-            ))}
-          </div>
-
           <div data-reveal><div className="hero-scroll-line" /></div>
         </div>
       </section>

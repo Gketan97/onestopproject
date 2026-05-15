@@ -1,24 +1,43 @@
+#!/bin/bash
+# ═══════════════════════════════════════════════════════════════
+# apply-all-fixes.sh
+# Patches Hero, TruthStatement, Nav directly in repo
+# Run from repo root: bash apply-all-fixes.sh
+# ═══════════════════════════════════════════════════════════════
+
+echo "→ Patching Hero.tsx — removing roles strip..."
+python3 << 'PYEOF'
+import re
+path = 'src/components/Hero.tsx'
+with open(path, 'r') as f:
+    src = f.read()
+
+# Remove the roles strip entirely from Hero
+src = re.sub(
+    r'\s*<div data-reveal className="hero-roles">[\s\S]*?</div>\s*\n',
+    '\n',
+    src
+)
+
+# Remove hero-roles CSS
+src = re.sub(r'\.hero-roles \{[^}]*\}\s*', '', src)
+src = re.sub(r'\.hero-roles-label \{[^}]*\}\s*', '', src)
+src = re.sub(r'\.hero-role \{[^}]*\}\s*', '', src)
+
+with open(path, 'w') as f:
+    f.write(src)
+print('✓ Hero roles strip removed')
+PYEOF
+
+echo "→ Rewriting TruthStatement.tsx..."
+cat > src/components/TruthStatement.tsx << 'COMPONENT'
 import { useEffect, useRef } from 'react'
 
 const COMPANIES = [
-  { name: 'Flipkart', domain: 'flipkart.com' },
-  { name: 'Zomato', domain: 'zomato.com' },
-  { name: 'MakeMyTrip', domain: 'makemytrip.com' },
-  { name: 'Nykaa', domain: 'nykaa.com' },
-  { name: 'American Express', domain: 'americanexpress.com' },
-  { name: 'JP Morgan', domain: 'jpmorgan.com' },
-  { name: 'PhonePe', domain: 'phonepe.com' },
-  { name: 'McKinsey', domain: 'mckinsey.com' },
-  { name: 'Goldman Sachs', domain: 'goldmansachs.com' },
-  { name: 'BCG', domain: 'bcg.com' },
-  { name: 'Meta', domain: 'meta.com' },
-  { name: 'Razorpay', domain: 'razorpay.com' },
-  { name: 'CRED', domain: 'cred.club' },
-  { name: 'Groww', domain: 'groww.in' },
-  { name: 'Zepto', domain: 'zeptonow.com' },
-  { name: 'Blinkit', domain: 'blinkit.com' },
-  { name: 'Swiggy', domain: 'swiggy.com' },
-  { name: 'HDFC Bank', domain: 'hdfcbank.com' },
+  'Flipkart', 'MakeMyTrip', 'Zomato', 'Nykaa', 'American Express',
+  'JP Morgan', 'Meesho', 'Zepto', 'PhonePe', 'McKinsey',
+  'Goldman Sachs', 'BCG', 'Meta', 'Swiggy', 'HDFC Bank',
+  'Razorpay', 'CRED', 'Blinkit', 'Groww', 'Paytm',
 ]
 
 export default function TruthStatement() {
@@ -164,26 +183,24 @@ export default function TruthStatement() {
 
         /* Ticker */
         .truth-ticker-wrap {
-          overflow: hidden; padding: 32px 0;
+          overflow: hidden; padding: 28px 0;
           border-top: 1px solid var(--border-subtle);
           position: relative; margin-top: 0;
-          background: var(--bg-surface);
         }
         .truth-ticker-wrap::before,
         .truth-ticker-wrap::after {
           content: ''; position: absolute; top: 0; bottom: 0;
-          width: 160px; z-index: 2; pointer-events: none;
+          width: 140px; z-index: 2; pointer-events: none;
         }
         .truth-ticker-wrap::before { left: 0; background: linear-gradient(to right, var(--bg-surface), transparent); }
         .truth-ticker-wrap::after { right: 0; background: linear-gradient(to left, var(--bg-surface), transparent); }
         .truth-ticker-label {
           font-family: 'DM Mono', monospace; font-size: 10px;
           letter-spacing: 0.14em; color: var(--text-tertiary);
-          text-align: center; margin-bottom: 20px;
+          text-align: center; margin-bottom: 18px;
         }
         .truth-ticker {
-          display: flex; align-items: center;
-          animation: ticker-scroll 35s linear infinite;
+          display: flex; animation: ticker-scroll 30s linear infinite;
           width: max-content;
         }
         .truth-ticker:hover { animation-play-state: paused; }
@@ -193,23 +210,15 @@ export default function TruthStatement() {
         }
         .truth-ticker-item {
           display: flex; align-items: center; gap: 10px;
-          padding: 0 28px; white-space: nowrap;
-          opacity: 0.7; transition: opacity 200ms ease;
+          padding: 0 32px; white-space: nowrap;
         }
-        .truth-ticker-item:hover { opacity: 1; }
-        .truth-ticker-logo {
-          width: 24px; height: 24px; border-radius: 6px;
-          object-fit: contain; background: white; padding: 2px;
-          flex-shrink: 0;
+        .truth-ticker-dot {
+          width: 4px; height: 4px; border-radius: 50%;
+          background: rgba(168,85,247,0.4); flex-shrink: 0;
         }
-        .truth-ticker-logo-err { display: none; }
         .truth-ticker-name {
-          font-family: 'DM Sans', sans-serif; font-size: 14px;
-          font-weight: 500; color: var(--text-secondary);
-        }
-        .truth-ticker-sep {
-          width: 1px; height: 20px; background: var(--border-subtle);
-          margin: 0 4px; flex-shrink: 0;
+          font-family: 'DM Mono', monospace; font-size: 13px;
+          letter-spacing: 0.08em; color: var(--text-secondary); font-weight: 500;
         }
 
         @media (max-width: 860px) {
@@ -290,18 +299,12 @@ export default function TruthStatement() {
 
         {/* Ticker */}
         <div className="truth-ticker-wrap">
-          <p className="truth-ticker-label">PROFESSIONALS FROM THESE ORGANISATIONS ARE BUILDING THIS SKILL</p>
+          <p className="truth-ticker-label">PROFESSIONALS FROM THESE COMPANIES ARE BUILDING THIS SKILL</p>
           <div className="truth-ticker">
             {[...COMPANIES, ...COMPANIES].map((c, i) => (
               <div key={i} className="truth-ticker-item">
-                <img
-                  className="truth-ticker-logo"
-                  src={`https://logo.clearbit.com/${c.domain}`}
-                  alt={c.name}
-                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
-                />
-                <span className="truth-ticker-name">{c.name}</span>
-                {i !== COMPANIES.length * 2 - 1 && <span className="truth-ticker-sep" />}
+                <span className="truth-ticker-dot" />
+                <span className="truth-ticker-name">{c}</span>
               </div>
             ))}
           </div>
@@ -310,3 +313,156 @@ export default function TruthStatement() {
     </>
   )
 }
+COMPONENT
+echo "  ✓ TruthStatement.tsx rewritten"
+
+echo "→ Fixing Nav visibility..."
+python3 << 'PYEOF'
+path = 'src/components/Nav.tsx'
+with open(path, 'r') as f:
+    src = f.read()
+
+# Make nav always have semi-transparent background so logo is always visible
+src = src.replace(
+    '.nav-root {\n          position: fixed; top: 0; left: 0; right: 0; z-index: 100;\n          transition: background 300ms ease, border-color 300ms ease, backdrop-filter 300ms ease;\n        }',
+    '.nav-root {\n          position: fixed; top: 0; left: 0; right: 0; z-index: 100;\n          background: rgba(8,8,12,0.7);\n          backdrop-filter: blur(12px);\n          -webkit-backdrop-filter: blur(12px);\n          border-bottom: 1px solid rgba(255,255,255,0.07);\n          transition: background 300ms ease, border-color 300ms ease;\n        }'
+)
+
+# Make brand name always white
+src = src.replace(
+    '.nav-brand-name {\n          font-family: \'DM Mono\', monospace;\n          font-size: 14px; letter-spacing: 0.14em;\n          color: var(--text-primary); font-weight: 500; line-height: 1;\n        }',
+    '.nav-brand-name {\n          font-family: \'DM Mono\', monospace;\n          font-size: 16px; letter-spacing: 0.1em;\n          color: #ffffff; font-weight: 600; line-height: 1;\n        }'
+)
+
+# Make sub label more visible
+src = src.replace(
+    '.nav-brand-sub {\n          font-family: \'DM Mono\', monospace;\n          font-size: 9px; letter-spacing: 0.12em;\n          color: var(--text-tertiary);\n        }',
+    '.nav-brand-sub {\n          font-family: \'DM Mono\', monospace;\n          font-size: 11px; letter-spacing: 0.1em;\n          color: rgba(255,255,255,0.5);\n        }'
+)
+
+# Change Why This to The Problem
+src = src.replace(
+    "<button className=\"nav-link\" onClick={() => scrollTo('truth')}>Why This</button>",
+    "<button className=\"nav-link\" onClick={() => scrollTo('truth')}>The Problem</button>"
+)
+src = src.replace(
+    "<button className=\"nav-mobile-link\" onClick={() => scrollTo('truth')}>Why This</button>",
+    "<button className=\"nav-mobile-link\" onClick={() => scrollTo('truth')}>The Problem</button>"
+)
+
+with open(path, 'w') as f:
+    f.write(src)
+print('  ✓ Nav visibility fixed, Why This → The Problem')
+PYEOF
+
+echo "→ Adding Footer to Home.tsx..."
+python3 << 'PYEOF'
+path = 'src/pages/Home.tsx'
+with open(path, 'r') as f:
+    src = f.read()
+
+if 'Footer' not in src:
+    src = src.replace(
+        "import FAQ from '../components/FAQ'",
+        "import FAQ from '../components/FAQ'\nimport Footer from '../components/Footer'"
+    )
+    src = src.replace(
+        '      <FAQ />\n    </main>',
+        '      <FAQ />\n      <Footer />\n    </main>'
+    )
+    with open(path, 'w') as f:
+        f.write(src)
+    print('  ✓ Footer added to Home.tsx')
+else:
+    print('  ✓ Footer already in Home.tsx')
+PYEOF
+
+echo "→ Creating Footer.tsx if missing..."
+if [ ! -f src/components/Footer.tsx ]; then
+cat > src/components/Footer.tsx << 'FOOTER'
+import { useNavigate } from 'react-router-dom'
+
+export default function Footer() {
+  const navigate = useNavigate()
+  const year = new Date().getFullYear()
+  return (
+    <>
+      <style>{`
+        .footer { background: var(--bg-base); border-top: 1px solid var(--border-subtle); padding: 48px 32px 32px; }
+        .footer-inner { max-width: 1100px; margin: 0 auto; }
+        .footer-top { display: grid; grid-template-columns: 1fr auto auto auto; gap: 48px; margin-bottom: 40px; padding-bottom: 40px; border-bottom: 1px solid var(--border-subtle); }
+        .footer-logo { font-family: 'DM Mono', monospace; font-size: 15px; letter-spacing: 0.1em; color: var(--text-primary); font-weight: 500; cursor: pointer; display: block; margin-bottom: 8px; }
+        .footer-logo span { background: linear-gradient(135deg, #FF6B9D, #A855F7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .footer-tagline { font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text-tertiary); line-height: 1.6; max-width: 240px; }
+        .footer-col-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.14em; color: var(--text-tertiary); margin-bottom: 14px; }
+        .footer-links { display: flex; flex-direction: column; gap: 10px; }
+        .footer-link { font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text-secondary); background: none; border: none; cursor: pointer; padding: 0; text-align: left; transition: color 150ms; text-decoration: none; display: block; }
+        .footer-link:hover { color: var(--text-primary); }
+        .footer-bottom { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+        .footer-copy { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.06em; color: var(--text-tertiary); }
+        .footer-legal { display: flex; gap: 24px; }
+        .footer-legal-link { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.06em; color: var(--text-tertiary); background: none; border: none; cursor: pointer; padding: 0; transition: color 150ms; text-decoration: none; }
+        .footer-legal-link:hover { color: var(--text-secondary); }
+        .footer-refund { font-family: 'DM Sans', sans-serif; font-size: 13px; color: #4ade80; }
+        .footer-refund-note { font-family: 'DM Sans', sans-serif; font-size: 12px; color: var(--text-tertiary); margin-top: 6px; line-height: 1.6; }
+        @media (max-width: 768px) { .footer-top { grid-template-columns: 1fr 1fr; gap: 32px; } .footer { padding: 40px 24px 28px; } }
+        @media (max-width: 480px) { .footer-top { grid-template-columns: 1fr; gap: 24px; } .footer-bottom { flex-direction: column; align-items: flex-start; } }
+      `}</style>
+      <footer className="footer">
+        <div className="footer-inner">
+          <div className="footer-top">
+            <div>
+              <span className="footer-logo" onClick={() => navigate('/')}>onestop<span>careers</span></span>
+              <p className="footer-tagline">AI Problem Solving Lab. Built for professionals who want to think better — not just use better tools.</p>
+            </div>
+            <div>
+              <p className="footer-col-label">NAVIGATE</p>
+              <div className="footer-links">
+                <button className="footer-link" onClick={() => navigate('/')}>Home</button>
+                <button className="footer-link" onClick={() => navigate('/lab')}>The Lab</button>
+                <button className="footer-link" onClick={() => navigate('/diagnostic')}>Free Diagnostic</button>
+              </div>
+            </div>
+            <div>
+              <p className="footer-col-label">ABOUT</p>
+              <div className="footer-links">
+                <a className="footer-link" href="https://linkedin.com/in/ketangoel" target="_blank" rel="noopener noreferrer">Ketan on LinkedIn</a>
+                <a className="footer-link" href="https://topmate.io/ketangoel" target="_blank" rel="noopener noreferrer">Topmate Sessions</a>
+              </div>
+            </div>
+            <div>
+              <p className="footer-col-label">GUARANTEE</p>
+              <p className="footer-refund">✓ No questions asked refund</p>
+              <p className="footer-refund-note">Not satisfied after Session 1?<br />Full refund. No conditions.</p>
+            </div>
+          </div>
+          <div className="footer-bottom">
+            <span className="footer-copy">© {year} onestopcareers. All rights reserved.</span>
+            <div className="footer-legal">
+              <button className="footer-legal-link" onClick={() => alert('Terms — Coming soon')}>Terms of Service</button>
+              <button className="footer-legal-link" onClick={() => alert('Privacy — Coming soon')}>Privacy Policy</button>
+              <a className="footer-legal-link" href="mailto:ketan@onestopcareers.in">Contact</a>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </>
+  )
+}
+FOOTER
+echo "  ✓ Footer.tsx created"
+else
+  echo "  ✓ Footer.tsx already exists"
+fi
+
+echo ""
+echo "→ Running build..."
+npm run build
+
+if [ $? -eq 0 ]; then
+  echo ""
+  echo "✅ All fixes applied. Now push:"
+  echo "   git add . && git commit -m 'fix: truth section, nav, ticker, footer' && git push origin signal-mvp"
+else
+  echo "⚠ Build failed — check errors above"
+fi
