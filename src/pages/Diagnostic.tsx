@@ -68,7 +68,10 @@ export default function Diagnostic() {
 
       <div className="diag-page">
         <div className="diag-topbar">
-          <span className="diag-logo" onClick={() => navigate('/')}>onestop<span>careers</span></span>
+          <div style={{display:'flex',alignItems:'center',gap:16}}>
+            <button onClick={() => navigate('/')} style={{background:'none',border:'1px solid var(--border-subtle)',borderRadius:100,padding:'6px 14px',fontFamily:'DM Sans,sans-serif',fontSize:13,color:'var(--text-secondary)',cursor:'pointer',transition:'all 150ms'}}>← Home</button>
+            <span className="diag-logo" onClick={() => navigate('/')}>onestop<span>careers</span></span>
+          </div>
           <div className="diag-steps">
             <div className="diag-step done" />
             <div className="diag-step active" />

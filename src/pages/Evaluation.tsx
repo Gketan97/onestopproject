@@ -516,7 +516,10 @@ export default function Evaluation() {
 
       <div className="eval-page">
         <div className="eval-topbar">
-          <span className="eval-logo">onestop<span>careers</span></span>
+          <div style={{display:'flex',alignItems:'center',gap:16}}>
+            <button onClick={() => navigate('/')} style={{background:'none',border:'1px solid var(--border-subtle)',borderRadius:100,padding:'6px 14px',fontFamily:'DM Sans,sans-serif',fontSize:13,color:'var(--text-secondary)',cursor:'pointer',transition:'all 150ms'}}>← Home</button>
+            <span className="eval-logo">onestop<span>careers</span></span>
+          </div>
           <div className="eval-steps">
             <div className="eval-step done" />
             <div className="eval-step done" />
