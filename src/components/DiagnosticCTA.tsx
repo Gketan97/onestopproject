@@ -118,7 +118,8 @@ export default function DiagnosticCTA() {
           <div className="dcta-banner">
             <p data-reveal className="dcta-label">THE 4-MINUTE TEST</p>
             <h2 data-reveal className="dcta-h2">
-              Most people think they think well.<br />Most are wrong.
+              Most people think they think well.<br />
+              <em>Most are wrong.</em>
             </h2>
             <p data-reveal className="dcta-body">
               We put you in a real work situation — the kind that decides who gets promoted

@@ -32,6 +32,10 @@ export default function Nav() {
       <style>{`
         .nav-root {
           position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+          background: rgba(8,8,12,0.75);
+          backdrop-filter: blur(14px);
+          -webkit-backdrop-filter: blur(14px);
+          border-bottom: 1px solid rgba(255,255,255,0.07);
         }
         .nav-root.scrolled {
           background: rgba(8,8,12,0.88);
@@ -49,7 +53,7 @@ export default function Nav() {
         .nav-brand-name {
           font-family: 'DM Mono', monospace;
           font-size: 15px; letter-spacing: 0.1em;
-          color: var(--text-primary); font-weight: 500; line-height: 1;
+          color: #ffffff; font-weight: 600; line-height: 1;
         }
         .nav-brand-name span {
           background: linear-gradient(135deg, #FF6B9D, #A855F7);
