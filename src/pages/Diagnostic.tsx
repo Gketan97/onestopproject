@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 // ── TESTING CONFIG — flip to false before launch ──────────────
 const USE_DEFAULT_ANSWER = false
@@ -16,9 +16,7 @@ What I'd want to check: where in the flow they dropped. Did they reach the check
 
 export default function Diagnostic() {
   const navigate = useNavigate()
-  const location = useLocation()
-  const previewMode = new URLSearchParams(location.search).get('preview') === 'osc2025'
-  const location = useLocation()
+  const previewMode = new URLSearchParams(window.location.search).get('preview') === 'osc2025'
   const isTestMode = new URLSearchParams(location.search).get('test') === '1'
   const [answer, setAnswer] = useState('')
   const [submitting, setSubmitting] = useState(false)
