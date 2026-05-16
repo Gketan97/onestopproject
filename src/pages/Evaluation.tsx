@@ -47,32 +47,124 @@ interface EvalResult {
 // ── Transformation cards ──────────────────────────────────────
 const TRANSFORMATIONS = [
   {
-    before: 'Manager asks "what happened?" You say "it could be many things, let me investigate."',
-    after: 'You walk in with one hypothesis, your reasoning, and what you already checked.',
+    before: '❌ Manager asks "what happened?" You give a vague, multi-option answer. The room loses confidence and moves on without your input.',
+    after: '✅ You walk in with a singular, high-conviction hypothesis, your reasoning framework, and the precise metric required to prove you wrong.',
   },
   {
-    before: 'You use AI to write the analysis faster — but the thinking is still shallow.',
-    after: 'You use AI to challenge your own hypothesis before anyone else gets the chance to.',
+    before: '❌ You use AI to produce more output — longer reports, more slides, faster drafts. The thinking is still shallow.',
+    after: '✅ You use AI to pressure-test your own hypothesis before anyone else in the room gets the chance to challenge it.',
   },
   {
-    before: 'You present findings. One question from the room and you are back to "let me check."',
-    after: 'You present a recommendation. You have already answered their pushback in slide 2.',
+    before: '❌ You present findings. One question from leadership and you say "let me check and get back to you."',
+    after: '✅ You present a recommendation. You have already anticipated their pushback and addressed it in your second slide.',
   },
   {
-    before: 'You know something is wrong with the numbers. You cannot say what or why.',
-    after: 'You can name the problem, trace it to a root cause, and say what to fix first.',
+    before: '❌ You know something is wrong with the numbers. You cannot name what it is, why it happened, or what to fix first.',
+    after: '✅ You diagnose the root cause in minutes, trace it to a business driver, and recommend one action with a success metric.',
   },
 ]
 
 // ── Score bar ─────────────────────────────────────────────────
-function ScoreBar({ score }: { score: number }) {
+const RISK_LABELS: Record<string, Record<number, string>> = {
+  'Problem Reframe': {
+    1: 'Risk: You are solving the wrong problem entirely.',
+    2: 'Risk: Missing the key insight that reframes the whole question.',
+    3: 'Partial: Aware of the framing but not fully exploiting it.',
+  },
+  'Hypothesis Commitment': {
+    1: 'Risk: Leadership sees you as unable to form independent views.',
+    2: 'Risk: Your communication style reads as passive and non-committal.',
+    3: 'Partial: Shows a view but hedges too much to be actionable.',
+  },
+  'Structure': {
+    1: 'Risk: Arguments lack framing — stakeholders tune out.',
+    2: 'Risk: Causes are mixed without a logical separation.',
+    3: 'Partial: Some structure present but not consistently applied.',
+  },
+  'Data Curiosity': {
+    1: 'Risk: Cannot distinguish between data that matters and noise.',
+    2: 'Risk: No clear sense of what would confirm or refute your view.',
+    3: 'Partial: Curious but not specific about what to look for.',
+  },
+  'Decision Clarity': {
+    1: 'Risk: Thinking trails off — no clear conclusion reached.',
+    2: 'Risk: Contradictory signals — the argument undermines itself.',
+    3: 'Partial: Clear direction but stops short of a full recommendation.',
+  },
+}
+
+function ScoreBar({ score, name }: { score: number; name: string }) {
   const color = score <= 2 ? '#f87171' : score === 3 ? '#fbbf24' : '#4ade80'
+  const risk = score <= 3 ? RISK_LABELS[name]?.[score] : null
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1 }}>
-      <div style={{ flex: 1, height: 3, background: 'var(--border-subtle)', borderRadius: 2, overflow: 'hidden' }}>
-        <div style={{ width: `${(score / 5) * 100}%`, height: '100%', background: color, borderRadius: 2, transition: 'width 900ms ease' }} />
+    <div style={{ flex: 1 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: risk ? 6 : 0 }}>
+        <div style={{ flex: 1, height: 3, background: 'var(--border-subtle)', borderRadius: 2, overflow: 'hidden' }}>
+          <div style={{ width: `${(score / 5) * 100}%`, height: '100%', background: color, borderRadius: 2, transition: 'width 900ms ease' }} />
+        </div>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color, minWidth: 28, textAlign: 'right' }}>{score}/5</span>
       </div>
-      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color, minWidth: 28, textAlign: 'right' }}>{score}/5</span>
+      {risk && (
+        <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.06em', color: '#f87171', lineHeight: 1.5 }}>
+          {risk}
+        </div>
+      )}
+    </div>
+  )
+}
+
+
+// ── Framework Accordion ───────────────────────────────────────
+const FW_STEPS = [
+  { n: '01', t: 'Understand the business', b: 'Before touching the problem, understand what the company actually cares about — its revenue model, growth levers, and what a win looks like for this team.' },
+  { n: '02', t: 'Define the real problem', b: 'Separate what you have been asked from what you should actually be solving. Most people skip this and solve the wrong problem brilliantly.' },
+  { n: '03', t: 'Break it into MECE parts', b: 'Structure the problem space into mutually exclusive, collectively exhaustive sub-problems before investigating anything.' },
+  { n: '04', t: 'Generate hypotheses', b: 'Not a list of guesses — a structured set of testable explanations ranked by likelihood. Commit to a most-likely hypothesis.' },
+  { n: '05', t: 'Prioritise ruthlessly', b: 'You cannot investigate everything. Which hypotheses have the highest probability and highest impact if true? Start there.' },
+  { n: '06', t: 'Structure your analysis', b: 'What data confirms or refutes each hypothesis? Use AI to move faster — but verify before you act on it.' },
+  { n: '07', t: 'Form a clear recommendation', b: 'Not findings. A specific recommendation with a reason and a next step someone can act on immediately.' },
+  { n: '08', t: 'Stress test your thinking', b: 'Where are you most likely to be wrong? Anticipating pushback before it comes is what separates sharp thinkers from everyone else.' },
+]
+
+function FwAccordion() {
+  const [open, setOpen] = useState<number | null>(null)
+  return (
+    <div style={{ marginLeft: 32, display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {FW_STEPS.map((s, i) => (
+        <div
+          key={i}
+          style={{
+            background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)',
+            borderRadius: 12, overflow: 'hidden',
+            borderColor: open === i ? 'rgba(168,85,247,0.3)' : 'var(--border-subtle)',
+            transition: 'border-color 200ms',
+          }}
+        >
+          <div
+            onClick={() => setOpen(open === i ? null : i)}
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '14px 16px', cursor: 'pointer',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 11, color: 'var(--accent)', letterSpacing: '0.1em' }}>{s.n}</span>
+              <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{s.t}</span>
+            </div>
+            <span style={{ color: 'var(--text-tertiary)', fontSize: 16, flexShrink: 0 }}>{open === i ? '−' : '+'}</span>
+          </div>
+          {open === i && (
+            <div style={{
+              padding: '0 16px 16px',
+              fontFamily: 'DM Sans, sans-serif', fontSize: 13,
+              color: 'var(--text-secondary)', lineHeight: 1.7,
+              borderTop: '1px solid var(--border-subtle)', paddingTop: 12,
+            }}>
+              {s.b}
+            </div>
+          )}
+        </div>
+      ))}
     </div>
   )
 }
@@ -89,6 +181,31 @@ export default function Evaluation() {
   useEffect(() => {
     const answer = sessionStorage.getItem('signal_answer')
     if (!answer) { navigate('/diagnostic'); return }
+
+    // Preview mode — bypass API with fallback result
+    const isPreview = sessionStorage.getItem('signal_preview') === '1'
+    if (isPreview) {
+      setTimeout(() => {
+        setResult({
+          verdict: 'Good breadth. Needs sharper hypothesis.',
+          overall: 2,
+          passed: false,
+          summary: 'Your response shows genuine curiosity and covers a range of possibilities. The biggest strength is engaging with the problem thoughtfully. The core gap: possibilities are listed with equal weight and there is no commitment to a single most-likely cause.',
+          dimensions: [
+            { name: 'Problem Reframe', score: 2, observation: 'Did not explicitly use the 5-minute browse as evidence of intent to reframe the question.' },
+            { name: 'Hypothesis Commitment', score: 2, observation: 'Listed multiple possibilities without committing to the most likely one with reasoning.' },
+            { name: 'Structure', score: 2, observation: 'Some structure present but causes were not separated into user-side vs product-side buckets.' },
+            { name: 'Data Curiosity', score: 3, observation: 'Showed curiosity about what might have happened but did not name a specific data point to confirm it.' },
+            { name: 'Decision Clarity', score: 2, observation: 'Thinking was consistent but did not arrive at a clear, defensible position.' },
+          ],
+          what_strong_looks_like: 'A strong response immediately notices that 5 minutes of browsing signals intent. From there it narrows to one most-likely cause and names one data point that would confirm it.',
+          one_thing: 'Practice committing to one hypothesis and defending it before listing alternatives.',
+          ketan_note: 'The instinct to think through multiple angles is good. The next step is learning to pick one and stand behind it.',
+        })
+        setPhase('result')
+      }, 1500)
+      return
+    }
 
     const client = new Anthropic({
       apiKey: import.meta.env.VITE_ANTHROPIC_API_KEY,
@@ -446,7 +563,7 @@ export default function Evaluation() {
                 <div key={i} className="eval-dim">
                   <div className="eval-dim-top">
                     <span className="eval-dim-name">{d.name}</span>
-                    <ScoreBar score={d.score} />
+                    <ScoreBar score={d.score} name={d.name} />
                   </div>
                   <p className="eval-dim-obs">{d.observation}</p>
                 </div>
@@ -548,24 +665,7 @@ export default function Evaluation() {
                       <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.7 }}>A repeatable way to go from a messy problem to a clear recommendation — works on any business question. Tap any step.</div>
                     </div>
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginLeft: 32 }}>
-                    {[
-                      { n: '01', t: 'Understand the business', b: 'Before touching the problem, understand what the company actually cares about — its revenue model and growth levers.' },
-                      { n: '02', t: 'Define the real problem', b: 'Separate what you have been asked from what you should actually be solving. Most people skip this.' },
-                      { n: '03', t: 'Break it into parts', b: 'Structure the problem space before investigating. What are the logical sub-problems?' },
-                      { n: '04', t: 'Generate hypotheses', b: 'Not a list of guesses — a structured set of testable explanations ranked by likelihood.' },
-                      { n: '05', t: 'Prioritise ruthlessly', b: 'You cannot investigate everything. Which hypotheses have the highest probability and impact if true?' },
-                      { n: '06', t: 'Structure your analysis', b: 'What data confirms or refutes each hypothesis? How do you use AI to move faster without losing rigour?' },
-                      { n: '07', t: 'Form a recommendation', b: 'Not findings. A specific recommendation with a reason and a next step someone can act on.' },
-                      { n: '08', t: 'Stress test', b: 'Where are you most likely to be wrong? Anticipating pushback before it comes is what separates sharp thinkers.' },
-                    ].map((s, i) => (
-                      <div key={i} style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', borderRadius: 12, padding: '16px 14px', cursor: 'default' }}>
-                        <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.12em', color: 'var(--accent)', marginBottom: 8 }}>{s.n}</div>
-                        <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.35, marginBottom: 8 }}>{s.t}</div>
-                        <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6 }}>{s.b}</div>
-                      </div>
-                    ))}
-                  </div>
+                  <FwAccordion />
                 </div>
 
                 {/* 02 — AI in decision making */}

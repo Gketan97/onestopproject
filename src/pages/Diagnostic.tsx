@@ -17,6 +17,8 @@ What I'd want to check: where in the flow they dropped. Did they reach the check
 export default function Diagnostic() {
   const navigate = useNavigate()
   const location = useLocation()
+  const previewMode = new URLSearchParams(location.search).get('preview') === 'osc2025'
+  const location = useLocation()
   const isTestMode = new URLSearchParams(location.search).get('test') === '1'
   const [answer, setAnswer] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -31,7 +33,7 @@ export default function Diagnostic() {
   }, [isTestMode])
 
   const wordCount = answer.trim() === '' ? 0 : answer.trim().split(/\s+/).length
-  const MIN_WORDS = 80
+  const MIN_WORDS = 40
   const progress = Math.min((wordCount / MIN_WORDS) * 100, 100)
   const canSubmit = USE_DEFAULT_ANSWER || wordCount >= MIN_WORDS
 

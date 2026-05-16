@@ -32,10 +32,10 @@ export default function AboutKetan() {
   }, [])
 
   const stats = [
-    { val: '170K', label: 'LinkedIn followers' },
-    { val: '500+', label: 'Mentored on Topmate' },
-    { val: '7yr', label: 'At Meesho' },
+    { val: '7yr', label: 'At Meesho & Myntra' },
+    { val: '500+', label: 'Professionals mentored' },
     { val: '15+', label: 'Rejections before Meesho' },
+    { val: '170K', label: 'LinkedIn followers' },
   ]
 
   const credentials = [
