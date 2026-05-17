@@ -1,0 +1,9 @@
+experiment_id,experiment_name,variant,expected_effect,exposed_users,simulated_conversion,simulated_checkout_rate,note
+EXP_COUPON_GATE,Email Verification Before Coupon,control,negative_new_users,2366,0.038,0.735,Significant negative effect on new user checkout. Roll back for new users.
+EXP_COUPON_GATE,Email Verification Before Coupon,treatment,negative_new_users,1634,0.0339,0.68,Significant negative effect on new user checkout. Roll back for new users.
+EXP_PAYMENT_UI_V2,Payment Method Selector Redesign,control,small_negative,453,0.038,0.735,Small real effect on Android checkout-to-payment. Effect size too small to explain aggregate.
+EXP_PAYMENT_UI_V2,Payment Method Selector Redesign,treatment,small_negative,483,0.0372,0.72,Small real effect on Android checkout-to-payment. Effect size too small to explain aggregate.
+EXP_PRICE_NUDGE,Social Proof Price Nudge,control,small_positive,3187,0.038,0.735,Positive effect on listing click rate. Keep live.
+EXP_PRICE_NUDGE,Social Proof Price Nudge,treatment,small_positive,813,0.0392,0.74,Positive effect on listing click rate. Keep live.
+EXP_SORT_ALGO_V3,Flight Ranking Algorithm V3,control,unclear,2453,0.038,0.735,WARNING: Sample ratio mismatch — 38% exposure vs 30% expected. Results unreliable.
+EXP_SORT_ALGO_V3,Flight Ranking Algorithm V3,treatment,unclear,1547,0.038,0.735,WARNING: Sample ratio mismatch — 38% exposure vs 30% expected. Results unreliable.

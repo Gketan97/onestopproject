@@ -1,0 +1,72 @@
+{
+  "access_level": "instructor_only",
+  "primary_root_cause": {
+    "name": "Traffic mix shift \u2014 low-intent app install campaign users",
+    "description": "Paid social/UAC session share grew from 8% to 19% of total sessions after July 12 campaign launch. These users convert at 1.4% vs 4.8% for organic returning users. Within every segment, conversion is stable. The aggregate drops because the mix changed.",
+    "evidence_tables": [
+      "funnel_by_week_channel",
+      "funnel_by_user_segment",
+      "marketing_spend"
+    ],
+    "contribution_to_drop": "~73% of the 1.3pp aggregate conversion decline"
+  },
+  "secondary_causes": [
+    {
+      "name": "TripEase price advantage on DEL-BOM, BOM-BLR, DEL-BLR routes",
+      "description": "TripEase is 8-16% cheaper on these 3 routes during problem period. Causes genuine switching.",
+      "evidence_tables": [
+        "competitor_price_snapshots",
+        "competitor_price_summary"
+      ],
+      "contribution_to_drop": "~17%"
+    },
+    {
+      "name": "Android payment UI experiment (EXP_PAYMENT_UI_V2)",
+      "description": "Real but small -0.8pp effect on checkout-to-payment for Android 8.4.x users.",
+      "evidence_tables": [
+        "experiments",
+        "experiment_readout"
+      ],
+      "contribution_to_drop": "~8%"
+    },
+    {
+      "name": "Coupon gate experiment (EXP_COUPON_GATE)",
+      "description": "-4.1pp checkout start rate for new users in treatment group. Roll back immediately.",
+      "evidence_tables": [
+        "experiments",
+        "experiment_readout"
+      ],
+      "contribution_to_drop": "~5%"
+    }
+  ],
+  "false_leads": [
+    {
+      "name": "Payment success rate decline",
+      "why_misleading": "Denominator (payment attempts) increased. Rate barely moved. Not primary cause."
+    },
+    {
+      "name": "Support ticket volume increase",
+      "why_misleading": "Absolute volume up. But rate per booking also increased \u2014 real signal for payment UX. Not primary conversion driver."
+    },
+    {
+      "name": "App installs at all-time high",
+      "why_misleading": "Vanity metric. These installs came from low-intent users who don't convert."
+    },
+    {
+      "name": "EXP_SORT_ALGO_V3",
+      "why_misleading": "Sample ratio mismatch (38% vs 30%) makes results statistically invalid. Do not use for causal attribution."
+    },
+    {
+      "name": "Discounting partially recovered bookings",
+      "why_misleading": "Volume metric improved. Net revenue per booking collapsed from \u20b9342 to \u20b9248. CFO is right."
+    }
+  ],
+  "how_to_find_it": [
+    "Step 1: Look at daily_kpi_summary \u2014 conversion drops sharply week of July 12 (campaign launch date)",
+    "Step 2: Open funnel_by_week_channel \u2014 compare organic vs paid_social conversion rates",
+    "Step 3: Observe paid_social converts at 1.4% vs organic at 4.7-4.8% \u2014 and session share went from 8% to 19%",
+    "Step 4: Compute mix shift contribution: 11pp share shift \u00d7 3.4pp conversion gap = ~0.37pp direct drag",
+    "Step 5: Check funnel_by_user_segment \u2014 new_campaign users consistently low conversion both periods (rules out product change)",
+    "Step 6: Check iOS conversion \u2014 also stable (rules out Android experiment as primary)"
+  ]
+}

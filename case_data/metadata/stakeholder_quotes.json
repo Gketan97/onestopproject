@@ -1,0 +1,52 @@
+{
+  "stakeholders": [
+    {
+      "name": "Rohan Kapoor",
+      "title": "CEO",
+      "quote": "We've clearly lost share to TripEase on price. Customers are switching. I want to match their cashback or we accept the volume loss. Either way I need a decision this week.",
+      "metric_they_watch": "Weekly paid bookings and estimated market share",
+      "what_they_want": "Approve \u20b925 crore additional discount budget",
+      "blind_spot": "Does not distinguish volume from quality. Has not looked at net revenue per booking or cohort repeat rate."
+    },
+    {
+      "name": "Priya Nair",
+      "title": "VP Product",
+      "quote": "I've been saying this since July \u2014 the payment UI experiment we launched in June is the problem. Checkout-to-payment conversion dropped right when we launched it. We need to roll it back immediately.",
+      "metric_they_watch": "Checkout-to-payment conversion and payment success rate",
+      "what_they_want": "Immediate rollback of EXP_PAYMENT_UI_V2",
+      "blind_spot": "Experiment affected only 12% of users. iOS conversion is also down \u2014 proving it's not just the experiment. Effect size too small to explain aggregate."
+    },
+    {
+      "name": "Siddharth Rao",
+      "title": "VP Growth & Marketing",
+      "quote": "The organic traffic quality is fine \u2014 I can show you that. It's the paid acquisition channels. TripEase is flooding the market with cashback and we're attracting their spillover traffic \u2014 low-intent users who just compare prices. This is a traffic quality problem.",
+      "metric_they_watch": "Channel-level cost per booking and booking-to-60-day-repeat rate by channel",
+      "what_they_want": "Shift spend from performance marketing to brand building",
+      "blind_spot": "Partially right about traffic quality \u2014 but has not acknowledged that his own campaigns created the low-quality traffic problem."
+    },
+    {
+      "name": "Anjali Mehta",
+      "title": "Head of Analytics",
+      "quote": "There was a step-change in conversion in the week of July 12. That's not a gradual seasonal drift. I need 48 hours to isolate whether it's a tracking issue, an experiment gone wrong, or a real business change. Please don't make decisions before I have the analysis.",
+      "metric_they_watch": "Day-level funnel conversion with experiment exposure controls",
+      "what_they_want": "48 hours to run proper root cause analysis before any decision",
+      "blind_spot": "Closest to the truth. Needs to move faster \u2014 leadership is already making decisions."
+    },
+    {
+      "name": "Vikram Shah",
+      "title": "CFO",
+      "quote": "I don't care about bookings. I care about contribution margin. We're spending \u20b9610 per booking in discounts to sustain volumes that used to be self-sustaining at \u20b9380. If this continues 6 more weeks, we miss Q2 by \u20b9180 crore. Cap the discount budget and find the real cause.",
+      "metric_they_watch": "Contribution margin per booking and cumulative discount burn",
+      "what_they_want": "Hard cap on discount budget; mandate root cause analysis before further spend",
+      "blind_spot": "Financially correct diagnosis. Does not have a view on which operational lever to pull."
+    },
+    {
+      "name": "Deepa Krishnan",
+      "title": "Head of Customer Support",
+      "quote": "Payment failure contacts are up 38%. Customers are calling us saying money was deducted but booking not confirmed. This is a trust problem. Engineering needs to treat this as P1.",
+      "metric_they_watch": "Contact rate per booking and CSAT on payment failure contacts",
+      "what_they_want": "Escalate payment failure as P1 to engineering",
+      "blind_spot": "Absolute contact volume up \u2014 but driven partly by more bookings attempting payment. Rate per booking also rose, but payment failure is not the primary conversion driver."
+    }
+  ]
+}

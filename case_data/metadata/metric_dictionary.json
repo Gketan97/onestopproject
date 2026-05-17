@@ -1,0 +1,59 @@
+{
+  "search_to_booking_conversion": {
+    "definition": "Confirmed paid bookings divided by sessions with at least one flight search",
+    "formula": "confirmed_bookings / search_sessions",
+    "tables": [
+      "sessions",
+      "search_events",
+      "bookings"
+    ],
+    "common_mistake": "Using total booking attempts (including abandoned) in numerator. Always filter booking_status = confirmed.",
+    "phase_visible": "phase1"
+  },
+  "listing_click_rate": {
+    "definition": "Sessions where user clicked at least one flight listing / Total search sessions",
+    "formula": "sessions_with_listing_click / search_sessions",
+    "tables": [
+      "search_events"
+    ],
+    "investigation_note": "This is the first major funnel stage drop. Investigate by channel and user segment.",
+    "phase_visible": "phase1"
+  },
+  "cost_per_booking": {
+    "definition": "Total marketing spend for a channel / Paid bookings attributed to that channel",
+    "formula": "channel_spend / attributed_confirmed_bookings",
+    "tables": [
+      "marketing_spend"
+    ],
+    "common_mistake": "Confusing with cost per install. CPI does not measure booking intent.",
+    "phase_visible": "phase2"
+  },
+  "net_revenue_per_booking": {
+    "definition": "(Booking price \u00d7 take rate) - discount applied",
+    "formula": "(price \u00d7 0.055) - discount_amount",
+    "tables": [
+      "bookings"
+    ],
+    "why_it_matters": "More meaningful than GBV when discounts vary. CFO's preferred metric.",
+    "phase_visible": "phase1"
+  },
+  "session_mix": {
+    "definition": "Share of total sessions attributed to each acquisition channel",
+    "formula": "channel_sessions / total_sessions",
+    "tables": [
+      "sessions",
+      "acquisition_channels"
+    ],
+    "investigation_note": "Key diagnostic metric. If mix shifts toward low-converting channels, aggregate conversion drops even if within-channel performance is stable.",
+    "phase_visible": "phase2"
+  },
+  "cohort_month1_retention": {
+    "definition": "% of users who acquired in a given month and made another booking in the following month",
+    "formula": "users_with_booking_in_month1 / cohort_size",
+    "tables": [
+      "cohort_summary"
+    ],
+    "why_it_matters": "Distinguishes quality of acquisition. Low retention = low-quality cohort.",
+    "phase_visible": "phase2"
+  }
+}

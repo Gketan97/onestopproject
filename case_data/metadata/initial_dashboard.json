@@ -1,0 +1,82 @@
+{
+  "period_note": "Baseline = Apr-Jun 2024. Problem period = Jul 1 - Aug 25, 2024",
+  "metrics": [
+    {
+      "name": "Search-to-Booking Conversion",
+      "definition": "Confirmed paid bookings / Sessions with at least one flight search",
+      "baseline": 0.2141,
+      "current": 0.1598,
+      "change_pct": -25.4,
+      "reliability": "reliable",
+      "is_primary_metric": true
+    },
+    {
+      "name": "Weekly Sessions",
+      "definition": "Total app/web sessions",
+      "baseline": 429,
+      "current": 1932,
+      "change_pct": 350.7,
+      "reliability": "reliable",
+      "is_primary_metric": false
+    },
+    {
+      "name": "App Installs (weekly)",
+      "definition": "New app installs",
+      "baseline": 590000,
+      "current": 840000,
+      "change_pct": 42.4,
+      "reliability": "misleading",
+      "misleading_reason": "Installs are a vanity metric. High install rate from low-intent users inflates this. Cost per first paid booking tells the real story.",
+      "is_primary_metric": false
+    },
+    {
+      "name": "Payment Success Rate",
+      "definition": "Successful payments / Payment attempts",
+      "baseline": 0.921,
+      "current": 0.912,
+      "change_pct": -1.0,
+      "reliability": "misleading",
+      "misleading_reason": "Denominator (payment attempts) grew as discounts drove more checkout completions. Absolute failures barely changed. Not the primary driver.",
+      "is_primary_metric": false
+    },
+    {
+      "name": "Marketing Spend (weekly)",
+      "definition": "Total paid media spend",
+      "baseline": 78000000,
+      "current": 112000000,
+      "change_pct": 43.6,
+      "reliability": "reliable",
+      "is_primary_metric": false
+    },
+    {
+      "name": "Cost Per Install",
+      "definition": "Marketing spend / App installs",
+      "baseline": 132,
+      "current": 133,
+      "change_pct": 0.8,
+      "reliability": "misleading",
+      "misleading_reason": "Stable CPI appears efficient. But CPI does not measure booking intent. Cost per first paid booking rose from \u20b9892 to \u20b91,840.",
+      "is_primary_metric": false
+    },
+    {
+      "name": "Listing Click Rate",
+      "definition": "Sessions with \u22651 listing click / Search sessions",
+      "baseline": 0.68,
+      "current": 0.61,
+      "change_pct": -10.3,
+      "reliability": "reliable",
+      "is_primary_metric": false,
+      "investigation_note": "This is the largest funnel stage drop. Start here."
+    },
+    {
+      "name": "Support Contact Rate",
+      "definition": "Support tickets / Confirmed bookings",
+      "baseline": 0.061,
+      "current": 0.084,
+      "change_pct": 37.7,
+      "reliability": "incomplete",
+      "misleading_reason": "Absolute tickets up. But rate per booking also rose \u2014 payment_failure tickets specifically increased 3x per booking. Real signal but not primary conversion driver.",
+      "is_primary_metric": false
+    }
+  ]
+}
