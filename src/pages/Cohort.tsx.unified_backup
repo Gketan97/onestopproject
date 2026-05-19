@@ -515,9 +515,9 @@ export default function Cohort() {
   const [reflectionDone, setReflectionDone] = useState(false)
   const [reflectionAnswer, setReflectionAnswer] = useState('')
   const [phase2Complete, setPhase2Complete] = useState(false)
-  const [preReadExpanded, setPreReadExpanded] = useState(false)
 
   useEffect(() => {
+    window.scrollTo(0, 0)
     if (sessionStorage.getItem('preread_done') === '1') setPreReadDone(true)
     if (sessionStorage.getItem('cohort_unlocked') === PHASE2_KEYWORD) setPhase2Unlocked(true)
     // Restore Phase 2 progress
@@ -531,24 +531,6 @@ export default function Cohort() {
       setReflectionAnswer(savedReflection)
     }
     if (sessionStorage.getItem('phase2_complete') === '1') setPhase2Complete(true)
-  }, [])
-
-  // Auto-scroll to current phase on load
-  useEffect(() => {
-    const phase2Unlocked_ = sessionStorage.getItem('cohort_unlocked') === PHASE2_KEYWORD
-    const phase2Complete_ = sessionStorage.getItem('phase2_complete') === '1'
-    const preReadDone_ = sessionStorage.getItem('preread_done') === '1'
-    if (!preReadDone_) return
-    setTimeout(() => {
-      let targetId = 'phase0-section'
-      if (phase2Complete_) targetId = 'phase3-section'
-      else if (phase2Unlocked_) targetId = 'phase2-section'
-      const el = document.getElementById(targetId)
-      if (el) {
-        el.scrollIntoView({ behavior: 'auto', block: 'start' })
-        setTimeout(() => window.scrollBy(0, -145), 50)
-      }
-    }, 150)
   }, [])
 
   const sec = (bg = 'var(--bg-base)') => ({ background: bg, borderTop: '1px solid var(--border-subtle)', padding: '72px 32px' } as React.CSSProperties)
@@ -643,50 +625,6 @@ export default function Cohort() {
           <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.1em', color: 'var(--text-tertiary)', background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', borderRadius: 100, padding: '5px 14px' }}>🔒 COHORT MEMBERS ONLY</span>
         </div>
 
-        {/* ── Journey Map (clickable, sticky) ── */}
-        <div style={{ position: 'sticky', top: 60, zIndex: 90, background: 'rgba(8,8,12,0.96)', backdropFilter: 'blur(12px)', borderBottom: '1px solid var(--border-subtle)', padding: '16px 32px' }}>
-          <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 0, overflowX: 'auto' }}>
-            {(() => {
-              const steps = [
-                { label: 'Pre-Read', sub: 'Business', done: preReadDone, unlocked: true, scrollTo: 'preread-section' },
-                { label: 'Phase 0', sub: 'Problem', done: preReadDone, unlocked: preReadDone, scrollTo: 'phase0-section' },
-                { label: 'Phase 1', sub: 'Onboarding', done: phase2Unlocked, unlocked: preReadDone, scrollTo: 'phase1-section' },
-                { label: 'Phase 2', sub: 'Investigation', done: phase2Complete, unlocked: phase2Unlocked, scrollTo: 'phase2-section' },
-                { label: 'Phase 3', sub: 'Synthesis', done: false, unlocked: phase2Unlocked, scrollTo: 'phase3-section' },
-                { label: 'Session 2', sub: 'Evaluation', done: false, unlocked: phase2Complete, scrollTo: 'session2-section' },
-              ]
-              const scrollTo = (id: string) => {
-                const el = document.getElementById(id)
-                if (!el) return
-                el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                setTimeout(() => window.scrollBy(0, -145), 350)
-              }
-              return steps.map((step, i, arr) => {
-                const clickable = step.unlocked && step.scrollTo
-                return (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', flex: i < arr.length - 1 ? 1 : 0, minWidth: 130 }}>
-                    <div
-                      onClick={() => clickable && scrollTo(step.scrollTo)}
-                      style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 110, cursor: clickable ? 'pointer' : 'default', opacity: step.unlocked ? 1 : 0.35, transition: 'opacity 200ms, transform 200ms' }}
-                      onMouseEnter={e => { if (clickable) (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)' }}
-                      onMouseLeave={e => { if (clickable) (e.currentTarget as HTMLElement).style.transform = 'translateY(0)' }}
-                    >
-                      <div style={{ width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'DM Mono, monospace', fontSize: 12, fontWeight: 600, marginBottom: 6, background: step.done ? '#4ade80' : step.unlocked ? 'var(--accent)' : 'var(--bg-elevated)', border: 'none', color: step.unlocked ? '#fff' : 'var(--text-tertiary)' }}>
-                        {step.done ? '✓' : step.unlocked ? i + 1 : '🔒'}
-                      </div>
-                      <div style={{ textAlign: 'center' }}>
-                        <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 11, fontWeight: 600, color: step.done ? '#4ade80' : step.unlocked ? 'var(--text-primary)' : 'var(--text-tertiary)', marginBottom: 1 }}>{step.label}</div>
-                        <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 10, color: 'var(--text-tertiary)' }}>{step.sub}</div>
-                      </div>
-                    </div>
-                    {i < arr.length - 1 && <div style={{ flex: 1, height: 1, background: step.done ? '#4ade80' : 'var(--border-subtle)', minWidth: 20, marginTop: -20 }} />}
-                  </div>
-                )
-              })
-            })()}
-          </div>
-        </div>
-
         {/* Private banner */}
         <div style={{ background: 'rgba(168,85,247,0.07)', borderBottom: '1px solid rgba(168,85,247,0.15)', padding: '13px 32px' }}>
           <div style={{ maxWidth: 900, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
@@ -697,86 +635,119 @@ export default function Cohort() {
           </div>
         </div>
 
-
-
-
         {/* ═══════════════════════════════════════ */}
-        {/* PRE-READ — COLLAPSIBLE (always accessible) */}
+        {/* PHASE 0 — PRE-READ */}
         {/* ═══════════════════════════════════════ */}
-        <section id="preread-section" style={{ background: 'var(--bg-base)', borderTop: '1px solid var(--border-subtle)', padding: '0' }}>
-          <div
-            onClick={() => setPreReadExpanded(v => !v)}
-            style={{ maxWidth: 900, margin: '0 auto', padding: '20px 32px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-              <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#4ade80', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'DM Mono, monospace', fontSize: 11, color: '#000', fontWeight: 700, flexShrink: 0 }}>✓</div>
-              <div>
-                <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>Pre-Read — Business Context</div>
-                <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: 'var(--text-tertiary)' }}>PlanMyTrip business model, metrics, and customer journey — click to review</div>
-              </div>
-            </div>
-            <span style={{ color: 'var(--accent)', fontSize: 20, flexShrink: 0 }}>{preReadExpanded ? '−' : '+'}</span>
-          </div>
-          {preReadExpanded && (
-            <div style={{ borderTop: '1px solid var(--border-subtle)', padding: '32px', maxWidth: 900, margin: '0 auto' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 28 }}>
+        <section style={sec()}>
+          <div style={inner}>
+
+            {/* Journey map */}
+            <div style={{ marginBottom: 56 }}>
+              <Label text="YOUR LEARNING JOURNEY" />
+              <div className="cs-journey">
                 {[
-                  { label: 'WHAT PLANMYTRIP DOES', content: 'India’s third-largest OTA for domestic travel. Primary product: flight search and booking. Revenue model: take rate (% of booking GMV) + ancillary (hotel, insurance, seat upgrades). ~65% of revenue from domestic flights.' },
-                  { label: 'HOW CONVERSION IS MEASURED', content: 'Search-to-booking conversion = confirmed bookings ÷ sessions with at least one flight search. Baseline: 21.3% (April–June 2024). Problem period: 15.2% (July–August 2024).' },
-                  { label: 'KEY METRICS TO KNOW', content: 'GMV = Gross Merchandise Value (total booking value before discounts). Net revenue = GMV × take rate − discounts. ARPU = Average Revenue Per User. Contribution margin = net revenue − variable costs.' },
-                  { label: 'CUSTOMER JOURNEY', content: 'Search → Browse listings → Select flight → Enter details → Apply coupon → Pay → Confirm. Conversion drop can happen at any step. The funnel shows which step loses the most users.' },
-                ].map((item, i) => (
-                  <div key={i} style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', borderRadius: 12, padding: '16px 20px' }}>
-                    <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.1em', color: 'var(--accent)', marginBottom: 8 }}>{item.label}</div>
-                    <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7 }}>{item.content}</div>
+                  { label: 'Pre-Read', sub: 'Business context', status: 'open' },
+                  { label: 'Phase 0', sub: 'Problem statement', status: 'open' },
+                  { label: 'Phase 1', sub: 'Saturday with Ketan', status: 'open' },
+                  { label: 'Phase 2', sub: 'Your analysis + AI', status: phase2Unlocked ? 'open' : 'locked' },
+                  { label: 'Phase 3', sub: 'Submit + debrief', status: phase2Unlocked ? 'open' : 'locked' },
+                ].map((step, i, arr) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', flex: i < arr.length - 1 ? 1 : 0 }}>
+                    <div className="cs-journey-step">
+                      <div className={`cs-journey-dot ${step.status}`}>{step.status === 'locked' ? '🔒' : i + 1}</div>
+                      <span className={`cs-journey-label ${step.status === 'locked' ? 'locked' : ''}`}>
+                        <strong>{step.label}</strong><br />{step.sub}
+                      </span>
+                    </div>
+                    {i < arr.length - 1 && <div className="cs-journey-line" />}
                   </div>
                 ))}
               </div>
-              <div style={{ background: 'rgba(168,85,247,0.04)', border: '1px solid rgba(168,85,247,0.15)', borderRadius: 10, padding: '14px 20px' }}>
-                <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.1em', color: 'var(--accent)', marginBottom: 8 }}>GLOSSARY</div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-                  {[
-                    ['Funnel', 'Each step users take: search → browse → checkout'],
-                    ['Cohort', 'Group of users acquired in the same time period'],
-                    ['Mix shift', 'Traffic composition changed (channel share shifted)'],
-                    ['Root cause', 'Primary factor explaining most of the decline'],
-                    ['SRM', 'Sample Ratio Mismatch — experiment randomisation bug'],
-                    ['Take rate', 'PlanMyTrip’s % cut of each booking value'],
-                  ].map(([term, def], i) => (
-                    <div key={i} style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.55 }}>
-                      <strong style={{ color: 'var(--text-primary)' }}>{term}:</strong> {def}
-                    </div>
-                  ))}
-                </div>
+            </div>
+
+            <Label text="PRE-READ · READ BEFORE SATURDAY" />
+            <H2>Understanding the PlanMyTrip business</H2>
+            <Body>
+              <strong style={{ color: 'var(--text-primary)' }}>PlanMyTrip.com</strong> is India's second-largest online travel aggregator. It operates three primary business lines: domestic and international flight booking, hotel and holiday packages, and intercity bus ticketing (via RideConnect). The company has approximately 42% of India's OTA market.
+            </Body>
+
+            {/* Revenue model */}
+            <div style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', borderRadius: 14, padding: '24px 28px', marginBottom: 24 }}>
+              <p style={{ fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.14em', color: 'var(--accent)', marginBottom: 16 }}>HOW PLANMYTRIP MAKES MONEY</p>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+                {[
+                  { segment: 'Hotels & Packages', revenue: '52%', margin: '16%', note: 'Highest margin. Strategic priority.' },
+                  { segment: 'Air Ticketing', revenue: '29%', margin: '5%', note: 'Price-transparent commodity. Thin margins.' },
+                  { segment: 'Bus (RideConnect)', revenue: '19%', margin: '9%', note: 'Fast growing. 70% of online bus market.' },
+                ].map((s, i) => (
+                  <div key={i} style={{ background: 'var(--bg-base)', border: '1px solid var(--border-subtle)', borderRadius: 10, padding: '14px 16px' }}>
+                    <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>{s.segment}</div>
+                    <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 11, color: 'var(--accent)', marginBottom: 4 }}>{s.revenue} of revenue · {s.margin} margin</div>
+                    <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: 'var(--text-tertiary)', lineHeight: 1.5 }}>{s.note}</div>
+                  </div>
+                ))}
               </div>
             </div>
-          )}
+
+            <Callout accent>
+              <strong>Why hotels matter more than flights:</strong> Hotels generate 16% adjusted margin vs 5% for flights — 3.2x more profitable per rupee. Every ₹1 shifted from air to hotel bookings generates 3.2x the profit. This context shapes how we evaluate the case: a conversion problem in flights is still a P&L problem, not just a product metric.
+            </Callout>
+
+            <Body>
+              <strong style={{ color: 'var(--text-primary)' }}>The flight booking funnel:</strong> Users go through Homepage → Search (origin + dates) → Results Page → Flight Detail → Checkout → Payment → Confirmation. Each step has a drop-off rate. <strong style={{ color: 'var(--text-primary)' }}>Conversion rate = confirmed paid bookings / sessions with at least one flight search.</strong>
+            </Body>
+
+            <Body>
+              <strong style={{ color: 'var(--text-primary)' }}>Competitive environment:</strong> TripEase is the market leader at 47% share. All OTAs show the same flight prices — differentiation is on UX, loyalty, and ancillary services. TripEase launched an aggressive cashback campaign on July 5. PlanMyTrip's growth team responded on July 12 by scaling app install campaigns significantly.
+            </Body>
+
+            {/* Glossary */}
+            <div style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', borderRadius: 14, padding: '24px 28px', marginBottom: 0 }}>
+              <p style={{ fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.14em', color: 'var(--accent)', marginBottom: 16 }}>KEY METRICS GLOSSARY</p>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                {[
+                  { term: 'Take Rate', def: 'Revenue as % of gross booking value. Flights: ~5%, Hotels: ~16%.' },
+                  { term: 'Search-to-Booking Conversion', def: 'Confirmed paid bookings / sessions with ≥1 flight search.' },
+                  { term: 'Listing Click Rate', def: '% of search sessions where user clicked ≥1 flight result.' },
+                  { term: 'Cost per First Paid Booking', def: 'Marketing spend / first-ever paid bookings from that channel.' },
+                  { term: 'Cohort Month-1 Retention', def: '% of users who book again in the month after their first booking.' },
+                  { term: 'Sample Ratio Mismatch (SRM)', def: 'When actual experiment exposure % ≠ intended %. Makes results unreliable.' },
+                  { term: 'Mix Shift', def: 'Aggregate metric changes because segment composition changed — not performance.' },
+                  { term: 'Net Revenue per Booking', def: '(Booking price × take rate) − discount applied per booking.' },
+                ].map((g, i) => (
+                  <div key={i} style={{ background: 'var(--bg-base)', borderRadius: 8, padding: '12px 14px' }}>
+                    <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>{g.term}</div>
+                    <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: 'var(--text-tertiary)', lineHeight: 1.55 }}>{g.def}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Pre-read self check */}
+            <div style={{ background: 'rgba(34,197,94,0.05)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 14, padding: '24px 28px', marginTop: 24 }}>
+              <p style={{ fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.14em', color: '#4ade80', marginBottom: 14 }}>PRE-READ SELF-CHECK — CAN YOU ANSWER THESE?</p>
+              {[
+                'Why does PMT care more about hotel bookings than flight bookings?',
+                'What does "search-to-booking conversion" actually measure?',
+                'What is a "take rate" and how does it differ between flights and hotels?',
+                'What happened in PlanMyTrip\'s competitive environment in early July 2024?',
+              ].map((q, i) => (
+                <div key={i} style={{ display: 'flex', gap: 10, marginBottom: 10, fontFamily: 'DM Sans, sans-serif', fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                  <span style={{ color: '#4ade80', flexShrink: 0 }}>✓</span>{q}
+                </div>
+              ))}
+              <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 13, color: 'var(--text-tertiary)', marginTop: 8, marginBottom: 0 }}>If you can answer all four, you're ready for Saturday. If not — re-read the business context above.</p>
+            </div>
+          </div>
         </section>
 
         {/* ═══════════════════════════════════════ */}
-        {/* PHASE 0 — THE PROBLEM                  */}
+        {/* PHASE 0 — PROBLEM STATEMENT */}
         {/* ═══════════════════════════════════════ */}
-        <section id="phase0-section" style={sec()}>
+        <section style={sec('var(--bg-surface)')}>
           <div style={inner}>
-
-            {/* Where you are now */}
-            <div style={{ background: 'rgba(168,85,247,0.04)', border: '1px solid rgba(168,85,247,0.15)', borderRadius: 12, padding: '14px 20px', marginBottom: 32, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-              <span style={{ fontSize: 16, flexShrink: 0, marginTop: 1 }}>📍</span>
-              <div>
-                <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.12em', color: 'var(--accent)', marginBottom: 4 }}>WHERE YOU ARE NOW</div>
-                <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.65 }}>
-                  You understand how PlanMyTrip operates. Now you encounter the problem leadership is facing. Your job: diagnose what caused the conversion decline.
-                </div>
-              </div>
-            </div>
-
-            <div className="cs-phase-hdr">
-              <span className="cs-phase-num">00</span>
-              <div>
-                <Label text="PHASE 0 OF 4 · THE PROBLEM · 10 MINUTES" />
-                <H2>What you are being asked to solve</H2>
-              </div>
-            </div>
+            <Label text="PHASE 0 · THE PROBLEM STATEMENT" />
+            <H2>What you are being asked to solve</H2>
 
             {/* CEO Brief */}
             <div style={{ background: 'var(--bg-elevated)', border: '1px solid rgba(168,85,247,0.2)', borderRadius: 16, padding: '28px', marginBottom: 28, position: 'relative', overflow: 'hidden' }}>
@@ -787,19 +758,21 @@ export default function Cohort() {
                 SUBJECT: Flight Conversion — Urgent Diagnosis Needed
               </div>
               <p style={{ fontFamily: 'Instrument Serif, serif', fontSize: 18, color: 'var(--text-primary)', lineHeight: 1.65, fontStyle: 'italic', marginBottom: 0 }}>
-                "Over the past 8 weeks (July 1 – August 25, 2024), our domestic flight search-to-booking conversion dropped from 21.3% to 15.2% — a 29% relative decline — despite sessions growing 53% YoY. We are spending ₹610 per booking in discounts to sustain volumes that used to be self-sustaining at ₹380. Net revenue per booking fell from ₹342 to ₹248. If this continues 6 more weeks, we miss Q2 by ₹180 crore. I need the root cause and a recommendation by Saturday."
+                "Over the past 8 weeks (July 1 – August 25, 2024), our domestic flight search-to-booking conversion dropped from 21.3% to 15.2% — a relative decline of 29% — despite search sessions growing 53% year over year. We are spending ₹610 per booking in discounts to partially sustain volumes that used to be self-sustaining at ₹380. Net revenue per booking has fallen from ₹342 to ₹248. If this continues for 6 more weeks, we miss Q2 contribution margin by ₹180 crore. I need the root cause and a recommendation by Saturday."
               </p>
             </div>
 
-
-            <div style={{ background: 'rgba(168,85,247,0.05)', border: '1px solid rgba(168,85,247,0.2)', borderRadius: 12, padding: '16px 20px', marginBottom: 28 }}>
-              <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
-                <strong style={{ color: 'var(--text-primary)' }}>What to focus on:</strong> Traffic is up, yet conversion is falling. Explore the dashboard below — some metrics are reliable signals, others are misleading. Notice which metrics actually explain a 29% decline.
-              </div>
-            </div>
             <Body>
-              <strong style={{ color: 'var(--text-primary)' }}>This is a hard problem:</strong> Traffic is up. Marketing spend is up. Yet conversion is falling and unit economics are deteriorating. Something about the quality of traffic or experience changed. Multiple stakeholders disagree on the cause.
+              <strong style={{ color: 'var(--text-primary)' }}>Why this is a hard problem:</strong> Traffic is up. Marketing spend is up. Yet conversion is falling and unit economics are deteriorating. This means the cause is not about volume — something about the quality of the traffic or experience changed. Multiple stakeholders have different explanations and they all disagree.
             </Body>
+
+            {/* What strong looks like */}
+            <div style={{ background: 'rgba(34,197,94,0.05)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 14, padding: '20px 24px', marginBottom: 28 }}>
+              <p style={{ fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.12em', color: '#4ade80', marginBottom: 12 }}>WHAT A STRONG ANSWER LOOKS LIKE</p>
+              <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.75, margin: 0 }}>
+                A strong response names <strong style={{ color: 'var(--text-primary)' }}>one root cause</strong> with supporting evidence from at least two datasets. It explains why the aggregate metric declined without relying on surface-level observations. It sizes the contribution of each driver. It recommends <strong style={{ color: 'var(--text-primary)' }}>one specific action</strong> with an owner, an expected impact, and a success metric. It does not say "investigate further."
+              </p>
+            </div>
 
             {/* Initial Dashboard */}
             <Label text="INITIAL DASHBOARD — WHAT YOU SEE FIRST" />
@@ -826,21 +799,35 @@ export default function Cohort() {
               ))}
             </div>
 
-            {/* What you've gained */}
-            <div style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', borderRadius: 14, padding: '24px 28px', marginTop: 36 }}>
-              <p style={{ fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.14em', color: 'var(--accent)', marginBottom: 12 }}>WHAT YOU NOW UNDERSTAND</p>
-              <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.75, marginBottom: 0 }}>
-                You know what broke, when, and how much. You've seen the CEO's urgency. You've heard six conflicting explanations. You're ready for Saturday — Ketan will show you how to approach this.
-              </p>
+            {/* Stakeholders */}
+            <Label text="STAKEHOLDER PERSPECTIVES — THEY ALL DISAGREE" />
+            <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: 20 }}>
+              Six leaders. Six different explanations. All of them have real data behind their view. All of them have a blind spot. Click each one to understand their perspective — and what they're missing.
+            </p>
+            <div className="cs-stakeholder-grid">
+              {STAKEHOLDERS.map((s, i) => (
+                <div key={i} className={`cs-stk-card${activeStakeholder === i ? ' active' : ''}`} onClick={() => setActiveStakeholder(activeStakeholder === i ? null : i)}>
+                  <div className="cs-stk-avatar" style={{ background: s.color }}>{s.initials}</div>
+                  <div className="cs-stk-name">{s.name}</div>
+                  <div className="cs-stk-title">{s.title}</div>
+                  {activeStakeholder === i && (
+                    <div className="cs-stk-detail">
+                      <div className="cs-stk-quote">"{s.quote}"</div>
+                      <div className="cs-stk-label">WATCHES</div>
+                      <div className="cs-stk-row">{s.watches}</div>
+                      <div className="cs-stk-label">WANTS</div>
+                      <div className="cs-stk-row">{s.wants}</div>
+                      <div className="cs-stk-blind">⚠ Blind spot: {s.blind_spot}</div>
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
-
           </div>
-        </section>
-
-        {/* ═══════════════════════════════════════ */}
+        </section>        {/* ═══════════════════════════════════════ */}
         {/* PHASE 1 — INVESTIGATION KICKOFF */}
         {/* ═══════════════════════════════════════ */}
-        <section id="phase1-section" style={sec()}>
+        <section style={sec()}>
           <div style={inner}>
             <div className="cs-phase-hdr">
               <span className="cs-phase-num">01</span>
@@ -1111,7 +1098,7 @@ export default function Cohort() {
         {/* ═══════════════════════════════════════ */}
         {/* PHASE 2 — ANALYSIS (LOCKED) */}
         {/* ═══════════════════════════════════════ */}
-        <section id="phase2-section" style={sec('var(--bg-surface)')}>
+        <section style={sec('var(--bg-surface)')}>
           <div style={inner}>
             <div className="cs-phase-hdr">
               <span className="cs-phase-num">02</span>
@@ -1316,24 +1303,12 @@ ORDER BY 1, sessions DESC;`}</pre>
         {/* ═══════════════════════════════════════ */}
         {/* PHASE 3 — SYNTHESIS + SUBMISSION        */}
         {/* ═══════════════════════════════════════ */}
-        {!phase2Unlocked ? (
-          <section id="phase3-section" style={sec()}>
-            <div style={inner}>
-              <div style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', borderRadius: 16, padding: '48px 32px', textAlign: 'center', opacity: 0.5 }}>
-                <div style={{ fontSize: 32, marginBottom: 16 }}>🔒</div>
-                <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>Phase 3: Write Your Recommendation</div>
-                <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 14, color: 'var(--text-secondary)', marginBottom: 12 }}>SCQA framework, submission checklist, AI Report Coach, WhatsApp submit</div>
-                <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 11, letterSpacing: '0.08em', color: 'var(--text-tertiary)' }}>UNLOCKS AFTER SESSION 1 · SAME TIME AS PHASE 2</div>
-              </div>
-            </div>
-          </section>
-        ) : (
         <section id="phase3-section" style={sec()}>
           <div style={inner}>
             <div className="cs-phase-hdr">
               <span className="cs-phase-num">03</span>
               <div>
-                <Label text="PHASE 3 OF 4 · WRITE YOUR RECOMMENDATION · DUE FRIDAY 6PM" />
+                <Label text="PHASE 3 · DUE FRIDAY 6PM · SUBMIT VIA WHATSAPP" />
                 <H2>Write your recommendation</H2>
               </div>
             </div>
@@ -1343,8 +1318,8 @@ ORDER BY 1, sessions DESC;`}</pre>
             ) : (
               <>
                 <Body>
-                  Phase 3 is not a report. It is a <strong style={{ color: 'var(--text-primary)' }}>decision memo</strong> — the kind a senior analyst sends to a CEO before a high-stakes meeting. <strong style={{ color: 'var(--accent)' }}>300-500 words. That's ~2 paragraphs.</strong> One root cause. Evidence. A specific recommendation. Nothing else.
-</Body>
+                  Phase 3 is not a report. It is a <strong style={{ color: 'var(--text-primary)' }}>decision memo</strong> — the kind a senior analyst sends to a CEO before a high-stakes meeting. One root cause. Evidence. A specific recommendation. Nothing else.
+                </Body>
 
                 {/* Phase 2 hypothesis surfaced */}
                 {(() => {
@@ -1574,25 +1549,11 @@ ORDER BY 1, sessions DESC;`}</pre>
             )}
           </div>
         </section>
-        )}
-
 
         {/* ═══════════════════════════════════════ */}
         {/* SESSION 2 — EVALUATION & DEBRIEF       */}
         {/* ═══════════════════════════════════════ */}
-        {!phase2Complete ? (
-          <section id="session2-section" style={sec('var(--bg-surface)')}>
-            <div style={inner}>
-              <div style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', borderRadius: 16, padding: '48px 32px', textAlign: 'center', opacity: 0.5 }}>
-                <div style={{ fontSize: 32, marginBottom: 16 }}>🔒</div>
-                <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>Session 2: Evaluation & Debrief</div>
-                <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 14, color: 'var(--text-secondary)', marginBottom: 12 }}>Present your findings live, defend your reasoning, learn from the expert solution</div>
-                <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 11, letterSpacing: '0.08em', color: 'var(--text-tertiary)' }}>UNLOCKS AFTER YOU MARK PHASE 2 COMPLETE</div>
-              </div>
-            </div>
-          </section>
-        ) : (
-        <section id="session2-section" style={sec('var(--bg-surface)')}>
+        <section style={sec('var(--bg-surface)')}>
           <div style={inner}>
             <div className="cs-phase-hdr">
               <span className="cs-phase-num">04</span>
@@ -1637,7 +1598,6 @@ ORDER BY 1, sessions DESC;`}</pre>
             </div>
           </div>
         </section>
-        )}
 
       </div>
     </>

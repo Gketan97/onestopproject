@@ -515,9 +515,9 @@ export default function Cohort() {
   const [reflectionDone, setReflectionDone] = useState(false)
   const [reflectionAnswer, setReflectionAnswer] = useState('')
   const [phase2Complete, setPhase2Complete] = useState(false)
-  const [preReadExpanded, setPreReadExpanded] = useState(false)
 
   useEffect(() => {
+    window.scrollTo(0, 0)
     if (sessionStorage.getItem('preread_done') === '1') setPreReadDone(true)
     if (sessionStorage.getItem('cohort_unlocked') === PHASE2_KEYWORD) setPhase2Unlocked(true)
     // Restore Phase 2 progress
@@ -531,24 +531,6 @@ export default function Cohort() {
       setReflectionAnswer(savedReflection)
     }
     if (sessionStorage.getItem('phase2_complete') === '1') setPhase2Complete(true)
-  }, [])
-
-  // Auto-scroll to current phase on load
-  useEffect(() => {
-    const phase2Unlocked_ = sessionStorage.getItem('cohort_unlocked') === PHASE2_KEYWORD
-    const phase2Complete_ = sessionStorage.getItem('phase2_complete') === '1'
-    const preReadDone_ = sessionStorage.getItem('preread_done') === '1'
-    if (!preReadDone_) return
-    setTimeout(() => {
-      let targetId = 'phase0-section'
-      if (phase2Complete_) targetId = 'phase3-section'
-      else if (phase2Unlocked_) targetId = 'phase2-section'
-      const el = document.getElementById(targetId)
-      if (el) {
-        el.scrollIntoView({ behavior: 'auto', block: 'start' })
-        setTimeout(() => window.scrollBy(0, -145), 50)
-      }
-    }, 150)
   }, [])
 
   const sec = (bg = 'var(--bg-base)') => ({ background: bg, borderTop: '1px solid var(--border-subtle)', padding: '72px 32px' } as React.CSSProperties)
@@ -643,47 +625,30 @@ export default function Cohort() {
           <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.1em', color: 'var(--text-tertiary)', background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', borderRadius: 100, padding: '5px 14px' }}>🔒 COHORT MEMBERS ONLY</span>
         </div>
 
-        {/* ── Journey Map (clickable, sticky) ── */}
+        {/* ── Journey Map (persistent, sticky) ── */}
         <div style={{ position: 'sticky', top: 60, zIndex: 90, background: 'rgba(8,8,12,0.96)', backdropFilter: 'blur(12px)', borderBottom: '1px solid var(--border-subtle)', padding: '16px 32px' }}>
           <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 0, overflowX: 'auto' }}>
-            {(() => {
-              const steps = [
-                { label: 'Pre-Read', sub: 'Business', done: preReadDone, unlocked: true, scrollTo: 'preread-section' },
-                { label: 'Phase 0', sub: 'Problem', done: preReadDone, unlocked: preReadDone, scrollTo: 'phase0-section' },
-                { label: 'Phase 1', sub: 'Onboarding', done: phase2Unlocked, unlocked: preReadDone, scrollTo: 'phase1-section' },
-                { label: 'Phase 2', sub: 'Investigation', done: phase2Complete, unlocked: phase2Unlocked, scrollTo: 'phase2-section' },
-                { label: 'Phase 3', sub: 'Synthesis', done: false, unlocked: phase2Unlocked, scrollTo: 'phase3-section' },
-                { label: 'Session 2', sub: 'Evaluation', done: false, unlocked: phase2Complete, scrollTo: 'session2-section' },
-              ]
-              const scrollTo = (id: string) => {
-                const el = document.getElementById(id)
-                if (!el) return
-                el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                setTimeout(() => window.scrollBy(0, -145), 350)
-              }
-              return steps.map((step, i, arr) => {
-                const clickable = step.unlocked && step.scrollTo
-                return (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', flex: i < arr.length - 1 ? 1 : 0, minWidth: 130 }}>
-                    <div
-                      onClick={() => clickable && scrollTo(step.scrollTo)}
-                      style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 110, cursor: clickable ? 'pointer' : 'default', opacity: step.unlocked ? 1 : 0.35, transition: 'opacity 200ms, transform 200ms' }}
-                      onMouseEnter={e => { if (clickable) (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)' }}
-                      onMouseLeave={e => { if (clickable) (e.currentTarget as HTMLElement).style.transform = 'translateY(0)' }}
-                    >
-                      <div style={{ width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'DM Mono, monospace', fontSize: 12, fontWeight: 600, marginBottom: 6, background: step.done ? '#4ade80' : step.unlocked ? 'var(--accent)' : 'var(--bg-elevated)', border: 'none', color: step.unlocked ? '#fff' : 'var(--text-tertiary)' }}>
-                        {step.done ? '✓' : step.unlocked ? i + 1 : '🔒'}
-                      </div>
-                      <div style={{ textAlign: 'center' }}>
-                        <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 11, fontWeight: 600, color: step.done ? '#4ade80' : step.unlocked ? 'var(--text-primary)' : 'var(--text-tertiary)', marginBottom: 1 }}>{step.label}</div>
-                        <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 10, color: 'var(--text-tertiary)' }}>{step.sub}</div>
-                      </div>
-                    </div>
-                    {i < arr.length - 1 && <div style={{ flex: 1, height: 1, background: step.done ? '#4ade80' : 'var(--border-subtle)', minWidth: 20, marginTop: -20 }} />}
+            {[
+              { id: 'preread', label: 'Pre-Read', sub: 'Business context', done: preReadDone, active: !preReadDone },
+              { id: 'phase0', label: 'Phase 0', sub: 'Problem', done: preReadDone, active: preReadDone && !phase2Unlocked },
+              { id: 'phase1', label: 'Phase 1', sub: 'Onboarding', done: phase2Unlocked, active: false },
+              { id: 'phase2', label: 'Phase 2', sub: 'Investigation', done: phase2Complete, active: phase2Unlocked && !phase2Complete },
+              { id: 'phase3', label: 'Phase 3', sub: 'Synthesis', done: false, active: phase2Complete },
+              { id: 'session2', label: 'Session 2', sub: 'Evaluation', done: false, active: false },
+            ].map((step, i, arr) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', flex: i < arr.length - 1 ? 1 : 0, minWidth: 140 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 120 }}>
+                  <div style={{ width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'DM Mono, monospace', fontSize: 12, fontWeight: 600, marginBottom: 6, background: step.done ? '#4ade80' : step.active ? 'var(--accent)' : 'var(--bg-elevated)', border: step.done ? 'none' : `1px solid ${step.active ? 'transparent' : 'var(--border-subtle)'}`, color: step.done || step.active ? '#fff' : 'var(--text-tertiary)' }}>
+                    {step.done ? '✓' : i + 1}
                   </div>
-                )
-              })
-            })()}
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 11, fontWeight: 600, color: step.active ? 'var(--text-primary)' : step.done ? '#4ade80' : 'var(--text-tertiary)', marginBottom: 1 }}>{step.label}</div>
+                    <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 10, color: 'var(--text-tertiary)' }}>{step.sub}</div>
+                  </div>
+                </div>
+                {i < arr.length - 1 && <div style={{ flex: 1, height: 1, background: step.done ? '#4ade80' : 'var(--border-subtle)', minWidth: 20, marginTop: -20 }} />}
+              </div>
+            ))}
           </div>
         </div>
 
@@ -698,65 +663,10 @@ export default function Cohort() {
         </div>
 
 
-
-
-        {/* ═══════════════════════════════════════ */}
-        {/* PRE-READ — COLLAPSIBLE (always accessible) */}
-        {/* ═══════════════════════════════════════ */}
-        <section id="preread-section" style={{ background: 'var(--bg-base)', borderTop: '1px solid var(--border-subtle)', padding: '0' }}>
-          <div
-            onClick={() => setPreReadExpanded(v => !v)}
-            style={{ maxWidth: 900, margin: '0 auto', padding: '20px 32px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-              <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#4ade80', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'DM Mono, monospace', fontSize: 11, color: '#000', fontWeight: 700, flexShrink: 0 }}>✓</div>
-              <div>
-                <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>Pre-Read — Business Context</div>
-                <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: 'var(--text-tertiary)' }}>PlanMyTrip business model, metrics, and customer journey — click to review</div>
-              </div>
-            </div>
-            <span style={{ color: 'var(--accent)', fontSize: 20, flexShrink: 0 }}>{preReadExpanded ? '−' : '+'}</span>
-          </div>
-          {preReadExpanded && (
-            <div style={{ borderTop: '1px solid var(--border-subtle)', padding: '32px', maxWidth: 900, margin: '0 auto' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 28 }}>
-                {[
-                  { label: 'WHAT PLANMYTRIP DOES', content: 'India’s third-largest OTA for domestic travel. Primary product: flight search and booking. Revenue model: take rate (% of booking GMV) + ancillary (hotel, insurance, seat upgrades). ~65% of revenue from domestic flights.' },
-                  { label: 'HOW CONVERSION IS MEASURED', content: 'Search-to-booking conversion = confirmed bookings ÷ sessions with at least one flight search. Baseline: 21.3% (April–June 2024). Problem period: 15.2% (July–August 2024).' },
-                  { label: 'KEY METRICS TO KNOW', content: 'GMV = Gross Merchandise Value (total booking value before discounts). Net revenue = GMV × take rate − discounts. ARPU = Average Revenue Per User. Contribution margin = net revenue − variable costs.' },
-                  { label: 'CUSTOMER JOURNEY', content: 'Search → Browse listings → Select flight → Enter details → Apply coupon → Pay → Confirm. Conversion drop can happen at any step. The funnel shows which step loses the most users.' },
-                ].map((item, i) => (
-                  <div key={i} style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', borderRadius: 12, padding: '16px 20px' }}>
-                    <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.1em', color: 'var(--accent)', marginBottom: 8 }}>{item.label}</div>
-                    <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7 }}>{item.content}</div>
-                  </div>
-                ))}
-              </div>
-              <div style={{ background: 'rgba(168,85,247,0.04)', border: '1px solid rgba(168,85,247,0.15)', borderRadius: 10, padding: '14px 20px' }}>
-                <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.1em', color: 'var(--accent)', marginBottom: 8 }}>GLOSSARY</div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-                  {[
-                    ['Funnel', 'Each step users take: search → browse → checkout'],
-                    ['Cohort', 'Group of users acquired in the same time period'],
-                    ['Mix shift', 'Traffic composition changed (channel share shifted)'],
-                    ['Root cause', 'Primary factor explaining most of the decline'],
-                    ['SRM', 'Sample Ratio Mismatch — experiment randomisation bug'],
-                    ['Take rate', 'PlanMyTrip’s % cut of each booking value'],
-                  ].map(([term, def], i) => (
-                    <div key={i} style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.55 }}>
-                      <strong style={{ color: 'var(--text-primary)' }}>{term}:</strong> {def}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-        </section>
-
         {/* ═══════════════════════════════════════ */}
         {/* PHASE 0 — THE PROBLEM                  */}
         {/* ═══════════════════════════════════════ */}
-        <section id="phase0-section" style={sec()}>
+        <section style={sec()}>
           <div style={inner}>
 
             {/* Where you are now */}
@@ -840,7 +750,7 @@ export default function Cohort() {
         {/* ═══════════════════════════════════════ */}
         {/* PHASE 1 — INVESTIGATION KICKOFF */}
         {/* ═══════════════════════════════════════ */}
-        <section id="phase1-section" style={sec()}>
+        <section style={sec()}>
           <div style={inner}>
             <div className="cs-phase-hdr">
               <span className="cs-phase-num">01</span>
@@ -1111,7 +1021,7 @@ export default function Cohort() {
         {/* ═══════════════════════════════════════ */}
         {/* PHASE 2 — ANALYSIS (LOCKED) */}
         {/* ═══════════════════════════════════════ */}
-        <section id="phase2-section" style={sec('var(--bg-surface)')}>
+        <section style={sec('var(--bg-surface)')}>
           <div style={inner}>
             <div className="cs-phase-hdr">
               <span className="cs-phase-num">02</span>
@@ -1316,18 +1226,6 @@ ORDER BY 1, sessions DESC;`}</pre>
         {/* ═══════════════════════════════════════ */}
         {/* PHASE 3 — SYNTHESIS + SUBMISSION        */}
         {/* ═══════════════════════════════════════ */}
-        {!phase2Unlocked ? (
-          <section id="phase3-section" style={sec()}>
-            <div style={inner}>
-              <div style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', borderRadius: 16, padding: '48px 32px', textAlign: 'center', opacity: 0.5 }}>
-                <div style={{ fontSize: 32, marginBottom: 16 }}>🔒</div>
-                <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>Phase 3: Write Your Recommendation</div>
-                <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 14, color: 'var(--text-secondary)', marginBottom: 12 }}>SCQA framework, submission checklist, AI Report Coach, WhatsApp submit</div>
-                <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 11, letterSpacing: '0.08em', color: 'var(--text-tertiary)' }}>UNLOCKS AFTER SESSION 1 · SAME TIME AS PHASE 2</div>
-              </div>
-            </div>
-          </section>
-        ) : (
         <section id="phase3-section" style={sec()}>
           <div style={inner}>
             <div className="cs-phase-hdr">
@@ -1574,25 +1472,11 @@ ORDER BY 1, sessions DESC;`}</pre>
             )}
           </div>
         </section>
-        )}
-
 
         {/* ═══════════════════════════════════════ */}
         {/* SESSION 2 — EVALUATION & DEBRIEF       */}
         {/* ═══════════════════════════════════════ */}
-        {!phase2Complete ? (
-          <section id="session2-section" style={sec('var(--bg-surface)')}>
-            <div style={inner}>
-              <div style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', borderRadius: 16, padding: '48px 32px', textAlign: 'center', opacity: 0.5 }}>
-                <div style={{ fontSize: 32, marginBottom: 16 }}>🔒</div>
-                <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>Session 2: Evaluation & Debrief</div>
-                <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 14, color: 'var(--text-secondary)', marginBottom: 12 }}>Present your findings live, defend your reasoning, learn from the expert solution</div>
-                <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 11, letterSpacing: '0.08em', color: 'var(--text-tertiary)' }}>UNLOCKS AFTER YOU MARK PHASE 2 COMPLETE</div>
-              </div>
-            </div>
-          </section>
-        ) : (
-        <section id="session2-section" style={sec('var(--bg-surface)')}>
+        <section style={sec('var(--bg-surface)')}>
           <div style={inner}>
             <div className="cs-phase-hdr">
               <span className="cs-phase-num">04</span>
@@ -1637,7 +1521,6 @@ ORDER BY 1, sessions DESC;`}</pre>
             </div>
           </div>
         </section>
-        )}
 
       </div>
     </>
