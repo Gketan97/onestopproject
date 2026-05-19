@@ -2,6 +2,8 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Home from './pages/Home'
 import Diagnostic from './pages/Diagnostic'
 import Evaluation from './pages/Evaluation'
+import CaseStudy from './pages/CaseStudy'
+import Cohort from './pages/Cohort'
 import './index.css'
 
 export default function App() {
@@ -11,6 +13,8 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/diagnostic" element={<Diagnostic />} />
         <Route path="/evaluation" element={<Evaluation />} />
+        <Route path="/case-study" element={<CaseStudy />} />
+        <Route path="/cohort" element={<Cohort />} />
       </Routes>
     </BrowserRouter>
   )

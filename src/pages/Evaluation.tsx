@@ -719,6 +719,20 @@ export default function Evaluation() {
                   </div>
                 </div>
               </div>
+              <div style={{ marginTop: 48, paddingTop: 48, borderTop: '1px solid var(--border-subtle)', textAlign: 'center' }}>
+                <p style={{ fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.14em', color: 'var(--accent)', marginBottom: 12 }}>SEE A FULL CASE STUDY</p>
+                <p style={{ fontFamily: 'Instrument Serif, serif', fontSize: 'clamp(20px, 2.5vw, 28px)', fontWeight: 400, color: 'var(--text-primary)', lineHeight: 1.25, marginBottom: 10 }}>Want to see what a cohort case study looks like?</p>
+                <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 15, color: 'var(--text-secondary)', lineHeight: 1.75, marginBottom: 24, maxWidth: 480, margin: '0 auto 24px' }}>
+                  Browse the PlanMyTrip case — the same type of ambiguous business problem you would work through live with Ketan. Pre-read and problem statement are open to everyone.
+                </p>
+                <button
+                  onClick={() => navigate('/case-study')}
+                  style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', background: 'var(--bg-elevated)', border: '1px solid var(--border-default)', borderRadius: 100, padding: '13px 32px', cursor: 'pointer', transition: 'all 180ms ease', marginBottom: 24, display: 'inline-block' }}
+                >
+                  Browse the Case Study →
+                </button>
+              </div>
+
               <div className="eval-retry">
                 <button className="eval-retry-btn" onClick={() => navigate('/diagnostic')}>
                   Retake the diagnostic

@@ -1,3 +1,147 @@
+#!/bin/bash
+# ═══════════════════════════════════════════════════════════
+# ship-everything.sh
+# Applies: Cohort page, Nav rewrite, Evaluation CTA,
+#          CaseStudy teaser, App.tsx routes
+# Run from repo root: bash ship-everything.sh
+# ═══════════════════════════════════════════════════════════
+
+echo "Shipping everything..."
+echo ""
+
+# ── 1. Copy Cohort.tsx ─────────────────────────────────────
+echo "→ [1/5] Applying Cohort.tsx..."
+cp $(ls -t ~/Downloads/Cohort*.tsx | head -1) src/pages/Cohort.tsx
+echo "  ✓ Cohort.tsx applied"
+
+# ── 2. Rewrite Nav ────────────────────────────────────────
+echo "→ [2/5] Rewriting Nav..."
+cat > src/components/Nav.tsx << 'NAVEOF'
+import { useState, useEffect } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
+
+export default function Nav() {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const [scrolled, setScrolled] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
+
+  useEffect(() => {
+    const handler = () => setScrolled(window.scrollY > 24)
+    window.addEventListener('scroll', handler, { passive: true })
+    return () => window.removeEventListener('scroll', handler)
+  }, [])
+
+  useEffect(() => { setMenuOpen(false) }, [location])
+
+  const scrollTo = (id: string) => {
+    setMenuOpen(false)
+    if (location.pathname !== '/') {
+      navigate('/')
+      setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' }), 150)
+    } else {
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
+
+  const isHome = location.pathname === '/'
+  const isEval = location.pathname === '/evaluation'
+
+  const ctaLabel = isEval ? 'Reserve My Seat →' : 'Test Yourself Free →'
+  const ctaAction = () => {
+    setMenuOpen(false)
+    if (isEval) {
+      document.querySelector<HTMLButtonElement>('.eval-lab-btn')?.click()
+    } else {
+      navigate('/diagnostic')
+    }
+  }
+
+  return (
+    <>
+      <style>{`
+        .nav-root { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(8,8,12,0.80); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-bottom: 1px solid rgba(255,255,255,0.07); transition: background 300ms ease; }
+        .nav-root.scrolled { background: rgba(8,8,12,0.96); border-bottom-color: var(--border-subtle); }
+        .nav-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 0 32px; height: 68px; }
+        .nav-brand { cursor: pointer; display: flex; flex-direction: column; gap: 3px; text-decoration: none; }
+        .nav-brand-name { font-family: 'DM Mono', monospace; font-size: 16px; letter-spacing: 0.1em; color: #ffffff; font-weight: 600; line-height: 1; }
+        .nav-brand-name span { background: linear-gradient(135deg, #FF6B9D, #A855F7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .nav-brand-sub { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.1em; color: rgba(255,255,255,0.45); line-height: 1; }
+        .nav-links { display: flex; align-items: center; gap: 28px; }
+        .nav-link { font-family: 'DM Sans', sans-serif; font-size: 14px; color: rgba(255,255,255,0.6); background: none; border: none; cursor: pointer; transition: color 150ms ease; padding: 0; white-space: nowrap; }
+        .nav-link:hover { color: #ffffff; }
+        .nav-link.active { color: #ffffff; }
+        .nav-link.highlight { color: var(--accent); font-weight: 500; }
+        .nav-link.highlight:hover { color: #c084fc; }
+        .nav-cta { font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; color: #fff; background: var(--accent); border: none; border-radius: 100px; padding: 10px 22px; cursor: pointer; transition: all 180ms ease; white-space: nowrap; }
+        .nav-cta:hover { filter: brightness(1.1); transform: scale(1.02); }
+        .nav-hamburger { display: none; flex-direction: column; gap: 5px; background: none; border: none; cursor: pointer; padding: 4px; }
+        .nav-ham-line { width: 22px; height: 2px; border-radius: 1px; background: rgba(255,255,255,0.7); transition: all 200ms ease; }
+        .nav-hamburger.open .nav-ham-line:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+        .nav-hamburger.open .nav-ham-line:nth-child(2) { opacity: 0; }
+        .nav-hamburger.open .nav-ham-line:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+        .nav-mobile { display: none; position: fixed; top: 68px; left: 0; right: 0; background: rgba(8,8,12,0.98); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-subtle); padding: 16px 24px 28px; flex-direction: column; }
+        .nav-mobile.open { display: flex; }
+        .nav-mobile-link { font-family: 'DM Sans', sans-serif; font-size: 16px; color: rgba(255,255,255,0.65); background: none; border: none; cursor: pointer; text-align: left; padding: 14px 0; border-bottom: 1px solid var(--border-subtle); transition: color 150ms ease; width: 100%; }
+        .nav-mobile-link:hover { color: #ffffff; }
+        .nav-mobile-link.highlight { color: var(--accent); font-weight: 500; }
+        .nav-mobile-cta { margin-top: 20px; font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 600; color: #fff; background: var(--accent); border: none; border-radius: 100px; padding: 15px; cursor: pointer; text-align: center; width: 100%; }
+        @media (max-width: 900px) { .nav-links { gap: 18px; } }
+        @media (max-width: 768px) { .nav-links { display: none; } .nav-cta { display: none; } .nav-hamburger { display: flex; } .nav-inner { padding: 0 20px; } }
+      `}</style>
+
+      <nav className={`nav-root${scrolled ? ' scrolled' : ''}`}>
+        <div className="nav-inner">
+          <div className="nav-brand" onClick={() => navigate('/')}>
+            <span className="nav-brand-name">onestop<span>careers</span></span>
+            <span className="nav-brand-sub">AI PROBLEM SOLVING LAB</span>
+          </div>
+
+          <div className="nav-links">
+            {isHome && (
+              <>
+                <button className="nav-link" onClick={() => scrollTo('truth')}>The Problem</button>
+                <button className="nav-link" onClick={() => scrollTo('about')}>About Ketan</button>
+                <button className="nav-link" onClick={() => scrollTo('testimonials')}>Reviews</button>
+                <button className="nav-link" onClick={() => scrollTo('faq')}>FAQ</button>
+              </>
+            )}
+            <button className={`nav-link${location.pathname === '/case-study' ? ' active' : ''}`} onClick={() => navigate('/case-study')}>Case Study</button>
+            <button className={`nav-link highlight${location.pathname === '/lab' ? ' active' : ''}`} onClick={() => navigate('/lab')}>The Lab ↗</button>
+          </div>
+
+          <button className="nav-cta" onClick={ctaAction}>{ctaLabel}</button>
+
+          <button className={`nav-hamburger${menuOpen ? ' open' : ''}`} onClick={() => setMenuOpen(o => !o)} aria-label="Menu">
+            <span className="nav-ham-line" /><span className="nav-ham-line" /><span className="nav-ham-line" />
+          </button>
+        </div>
+      </nav>
+
+      <div style={{ height: 68 }} />
+
+      <div className={`nav-mobile${menuOpen ? ' open' : ''}`}>
+        {isHome && (
+          <>
+            <button className="nav-mobile-link" onClick={() => scrollTo('truth')}>The Problem</button>
+            <button className="nav-mobile-link" onClick={() => scrollTo('about')}>About Ketan</button>
+            <button className="nav-mobile-link" onClick={() => scrollTo('testimonials')}>Reviews</button>
+            <button className="nav-mobile-link" onClick={() => scrollTo('faq')}>FAQ</button>
+          </>
+        )}
+        <button className="nav-mobile-link" onClick={() => { setMenuOpen(false); navigate('/case-study') }}>Case Study</button>
+        <button className="nav-mobile-link highlight" onClick={() => { setMenuOpen(false); navigate('/lab') }}>The Lab ↗</button>
+        <button className="nav-mobile-cta" onClick={ctaAction}>{ctaLabel}</button>
+      </div>
+    </>
+  )
+}
+NAVEOF
+echo "  ✓ Nav rewritten"
+
+# ── 3. Case Study public teaser page ──────────────────────
+echo "→ [3/5] Building CaseStudy teaser page..."
+cat > src/pages/CaseStudy.tsx << 'CSEOF'
 /// <reference types="vite/client" />
 import { useNavigate } from 'react-router-dom'
 
@@ -172,3 +316,111 @@ export default function CaseStudy() {
     </>
   )
 }
+CSEOF
+echo "  ✓ CaseStudy.tsx (public teaser)"
+
+# ── 4. Evaluation — add Case Study CTA ────────────────────
+echo "→ [4/5] Adding Case Study CTA to Evaluation..."
+python3 << 'PYEOF'
+path = 'src/pages/Evaluation.tsx'
+with open(path, 'r') as f:
+    src = f.read()
+
+old = """              <div className="eval-retry">
+                <button className="eval-retry-btn" onClick={() => navigate('/diagnostic')}>
+                  Retake the diagnostic
+                </button>
+              </div>"""
+
+new = """              <div style={{ marginTop: 48, paddingTop: 48, borderTop: '1px solid var(--border-subtle)', textAlign: 'center' }}>
+                <p style={{ fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.14em', color: 'var(--accent)', marginBottom: 12 }}>SEE A FULL CASE STUDY</p>
+                <p style={{ fontFamily: 'Instrument Serif, serif', fontSize: 'clamp(20px, 2.5vw, 28px)', fontWeight: 400, color: 'var(--text-primary)', lineHeight: 1.25, marginBottom: 10 }}>Want to see what a cohort case study looks like?</p>
+                <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 15, color: 'var(--text-secondary)', lineHeight: 1.75, marginBottom: 24, maxWidth: 480, margin: '0 auto 24px' }}>
+                  Browse the PlanMyTrip case — the same type of ambiguous business problem you would work through live with Ketan. Pre-read and problem statement are open to everyone.
+                </p>
+                <button
+                  onClick={() => navigate('/case-study')}
+                  style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', background: 'var(--bg-elevated)', border: '1px solid var(--border-default)', borderRadius: 100, padding: '13px 32px', cursor: 'pointer', transition: 'all 180ms ease', marginBottom: 24, display: 'inline-block' }}
+                >
+                  Browse the Case Study →
+                </button>
+              </div>
+
+              <div className="eval-retry">
+                <button className="eval-retry-btn" onClick={() => navigate('/diagnostic')}>
+                  Retake the diagnostic
+                </button>
+              </div>"""
+
+if old in src:
+    src = src.replace(old, new)
+    with open(path, 'w') as f:
+        f.write(src)
+    print('  ✓ Case Study CTA added to Evaluation')
+else:
+    print('  ✓ Pattern not found — checking alternative...')
+    # Try to find the retry div another way
+    if 'eval-retry' in src:
+        import re
+        src = re.sub(
+            r'(<div className="eval-retry">)',
+            '''<div style={{ marginTop: 48, paddingTop: 48, borderTop: '1px solid var(--border-subtle)', textAlign: 'center' }}>
+                <p style={{ fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.14em', color: 'var(--accent)', marginBottom: 12 }}>SEE A FULL CASE STUDY</p>
+                <p style={{ fontFamily: 'Instrument Serif, serif', fontSize: 'clamp(20px, 2.5vw, 28px)', fontWeight: 400, color: 'var(--text-primary)', lineHeight: 1.25, marginBottom: 10 }}>Want to see what a cohort case study looks like?</p>
+                <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 15, color: 'var(--text-secondary)', lineHeight: 1.75, marginBottom: 24, maxWidth: 480, margin: '0 auto 24px' }}>
+                  Browse the PlanMyTrip case — open to everyone.
+                </p>
+                <button onClick={() => navigate('/case-study')} style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', background: 'var(--bg-elevated)', border: '1px solid var(--border-default)', borderRadius: 100, padding: '13px 32px', cursor: 'pointer', marginBottom: 24 }}>
+                  Browse the Case Study →
+                </button>
+              </div>
+              \\1''',
+            src, count=1
+        )
+        with open(path, 'w') as f:
+            f.write(src)
+        print('  ✓ CTA added via regex')
+PYEOF
+
+# ── 5. App.tsx — all routes ────────────────────────────────
+echo "→ [5/5] Updating App.tsx routes..."
+cat > src/App.tsx << 'APPEOF'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import Home from './pages/Home'
+import Diagnostic from './pages/Diagnostic'
+import Evaluation from './pages/Evaluation'
+import CaseStudy from './pages/CaseStudy'
+import Cohort from './pages/Cohort'
+import './index.css'
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/diagnostic" element={<Diagnostic />} />
+        <Route path="/evaluation" element={<Evaluation />} />
+        <Route path="/case-study" element={<CaseStudy />} />
+        <Route path="/cohort" element={<Cohort />} />
+      </Routes>
+    </BrowserRouter>
+  )
+}
+APPEOF
+echo "  ✓ App.tsx — 5 routes"
+
+# ── Build ──────────────────────────────────────────────────
+echo ""
+echo "→ Running build..."
+npm run build
+
+if [ $? -eq 0 ]; then
+  echo ""
+  echo "✅ ALL DONE"
+  echo ""
+  echo "Push live:"
+  echo "  git add . && git commit -m 'feat: cohort page, case study teaser, nav, evaluation CTA, all routes' && git push origin signal-mvp"
+else
+  echo ""
+  echo "⚠ Build failed — paste errors"
+fi
