@@ -75,9 +75,9 @@ export default function DiagnosticCTA() {
         }
         .dcta-body {
           font-family: 'DM Sans', sans-serif;
-          font-size: 16px; line-height: 1.75;
+          font-size: 16px; line-height: 1.8;
           color: var(--text-secondary);
-          max-width: 480px; margin: 0 auto 36px;
+          max-width: 520px; margin: 0 auto 40px;
         }
         .dcta-body strong { color: var(--text-primary); font-weight: 500; }
         .dcta-btn {
@@ -87,17 +87,19 @@ export default function DiagnosticCTA() {
           border: none; border-radius: 100px;
           padding: 18px 52px; cursor: pointer;
           transition: all 200ms ease;
-          display: inline-block; margin-bottom: 24px;
+          display: inline-block; margin-bottom: 28px;
+          letter-spacing: 0.01em;
         }
         .dcta-btn:hover { filter: brightness(1.12); transform: translateY(-2px); box-shadow: 0 8px 32px rgba(168,85,247,0.35); }
         .dcta-btn:active { transform: translateY(0); }
         .dcta-trust {
           display: flex; align-items: center; justify-content: center;
-          gap: 16px; flex-wrap: wrap;
+          gap: 20px; flex-wrap: wrap;
         }
         .dcta-trust-item {
           font-family: 'DM Mono', monospace;
-          font-size: 12px; color: var(--text-tertiary); letter-spacing: 0.06em;
+          font-size: 12px; color: var(--text-tertiary);
+          letter-spacing: 0.06em;
         }
         .dcta-trust-sep {
           width: 3px; height: 3px; border-radius: 50%;
@@ -105,8 +107,8 @@ export default function DiagnosticCTA() {
         }
         @media (max-width: 640px) {
           .dcta-section { padding: 0 20px; }
-          .dcta-inner { padding: 64px 0; }
-          .dcta-banner { padding: 40px 24px; border-radius: 18px; }
+          .dcta-inner { padding: 72px 0; }
+          .dcta-banner { padding: 48px 28px; border-radius: 20px; }
           .dcta-btn { width: 100%; max-width: 320px; }
         }
       `}</style>
@@ -120,9 +122,12 @@ export default function DiagnosticCTA() {
               <em>Most are wrong.</em>
             </h2>
             <p data-reveal className="dcta-body">
-              We put you in a real work situation — no theory, no multiple choice.
-              Our AI shows you <strong>exactly where your reasoning breaks down</strong> —
-              the same things a senior leader notices in 30 seconds.
+              We put you in a real work situation — the kind that decides who gets promoted
+              and who gets managed out. No theory, no multiple choice.
+              Just you, thinking through a problem.
+              Our AI then shows you <strong>exactly where your reasoning is strong,
+              and where it breaks down</strong> — the same things a senior leader
+              notices in 30 seconds.
             </p>
             <div data-reveal>
               <button className="dcta-btn" onClick={() => navigate('/diagnostic')}>

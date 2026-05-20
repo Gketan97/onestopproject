@@ -22,15 +22,14 @@ const COMPANIES = [
 ]
 
 const ROLES = [
-  { role: 'Product Managers', pain: 'expected to defend structural trade-offs to aggressive leadership — not just write PRDs and wait for approval' },
-  { role: 'Business Analysts', pain: 'your charts are now AI-generated in seconds — your only remaining value is predicting what the data means for the business' },
-  { role: 'Marketing Managers', pain: 'your agency generates 100 ads instantly — can you pinpoint exactly why 99 of them failed?' },
-  { role: 'Finance & Strategy', pain: 'presenting to leadership who challenge every assumption — you need a position, not just a model' },
-  { role: 'Operations Leads', pain: 'making consequential calls with incomplete data and a 2-hour deadline — no analyst support' },
-  { role: 'Consultants', pain: 'clients pay for your judgment, not your slides — can you structure ambiguity into a recommendation under pressure?' },
+  { role: 'Product Managers', pain: 'Expected to defend structural trade-offs to leadership — not just write PRDs' },
+  { role: 'Business Analysts', pain: 'Your charts are AI-generated in seconds. Your only remaining value is what the data means for the business' },
+  { role: 'Strategy & Finance', pain: 'Presenting to leaders who challenge every assumption. You need a position, not just a model' },
+  { role: 'Operations Leads', pain: 'Making consequential calls with incomplete data in a 2-hour window. No analyst support' },
+  { role: 'Consultants', pain: 'Clients pay for your judgment, not your slides. Can you structure ambiguity into a recommendation under pressure?' },
 ]
 
-export default function TruthStatement() {
+function useReveal(threshold = 0.08) {
   const ref = useRef<HTMLDivElement>(null)
   useEffect(() => {
     const observer = new IntersectionObserver(entries => {
@@ -46,7 +45,7 @@ export default function TruthStatement() {
           observer.unobserve(entry.target)
         }
       })
-    }, { threshold: 0.08 })
+    }, { threshold })
     if (ref.current) {
       ref.current.querySelectorAll<HTMLElement>('[data-reveal]').forEach(el => {
         el.style.opacity = '0'
@@ -56,104 +55,219 @@ export default function TruthStatement() {
     }
     return () => observer.disconnect()
   }, [])
+  return ref
+}
+
+export default function TruthStatement() {
+  const ref1 = useReveal()
+  const ref2 = useReveal(0.1)
 
   return (
     <>
       <style>{`
-        .truth-section { background: var(--bg-surface); border-top: 1px solid var(--border-subtle); padding: 96px 32px 0; }
-        .truth-inner { max-width: 1060px; margin: 0 auto; }
-        .truth-label { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.16em; color: var(--accent); margin-bottom: 16px; }
-        .truth-h2 { font-family: 'Instrument Serif', serif; font-size: clamp(28px, 3.5vw, 44px); line-height: 1.2; color: var(--text-primary); font-weight: 400; margin-bottom: 16px; max-width: 680px; }
-        .truth-h2 em { font-style: italic; background: linear-gradient(135deg, #FF6B9D, #A855F7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        .truth-intro { font-family: 'DM Sans', sans-serif; font-size: 17px; line-height: 1.8; color: var(--text-secondary); max-width: 640px; margin-bottom: 56px; }
+        .truth-section {
+          background: var(--bg-surface);
+          border-top: 1px solid var(--border-subtle);
+          padding: 96px 32px 72px;
+        }
+        .truth-inner { max-width: 900px; margin: 0 auto; }
+        .truth-label {
+          font-family: 'DM Mono', monospace; font-size: 11px;
+          letter-spacing: 0.16em; color: var(--accent); margin-bottom: 16px;
+        }
+        .truth-h2 {
+          font-family: 'Instrument Serif', serif;
+          font-size: clamp(28px, 3.5vw, 44px);
+          line-height: 1.2; color: var(--text-primary);
+          font-weight: 400; margin-bottom: 14px; max-width: 640px;
+        }
+        .truth-h2 em {
+          font-style: italic;
+          background: linear-gradient(135deg, #FF6B9D, #A855F7);
+          -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
+        .truth-intro {
+          font-family: 'DM Sans', sans-serif;
+          font-size: 16px; line-height: 1.8;
+          color: var(--text-secondary); max-width: 580px; margin-bottom: 48px;
+        }
         .truth-intro strong { color: var(--text-primary); font-weight: 500; }
-        .truth-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; margin-bottom: 72px; align-items: start; }
-        .truth-setup { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em; color: var(--text-tertiary); padding: 14px 18px; margin-bottom: 16px; background: var(--bg-elevated); border: 1px solid var(--border-subtle); border-radius: 10px; line-height: 1.7; }
-        .truth-setup strong { color: var(--text-secondary); }
-        .truth-cards { display: flex; flex-direction: column; gap: 12px; }
-        .truth-card { border-radius: 16px; padding: 24px 22px; border: 1px solid; }
+
+        /* Good/bad cards */
+        .truth-moment {
+          background: var(--bg-elevated);
+          border: 1px solid var(--border-subtle);
+          border-radius: 14px; padding: 20px 22px;
+          margin-bottom: 14px;
+          font-family: 'DM Mono', monospace; font-size: 11px;
+          letter-spacing: 0.08em; color: var(--text-tertiary); line-height: 1.7;
+        }
+        .truth-moment strong { color: var(--text-secondary); }
+        .truth-cards { display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px; }
+        .truth-card { border-radius: 14px; padding: 22px 20px; border: 1px solid; }
         .truth-card.bad { background: rgba(239,68,68,0.04); border-color: rgba(239,68,68,0.15); }
         .truth-card.good { background: rgba(34,197,94,0.04); border-color: rgba(34,197,94,0.2); }
-        .truth-card-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.14em; margin-bottom: 12px; }
+        .truth-card-label {
+          font-family: 'DM Mono', monospace; font-size: 10px;
+          letter-spacing: 0.14em; margin-bottom: 12px;
+        }
         .truth-card-label.bad { color: #f87171; }
         .truth-card-label.good { color: #4ade80; }
-        .truth-card-quote { font-family: 'Instrument Serif', serif; font-style: italic; font-size: 17px; color: var(--text-primary); line-height: 1.55; margin-bottom: 12px; }
-        .truth-card-body { font-family: 'DM Sans', sans-serif; font-size: 13px; line-height: 1.65; color: var(--text-secondary); padding-top: 12px; border-top: 1px solid var(--border-subtle); }
+        .truth-card-quote {
+          font-family: 'Instrument Serif', serif;
+          font-style: italic; font-size: 17px;
+          color: var(--text-primary); line-height: 1.55; margin-bottom: 12px;
+        }
+        .truth-card-body {
+          font-family: 'DM Sans', sans-serif;
+          font-size: 13px; line-height: 1.65;
+          color: var(--text-secondary);
+          padding-top: 12px; border-top: 1px solid var(--border-subtle);
+        }
         .truth-card-body strong { color: var(--text-primary); font-weight: 500; }
-        .truth-tagline { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.08em; color: var(--text-tertiary); text-align: center; padding-top: 16px; }
-        .truth-who-label { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.16em; color: var(--accent); margin-bottom: 16px; }
-        .truth-who-h3 { font-family: 'Instrument Serif', serif; font-size: clamp(20px, 2vw, 26px); font-weight: 400; color: var(--text-primary); line-height: 1.3; margin-bottom: 24px; }
+        .truth-tagline {
+          font-family: 'DM Mono', monospace; font-size: 11px;
+          letter-spacing: 0.08em; color: var(--text-tertiary);
+          padding-top: 8px;
+        }
+
+        /* Who it\'s for */
+        .truth-who-section {
+          background: var(--bg-base);
+          border-top: 1px solid var(--border-subtle);
+          padding: 80px 32px;
+        }
+        .truth-who-inner { max-width: 900px; margin: 0 auto; }
+        .truth-who-h2 {
+          font-family: 'Instrument Serif', serif;
+          font-size: clamp(24px, 2.5vw, 34px);
+          font-weight: 400; color: var(--text-primary);
+          line-height: 1.3; margin-bottom: 36px; max-width: 560px;
+        }
         .truth-roles { display: flex; flex-direction: column; }
-        .truth-role-row { display: flex; align-items: flex-start; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--border-subtle); }
+        .truth-role-row {
+          display: grid; grid-template-columns: 180px 1fr;
+          gap: 20px; padding: 16px 0;
+          border-bottom: 1px solid var(--border-subtle);
+          align-items: baseline;
+        }
         .truth-role-row:last-child { border-bottom: none; }
-        .truth-role-name { font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; color: var(--text-primary); min-width: 180px; flex-shrink: 0; }
-        .truth-role-pain { font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text-secondary); line-height: 1.55; }
-        .truth-ticker-wrap { overflow: hidden; padding: 28px 0; border-top: 1px solid var(--border-subtle); position: relative; }
-        .truth-ticker-wrap::before, .truth-ticker-wrap::after { content: ''; position: absolute; top: 0; bottom: 0; width: 160px; z-index: 2; pointer-events: none; }
+        .truth-role-name {
+          font-family: 'DM Sans', sans-serif;
+          font-size: 14px; font-weight: 600; color: var(--text-primary);
+        }
+        .truth-role-pain {
+          font-family: 'DM Sans', sans-serif;
+          font-size: 14px; color: var(--text-secondary); line-height: 1.55;
+        }
+
+        /* Ticker */
+        .truth-ticker-section {
+          background: var(--bg-surface);
+          border-top: 1px solid var(--border-subtle);
+          padding: 36px 0;
+        }
+        .truth-ticker-label {
+          font-family: 'DM Mono', monospace; font-size: 10px;
+          letter-spacing: 0.14em; color: var(--text-tertiary);
+          text-align: center; margin-bottom: 20px;
+        }
+        .truth-ticker-wrap {
+          overflow: hidden; position: relative;
+        }
+        .truth-ticker-wrap::before, .truth-ticker-wrap::after {
+          content: \'\'; position: absolute; top: 0; bottom: 0; width: 120px;
+          z-index: 2; pointer-events: none;
+        }
         .truth-ticker-wrap::before { left: 0; background: linear-gradient(to right, var(--bg-surface), transparent); }
         .truth-ticker-wrap::after { right: 0; background: linear-gradient(to left, var(--bg-surface), transparent); }
-        .truth-ticker-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.14em; color: var(--text-tertiary); text-align: center; margin-bottom: 18px; }
-        .truth-ticker { display: flex; align-items: center; animation: ticker-scroll 35s linear infinite; width: max-content; }
+        .truth-ticker {
+          display: flex; align-items: center;
+          animation: ticker-scroll 35s linear infinite; width: max-content;
+        }
         .truth-ticker:hover { animation-play-state: paused; }
         @keyframes ticker-scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-        .truth-ticker-item { display: flex; align-items: center; gap: 10px; padding: 0 28px; white-space: nowrap; opacity: 0.75; transition: opacity 200ms; }
-        .truth-ticker-item:hover { opacity: 1; }
-        .truth-ticker-logo { width: 22px; height: 22px; border-radius: 5px; object-fit: contain; background: white; padding: 2px; flex-shrink: 0; }
-        .truth-ticker-name { font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; color: var(--text-secondary); }
-        .truth-ticker-sep { width: 1px; height: 18px; background: var(--border-subtle); margin: 0 2px; flex-shrink: 0; }
-        @media (max-width: 860px) { .truth-cols { grid-template-columns: 1fr; gap: 40px; } .truth-section { padding: 72px 24px 0; } .truth-role-name { min-width: 140px; } }
-        @media (max-width: 480px) { .truth-section { padding: 56px 20px 0; } .truth-role-row { flex-direction: column; gap: 4px; } .truth-role-name { min-width: unset; } }
+        .truth-ticker-item {
+          display: flex; align-items: center; gap: 10px;
+          padding: 0 28px; white-space: nowrap; opacity: 0.75;
+        }
+        .truth-ticker-logo {
+          width: 20px; height: 20px; border-radius: 4px;
+          object-fit: contain; background: white; padding: 2px; flex-shrink: 0;
+        }
+        .truth-ticker-name {
+          font-family: 'DM Sans', sans-serif;
+          font-size: 14px; font-weight: 500; color: var(--text-secondary);
+        }
+        .truth-ticker-sep { width: 1px; height: 16px; background: var(--border-subtle); margin: 0 2px; }
+
+        @media (max-width: 768px) {
+          .truth-section { padding: 72px 24px 56px; }
+          .truth-who-section { padding: 64px 24px; }
+          .truth-role-row { grid-template-columns: 1fr; gap: 4px; }
+        }
+        @media (max-width: 480px) {
+          .truth-section { padding: 56px 20px 48px; }
+          .truth-who-section { padding: 56px 20px; }
+        }
       `}</style>
 
+      {/* Section 1: What\'s changing */}
       <section id="truth" className="truth-section">
-        <div ref={ref} className="truth-inner">
+        <div ref={ref1} className="truth-inner">
           <p data-reveal className="truth-label">WHAT IS ACTUALLY CHANGING</p>
-          <h2 data-reveal className="truth-h2">Everyone has the same AI.<br /><em>Not everyone knows how to think with it.</em></h2>
+          <h2 data-reveal className="truth-h2">
+            Everyone has the same AI.<br />
+            <em>Not everyone knows how to think with it.</em>
+          </h2>
           <p data-reveal className="truth-intro">
-            The playing field for tools is completely flat. What is not flat is the quality of thinking you bring to them.
-            <strong> AI amplifies whatever thinking you already have</strong> — shallow thinking gets you more shallow output, faster.
+            AI amplifies whatever thinking you already have.
+            <strong> Shallow thinking gets you more shallow output, faster.</strong>{" "}
             Structured thinking gives you an unfair advantage.
           </p>
 
-          <div data-reveal className="truth-cols">
-            <div>
-              <div className="truth-setup">
-                <strong>THE MOMENT THAT HAPPENS TO EVERYONE:</strong><br />
-                Your manager turns to you in a meeting —<br />
-                "So what do you think we should do about this?"
-              </div>
-              <div className="truth-cards">
-                <div className="truth-card bad">
-                  <div className="truth-card-label bad">✕ WHAT MOST PEOPLE SAY</div>
-                  <div className="truth-card-quote">"There are a few options we could consider. We probably need more data before we can decide."</div>
-                  <div className="truth-card-body">Safe. Noncommittal. Sounds reasonable — but gives the room nothing to act on. <strong>This is what keeps you out of the rooms where decisions are made.</strong></div>
-                </div>
-                <div className="truth-card good">
-                  <div className="truth-card-label good">✓ WHAT SHARP THINKERS SAY</div>
-                  <div className="truth-card-quote">"I'd go with X. Here's the reason — and here's the one signal that would tell me if I'm wrong."</div>
-                  <div className="truth-card-body">A clear position. A reason. A way to verify it. <strong>This is what gets you trusted with decisions that actually matter.</strong></div>
-                </div>
-              </div>
-              <p className="truth-tagline">This gap is learnable. The lab exists to close it.</p>
-            </div>
+          <div data-reveal className="truth-moment">
+            <strong>THE MOMENT THAT HAPPENS TO EVERYONE:</strong> Your manager turns to you in a meeting — "So what do you think we should do about this?"
+          </div>
 
-            <div>
-              <p className="truth-who-label">WHO THIS IS FOR</p>
-              <h3 className="truth-who-h3">If you have ever been put on the spot and felt the gap — this is for you.</h3>
-              <div className="truth-roles">
-                {ROLES.map((r, i) => (
-                  <div key={i} className="truth-role-row">
-                    <span className="truth-role-name">{r.role}</span>
-                    <span className="truth-role-pain">{r.pain}</span>
-                  </div>
-                ))}
-              </div>
+          <div data-reveal className="truth-cards">
+            <div className="truth-card bad">
+              <div className="truth-card-label bad">✕ WHAT MOST PEOPLE SAY</div>
+              <div className="truth-card-quote">"There are a few options we could consider. We probably need more data before we can decide."</div>
+              <div className="truth-card-body">Safe. Noncommittal. Gives the room nothing to act on. <strong>This is what keeps you out of the rooms where decisions are made.</strong></div>
+            </div>
+            <div className="truth-card good">
+              <div className="truth-card-label good">✓ WHAT SHARP THINKERS SAY</div>
+              <div className="truth-card-quote">"I’d go with X. Here’s the reason — and here’s the one signal that would tell me if I’m wrong."</div>
+              <div className="truth-card-body">A clear position. A reason. A way to verify it. <strong>This is what gets you trusted with decisions that actually matter.</strong></div>
             </div>
           </div>
+          <p data-reveal className="truth-tagline">This gap is learnable. The lab exists to close it.</p>
         </div>
+      </section>
 
+      {/* Section 2: Who it\'s for */}
+      <section className="truth-who-section">
+        <div ref={ref2} className="truth-who-inner">
+          <h2 data-reveal className="truth-who-h2">
+            If you’ve ever been put on the spot and felt the gap — this is for you.
+          </h2>
+          <div className="truth-roles">
+            {ROLES.map((r, i) => (
+              <div key={i} data-reveal className="truth-role-row">
+                <span className="truth-role-name">{r.role}</span>
+                <span className="truth-role-pain">{r.pain}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Section 3: Company ticker */}
+      <div className="truth-ticker-section">
+        <p className="truth-ticker-label">PROFESSIONALS FROM THESE ORGANISATIONS ARE BUILDING THIS SKILL</p>
         <div className="truth-ticker-wrap">
-          <p className="truth-ticker-label">PROFESSIONALS FROM THESE ORGANISATIONS ARE BUILDING THIS SKILL</p>
           <div className="truth-ticker">
             {[...COMPANIES, ...COMPANIES].map((c, i) => (
               <div key={i} className="truth-ticker-item">
@@ -164,7 +278,7 @@ export default function TruthStatement() {
             ))}
           </div>
         </div>
-      </section>
+      </div>
     </>
   )
 }
