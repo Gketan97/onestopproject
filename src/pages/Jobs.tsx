@@ -71,7 +71,7 @@ export default function Jobs() {
 
   return (
     <>
-      <style>{\`
+      <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
         .jb { min-height: 100vh; background: #FAFAF8; font-family: 'DM Sans', sans-serif; color: #141414; }
@@ -132,7 +132,7 @@ export default function Jobs() {
           .jb-title { font-size: 26px; }
           .jb-search-wrap { max-width: 100%; }
         }
-      \`}</style>
+      `}</style>
 
       <div className="jb">
         <Nav />
@@ -152,7 +152,7 @@ export default function Jobs() {
         <div className="jb-header">
           <div className="jb-header-top">
             <div>
-              <h1 className="jb-title">{loading ? 'Loading jobs…' : \`\${filtered.length.toLocaleString()} open roles\`}</h1>
+              <h1 className="jb-title">{loading ? 'Loading jobs…' : `${filtered.length.toLocaleString()} open roles`}</h1>
               <p className="jb-subtitle">Analytics, Product & Tech roles across India · Updated daily</p>
             </div>
             {!loading && <span className="jb-count-badge">{jobs.filter(j => daysAgo(j.posted_at) <= 7).length} new this week</span>}
@@ -173,7 +173,7 @@ export default function Jobs() {
 
         <div className="jb-results-bar">
           <span className="jb-results-text">
-            {loading ? 'LOADING…' : \`\${filtered.length.toLocaleString()} RESULT\${filtered.length !== 1 ? 'S' : ''}\${q ? \` FOR "\${q.toUpperCase()}"\` : ''}\`}
+            {loading ? 'LOADING…' : `${filtered.length.toLocaleString()} RESULT${filtered.length !== 1 ? 'S' : ''}${q ? ` FOR "${q.toUpperCase()}"` : ''}`}
           </span>
           {q && <button className="jb-clear" onClick={() => setQ('')}>Clear</button>}
         </div>
@@ -204,7 +204,7 @@ export default function Jobs() {
                 <div
                   key={job.id}
                   className="jb-card"
-                  onClick={() => navigate(\`/jobs/\${job.id}\${q ? '?q=' + encodeURIComponent(q) : ''}\`)}
+                  onClick={() => navigate(`/jobs/${job.id}${q ? '?q=' + encodeURIComponent(q) : ''}`)}
                 >
                   <div className="jb-card-top">
                     <div className="jb-card-left">
