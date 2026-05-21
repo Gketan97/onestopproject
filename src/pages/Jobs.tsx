@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import Nav from '../components/Nav'
 
 const CDN = 'https://cdn.jsdelivr.net/gh/Gketan97/jobscout-date@main/data/jobs.json'
 const PAGE_SIZE = 20
@@ -11,28 +12,17 @@ interface Job {
   tier: number; dept: string; country: string
 }
 
-// The 5 categories — this is the entire filter surface
 const CATEGORIES = [
-  { id: 'analytics',    label: 'Analytics',    fns: ['data', 'analytics'] },
-  { id: 'product',      label: 'Product',      fns: ['product'] },
-  { id: 'business',     label: 'Business',     fns: ['bizops'] },
-  { id: 'engineering',  label: 'Engineering',  fns: ['engineering'] },
-  { id: 'datascience',  label: 'Data Science', fns: ['data'] },
+  { id: 'data',        label: 'Analytics',   fns: ['data', 'analytics'] },
+  { id: 'product',     label: 'Product',      fns: ['product'] },
+  { id: 'bizops',      label: 'Business',     fns: ['bizops'] },
+  { id: 'engineering', label: 'Engineering',  fns: ['engineering'] },
+  { id: 'finance',     label: 'Finance',      fns: ['finance'] },
 ]
-
-// Map fn values to category IDs
-function fnToCategory(fn: string): string {
-  if (fn === 'product') return 'product'
-  if (fn === 'engineering') return 'engineering'
-  if (fn === 'bizops') return 'business'
-  if (fn === 'data' || fn === 'analytics') return 'analytics'
-  return ''
-}
 
 function daysAgo(d: string) {
   return Math.floor((Date.now() - new Date(d).getTime()) / 86400000)
 }
-
 function postedLabel(d: string) {
   const days = daysAgo(d)
   if (days === 0) return 'Today'
@@ -41,7 +31,6 @@ function postedLabel(d: string) {
   if (days <= 30) return `${Math.floor(days / 7)}w ago`
   return `${Math.floor(days / 30)}mo ago`
 }
-
 function postedColor(d: string) {
   const days = daysAgo(d)
   if (days <= 3) return '#16a34a'
@@ -77,11 +66,8 @@ export default function Jobs() {
       .catch(() => setLoading(false))
   }, [])
 
-  // Only show jobs from our 5 categories
-  const TARGET_FNS = new Set(['data', 'analytics', 'product', 'engineering', 'bizops'])
-
   const filtered = useMemo(() => {
-    let result = jobs.filter(j => TARGET_FNS.has(j.fn))
+    let result = [...jobs]
     if (q) {
       const ql = q.toLowerCase()
       result = result.filter(j =>
@@ -99,12 +85,10 @@ export default function Jobs() {
   const paginated = filtered.slice(0, page * PAGE_SIZE)
   const hasMore = paginated.length < filtered.length
 
-  // Category counts
   const counts = useMemo(() => {
-    const base = jobs.filter(j => TARGET_FNS.has(j.fn))
     const c: Record<string, number> = {}
     CATEGORIES.forEach(cat => {
-      c[cat.id] = base.filter(j => cat.fns.includes(j.fn)).length
+      c[cat.id] = jobs.filter(j => cat.fns.includes(j.fn)).length
     })
     return c
   }, [jobs])
@@ -113,108 +97,40 @@ export default function Jobs() {
     <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap');
-
         * { box-sizing: border-box; margin: 0; padding: 0; }
-
         .jb { min-height: 100vh; background: #FAFAF8; font-family: 'DM Sans', sans-serif; color: #141414; }
-
-        /* Nav */
-        .jb-nav {
-          height: 56px; background: #fff;
-          border-bottom: 1px solid #E8E8E4;
-          display: flex; align-items: center; justify-content: space-between;
-          padding: 0 32px; position: sticky; top: 0; z-index: 100;
-        }
-        .jb-nav-logo { font-family: 'DM Mono', monospace; font-size: 14px; font-weight: 500; color: #141414; cursor: pointer; letter-spacing: 0.04em; }
-        .jb-nav-logo span { color: #A855F7; }
-        .jb-nav-right { display: flex; align-items: center; gap: 12px; }
-        .jb-nav-link { font-size: 13px; color: #6b6b6b; background: none; border: none; cursor: pointer; }
-        .jb-nav-link:hover { color: #141414; }
-        .jb-nav-cta { font-size: 13px; font-weight: 600; color: #fff; background: #141414; border: none; border-radius: 100px; padding: 8px 18px; cursor: pointer; white-space: nowrap; transition: background 150ms; }
-        .jb-nav-cta:hover { background: #A855F7; }
-
-        /* Banner */
-        .jb-banner {
-          background: #F5F0FF; border-bottom: 1px solid #E8DAFF;
-          padding: 10px 32px; display: flex; align-items: center; justify-content: space-between; gap: 12px;
-        }
+        .jb-banner { background: #F5F0FF; border-bottom: 1px solid #E8DAFF; padding: 10px 32px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
         .jb-banner-text { font-size: 13px; color: #6b21a8; }
         .jb-banner-text strong { font-weight: 600; }
         .jb-banner-right { display: flex; align-items: center; gap: 12px; }
         .jb-banner-btn { font-size: 13px; font-weight: 600; color: #7c3aed; background: none; border: 1px solid #c4b5fd; border-radius: 100px; padding: 5px 14px; cursor: pointer; white-space: nowrap; transition: all 150ms; }
         .jb-banner-btn:hover { background: #ede9fe; }
         .jb-banner-close { background: none; border: none; color: #9ca3af; cursor: pointer; font-size: 18px; line-height: 1; padding: 2px 6px; }
-        .jb-banner-close:hover { color: #141414; }
-
-        /* Header */
         .jb-header { max-width: 1200px; margin: 0 auto; padding: 40px 32px 0; }
         .jb-header-top { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
         .jb-title { font-family: 'Instrument Serif', serif; font-size: clamp(28px, 3vw, 40px); font-weight: 400; color: #141414; line-height: 1.1; }
         .jb-subtitle { font-size: 14px; color: #9ca3af; margin-top: 4px; }
         .jb-count-badge { font-family: 'DM Mono', monospace; font-size: 12px; color: #6b6b6b; background: #F0F0EC; border-radius: 100px; padding: 6px 14px; white-space: nowrap; }
-
-        /* Search */
         .jb-search-row { margin-bottom: 16px; }
         .jb-search-wrap { position: relative; max-width: 480px; }
-        .jb-search {
-          width: 100%; background: #fff;
-          border: 1.5px solid #E8E8E4; border-radius: 10px;
-          padding: 11px 40px 11px 16px;
-          font-family: 'DM Sans', sans-serif; font-size: 14px; color: #141414;
-          outline: none; transition: border-color 180ms;
-        }
+        .jb-search { width: 100%; background: #fff; border: 1.5px solid #E8E8E4; border-radius: 10px; padding: 11px 40px 11px 16px; font-family: 'DM Sans', sans-serif; font-size: 14px; color: #141414; outline: none; transition: border-color 180ms; }
         .jb-search::placeholder { color: #b0b0a8; }
         .jb-search:focus { border-color: #A855F7; }
         .jb-search-icon { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: #b0b0a8; font-size: 15px; pointer-events: none; }
         .jb-search-clear { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #9ca3af; cursor: pointer; font-size: 16px; padding: 4px; }
-
-        /* Category pills */
-        .jb-cats {
-          display: flex; align-items: center; gap: 8px;
-          overflow-x: auto; padding-bottom: 2px;
-          scrollbar-width: none;
-          margin-bottom: 28px;
-        }
+        .jb-cats { display: flex; align-items: center; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; margin-bottom: 28px; }
         .jb-cats::-webkit-scrollbar { display: none; }
-        .jb-cat {
-          flex-shrink: 0;
-          font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
-          color: #6b6b6b; background: #fff;
-          border: 1.5px solid #E8E8E4; border-radius: 100px;
-          padding: 7px 16px; cursor: pointer;
-          transition: all 150ms; white-space: nowrap;
-        }
+        .jb-cat { flex-shrink: 0; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; color: #6b6b6b; background: #fff; border: 1.5px solid #E8E8E4; border-radius: 100px; padding: 7px 16px; cursor: pointer; transition: all 150ms; white-space: nowrap; }
         .jb-cat:hover { border-color: #A855F7; color: #7c3aed; }
         .jb-cat.active { background: #141414; border-color: #141414; color: #fff; }
         .jb-cat-count { font-size: 11px; opacity: 0.6; margin-left: 4px; }
-
-        /* Results bar */
-        .jb-results-bar {
-          max-width: 1200px; margin: 0 auto;
-          padding: 0 32px 16px;
-          display: flex; align-items: center; justify-content: space-between;
-          flex-wrap: wrap; gap: 8px;
-        }
+        .jb-results-bar { max-width: 1200px; margin: 0 auto; padding: 0 32px 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
         .jb-results-text { font-family: 'DM Mono', monospace; font-size: 12px; color: #9ca3af; letter-spacing: 0.04em; }
         .jb-clear { font-size: 13px; color: #A855F7; background: none; border: none; cursor: pointer; }
-
-        /* Grid */
         .jb-grid-wrap { max-width: 1200px; margin: 0 auto; padding: 0 32px 80px; }
-        .jb-grid {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 12px;
-        }
-
-        /* Card */
-        .jb-card {
-          background: #fff; border: 1.5px solid #E8E8E4; border-radius: 14px;
-          padding: 20px 22px; cursor: pointer;
-          transition: all 180ms cubic-bezier(0.22,1,0.36,1);
-          display: flex; flex-direction: column; gap: 12px;
-        }
+        .jb-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        .jb-card { background: #fff; border: 1.5px solid #E8E8E4; border-radius: 14px; padding: 20px 22px; cursor: pointer; transition: all 180ms cubic-bezier(0.22,1,0.36,1); display: flex; flex-direction: column; gap: 12px; }
         .jb-card:hover { border-color: #A855F7; box-shadow: 0 4px 24px rgba(168,85,247,0.08); transform: translateY(-2px); }
-
         .jb-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
         .jb-card-left { flex: 1; min-width: 0; }
         .jb-card-company { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; }
@@ -222,36 +138,20 @@ export default function Jobs() {
         .jb-card-co-name { font-size: 12px; color: #9ca3af; font-family: 'DM Mono', monospace; letter-spacing: 0.04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .jb-card-title { font-size: 15px; font-weight: 600; color: #141414; line-height: 1.35; }
         .jb-card-posted { font-family: 'DM Mono', monospace; font-size: 11px; white-space: nowrap; flex-shrink: 0; margin-top: 2px; }
-
         .jb-card-bottom { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-        .jb-tag {
-          font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.04em;
-          color: #6b6b6b; background: #F5F5F2;
-          border-radius: 6px; padding: 3px 8px;
-          white-space: nowrap;
-        }
-        .jb-tag.cat { color: #7c3aed; background: #F5F0FF; }
+        .jb-tag { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.04em; color: #6b6b6b; background: #F5F5F2; border-radius: 6px; padding: 3px 8px; white-space: nowrap; }
         .jb-tag.remote { color: #16a34a; background: #f0fdf4; }
         .jb-location { font-size: 12px; color: #b0b0a8; margin-left: auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px; }
-
-        /* Skeleton */
         .jb-skel { background: #fff; border: 1.5px solid #E8E8E4; border-radius: 14px; padding: 20px 22px; }
         .jb-skel-line { background: #F0F0EC; border-radius: 6px; margin-bottom: 8px; animation: skel-pulse 1.4s ease-in-out infinite; }
         @keyframes skel-pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-
-        /* Load more */
         .jb-more { text-align: center; padding: 32px 0 0; }
         .jb-more-btn { font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; color: #6b6b6b; background: #fff; border: 1.5px solid #E8E8E4; border-radius: 100px; padding: 11px 32px; cursor: pointer; transition: all 180ms; }
         .jb-more-btn:hover { border-color: #A855F7; color: #7c3aed; }
-
-        /* Empty */
         .jb-empty { text-align: center; padding: 80px 20px; }
         .jb-empty h3 { font-family: 'Instrument Serif', serif; font-size: 24px; font-weight: 400; color: #141414; margin-bottom: 8px; }
         .jb-empty p { font-size: 14px; color: #9ca3af; }
-
-        /* Mobile */
         @media (max-width: 768px) {
-          .jb-nav { padding: 0 20px; }
           .jb-header { padding: 28px 20px 0; }
           .jb-results-bar { padding: 0 20px 12px; }
           .jb-grid-wrap { padding: 0 20px 80px; }
@@ -259,7 +159,6 @@ export default function Jobs() {
           .jb-banner { padding: 10px 20px; }
           .jb-banner-text { font-size: 12px; }
         }
-
         @media (max-width: 480px) {
           .jb-title { font-size: 26px; }
           .jb-search-wrap { max-width: 100%; }
@@ -267,50 +166,29 @@ export default function Jobs() {
       `}</style>
 
       <div className="jb">
+        <Nav />
 
-        {/* Nav */}
-        <nav className="jb-nav">
-          <span className="jb-nav-logo" onClick={() => navigate('/')}>
-            onestop<span>careers</span>
-          </span>
-          <div className="jb-nav-right">
-            <button className="jb-nav-link" onClick={() => navigate('/')}>Home</button>
-            <button className="jb-nav-cta" onClick={() => navigate('/diagnostic')}>
-              Test Your Thinking →
-            </button>
-          </div>
-        </nav>
-
-        {/* Branding banner */}
         {!dismissed && (
           <div className="jb-banner">
             <span className="jb-banner-text">
               <strong>Found a role you like?</strong> Know if your thinking is ready — free 4-min test.
             </span>
             <div className="jb-banner-right">
-              <button className="jb-banner-btn" onClick={() => navigate('/diagnostic')}>
-                Test yourself free →
-              </button>
+              <button className="jb-banner-btn" onClick={() => navigate('/diagnostic')}>Test yourself free →</button>
               <button className="jb-banner-close" onClick={() => setDismissed(true)}>×</button>
             </div>
           </div>
         )}
 
-        {/* Header */}
         <div className="jb-header">
           <div className="jb-header-top">
             <div>
-              <h1 className="jb-title">
-                {loading ? 'Loading jobs…' : `${filtered.length.toLocaleString()} open roles`}
-              </h1>
+              <h1 className="jb-title">{loading ? 'Loading jobs…' : `${filtered.length.toLocaleString()} open roles`}</h1>
               <p className="jb-subtitle">Analytics, Product & Tech roles across India · Updated daily</p>
             </div>
-            {!loading && (
-              <span className="jb-count-badge">{jobs.filter(j => daysAgo(j.posted_at) <= 7).length} new this week</span>
-            )}
+            {!loading && <span className="jb-count-badge">{jobs.filter(j => daysAgo(j.posted_at) <= 7).length} new this week</span>}
           </div>
 
-          {/* Search */}
           <div className="jb-search-row">
             <div className="jb-search-wrap">
               <input
@@ -326,14 +204,10 @@ export default function Jobs() {
             </div>
           </div>
 
-          {/* Category pills */}
           <div className="jb-cats">
-            <button
-              className={`jb-cat${!cat ? ' active' : ''}`}
-              onClick={() => setFilter('cat', '')}
-            >
+            <button className={`jb-cat${!cat ? ' active' : ''}`} onClick={() => setFilter('cat', '')}>
               All roles
-              {!loading && <span className="jb-cat-count">{jobs.filter(j => ['data','analytics','product','engineering','bizops'].includes(j.fn)).length}</span>}
+              {!loading && <span className="jb-cat-count">{jobs.length}</span>}
             </button>
             {CATEGORIES.map(c => (
               <button
@@ -342,30 +216,20 @@ export default function Jobs() {
                 onClick={() => setFilter('cat', cat === c.id ? '' : c.id)}
               >
                 {c.label}
-                {!loading && counts[c.id] > 0 && (
-                  <span className="jb-cat-count">{counts[c.id]}</span>
-                )}
+                {!loading && counts[c.id] > 0 && <span className="jb-cat-count">{counts[c.id]}</span>}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Results bar */}
         <div className="jb-results-bar">
           <span className="jb-results-text">
             {loading ? 'LOADING…' : `${filtered.length.toLocaleString()} RESULT${filtered.length !== 1 ? 'S' : ''}${q ? ` FOR "${q.toUpperCase()}"` : ''}${cat ? ` IN ${cat.toUpperCase()}` : ''}`}
           </span>
-          {(q || cat) && (
-            <button className="jb-clear" onClick={() => { setFilter('q', ''); setFilter('cat', '') }}>
-              Clear filters
-            </button>
-          )}
+          {(q || cat) && <button className="jb-clear" onClick={() => { setFilter('q', ''); setFilter('cat', '') }}>Clear filters</button>}
         </div>
 
-        {/* Grid */}
         <div className="jb-grid-wrap">
-
-          {/* Skeletons */}
           {loading && (
             <div className="jb-grid">
               {[...Array(8)].map((_, i) => (
@@ -378,7 +242,6 @@ export default function Jobs() {
             </div>
           )}
 
-          {/* Empty */}
           {!loading && filtered.length === 0 && (
             <div className="jb-empty">
               <h3>No roles found</h3>
@@ -386,7 +249,6 @@ export default function Jobs() {
             </div>
           )}
 
-          {/* Cards */}
           {!loading && filtered.length > 0 && (
             <div className="jb-grid">
               {paginated.map(job => (
@@ -403,34 +265,20 @@ export default function Jobs() {
                       </div>
                       <div className="jb-card-title">{job.title}</div>
                     </div>
-                    <span
-                      className="jb-card-posted"
-                      style={{ color: postedColor(job.posted_at) }}
-                    >
+                    <span className="jb-card-posted" style={{ color: postedColor(job.posted_at) }}>
                       {postedLabel(job.posted_at)}
                     </span>
                   </div>
-
                   <div className="jb-card-bottom">
-                    {job.fn && (
-                      <span className="jb-tag cat">
-                        {CATEGORIES.find(c => c.fns.includes(job.fn))?.label || job.fn}
-                      </span>
-                    )}
                     {job.mode === 'remote' && <span className="jb-tag remote">Remote</span>}
-                    {job.seniority && job.seniority !== 'mid' && (
-                      <span className="jb-tag">{job.seniority}</span>
-                    )}
-                    {job.city && (
-                      <span className="jb-location">{job.city}</span>
-                    )}
+                    {job.seniority && job.seniority !== 'mid' && <span className="jb-tag">{job.seniority}</span>}
+                    {job.city && <span className="jb-location">{job.city}</span>}
                   </div>
                 </div>
               ))}
             </div>
           )}
 
-          {/* Load more */}
           {hasMore && !loading && (
             <div className="jb-more">
               <button className="jb-more-btn" onClick={() => setPage(p => p + 1)}>
