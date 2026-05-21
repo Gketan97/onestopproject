@@ -531,14 +531,13 @@ export default function Cohort() {
       setReflectionAnswer(savedReflection)
     }
     if (sessionStorage.getItem('phase2_complete') === '1') setPhase2Complete(true)
-  }, [])
+  }, [preReadDone])
 
   // Auto-scroll to current phase on load
   useEffect(() => {
+    if (!preReadDone) return
     const phase2Unlocked_ = sessionStorage.getItem('cohort_unlocked') === PHASE2_KEYWORD
     const phase2Complete_ = sessionStorage.getItem('phase2_complete') === '1'
-    const preReadDone_ = sessionStorage.getItem('preread_done') === '1'
-    if (!preReadDone_) return
     setTimeout(() => {
       let targetId = 'phase0-section'
       if (phase2Complete_) targetId = 'phase3-section'
@@ -555,7 +554,14 @@ export default function Cohort() {
   const inner = { maxWidth: 900, margin: '0 auto' } as React.CSSProperties
 
   if (!preReadDone) {
-    return <PreRead onComplete={() => { sessionStorage.setItem('preread_done', '1'); setPreReadDone(true) }} />
+    return <PreRead onComplete={() => {
+    sessionStorage.setItem('preread_done', '1')
+    setPreReadDone(true)
+    setTimeout(() => {
+      document.getElementById('phase0-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      setTimeout(() => window.scrollBy(0, -145), 400)
+    }, 100)
+  }} />
   }
 
   return (
