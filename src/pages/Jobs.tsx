@@ -12,14 +12,6 @@ interface Job {
   tier: number; dept: string; country: string
 }
 
-const CATEGORIES = [
-  { id: 'data',        label: 'Analytics',   fns: ['data', 'analytics'] },
-  { id: 'product',     label: 'Product',      fns: ['product'] },
-  { id: 'bizops',      label: 'Business',     fns: ['bizops'] },
-  { id: 'engineering', label: 'Engineering',  fns: ['engineering'] },
-  { id: 'finance',     label: 'Finance',      fns: ['finance'] },
-]
-
 function daysAgo(d: string) {
   return Math.floor((Date.now() - new Date(d).getTime()) / 86400000)
 }
@@ -47,14 +39,13 @@ export default function Jobs() {
   const [dismissed, setDismissed] = useState(false)
 
   const q = searchParams.get('q') || ''
-  const cat = searchParams.get('cat') || ''
 
-  const setFilter = useCallback((key: string, val: string) => {
+  const setQ = useCallback((val: string) => {
     setPage(1)
     setSearchParams(prev => {
       const next = new URLSearchParams(prev)
-      if (val) next.set(key, val)
-      else next.delete(key)
+      if (val) next.set('q', val)
+      else next.delete('q')
       return next
     }, { replace: true })
   }, [setSearchParams])
@@ -67,35 +58,20 @@ export default function Jobs() {
   }, [])
 
   const filtered = useMemo(() => {
-    let result = [...jobs]
-    if (q) {
-      const ql = q.toLowerCase()
-      result = result.filter(j =>
-        j.title.toLowerCase().includes(ql) ||
-        j.company.toLowerCase().includes(ql)
-      )
-    }
-    if (cat) {
-      const catDef = CATEGORIES.find(c => c.id === cat)
-      if (catDef) result = result.filter(j => catDef.fns.includes(j.fn))
-    }
-    return result
-  }, [jobs, q, cat])
+    if (!q) return jobs
+    const ql = q.toLowerCase()
+    return jobs.filter(j =>
+      j.title.toLowerCase().includes(ql) ||
+      j.company.toLowerCase().includes(ql)
+    )
+  }, [jobs, q])
 
   const paginated = filtered.slice(0, page * PAGE_SIZE)
   const hasMore = paginated.length < filtered.length
 
-  const counts = useMemo(() => {
-    const c: Record<string, number> = {}
-    CATEGORIES.forEach(cat => {
-      c[cat.id] = jobs.filter(j => cat.fns.includes(j.fn)).length
-    })
-    return c
-  }, [jobs])
-
   return (
     <>
-      <style>{`
+      <style>{\`
         @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
         .jb { min-height: 100vh; background: #FAFAF8; font-family: 'DM Sans', sans-serif; color: #141414; }
@@ -106,24 +82,17 @@ export default function Jobs() {
         .jb-banner-btn { font-size: 13px; font-weight: 600; color: #7c3aed; background: none; border: 1px solid #c4b5fd; border-radius: 100px; padding: 5px 14px; cursor: pointer; white-space: nowrap; transition: all 150ms; }
         .jb-banner-btn:hover { background: #ede9fe; }
         .jb-banner-close { background: none; border: none; color: #9ca3af; cursor: pointer; font-size: 18px; line-height: 1; padding: 2px 6px; }
-        .jb-header { max-width: 1200px; margin: 0 auto; padding: 40px 32px 0; }
+        .jb-header { max-width: 1200px; margin: 0 auto; padding: 40px 32px 28px; }
         .jb-header-top { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
         .jb-title { font-family: 'Instrument Serif', serif; font-size: clamp(28px, 3vw, 40px); font-weight: 400; color: #141414; line-height: 1.1; }
         .jb-subtitle { font-size: 14px; color: #9ca3af; margin-top: 4px; }
         .jb-count-badge { font-family: 'DM Mono', monospace; font-size: 12px; color: #6b6b6b; background: #F0F0EC; border-radius: 100px; padding: 6px 14px; white-space: nowrap; }
-        .jb-search-row { margin-bottom: 16px; }
         .jb-search-wrap { position: relative; max-width: 480px; }
         .jb-search { width: 100%; background: #fff; border: 1.5px solid #E8E8E4; border-radius: 10px; padding: 11px 40px 11px 16px; font-family: 'DM Sans', sans-serif; font-size: 14px; color: #141414; outline: none; transition: border-color 180ms; }
         .jb-search::placeholder { color: #b0b0a8; }
         .jb-search:focus { border-color: #A855F7; }
         .jb-search-icon { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: #b0b0a8; font-size: 15px; pointer-events: none; }
         .jb-search-clear { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #9ca3af; cursor: pointer; font-size: 16px; padding: 4px; }
-        .jb-cats { display: flex; align-items: center; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; margin-bottom: 28px; }
-        .jb-cats::-webkit-scrollbar { display: none; }
-        .jb-cat { flex-shrink: 0; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; color: #6b6b6b; background: #fff; border: 1.5px solid #E8E8E4; border-radius: 100px; padding: 7px 16px; cursor: pointer; transition: all 150ms; white-space: nowrap; }
-        .jb-cat:hover { border-color: #A855F7; color: #7c3aed; }
-        .jb-cat.active { background: #141414; border-color: #141414; color: #fff; }
-        .jb-cat-count { font-size: 11px; opacity: 0.6; margin-left: 4px; }
         .jb-results-bar { max-width: 1200px; margin: 0 auto; padding: 0 32px 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
         .jb-results-text { font-family: 'DM Mono', monospace; font-size: 12px; color: #9ca3af; letter-spacing: 0.04em; }
         .jb-clear { font-size: 13px; color: #A855F7; background: none; border: none; cursor: pointer; }
@@ -152,7 +121,7 @@ export default function Jobs() {
         .jb-empty h3 { font-family: 'Instrument Serif', serif; font-size: 24px; font-weight: 400; color: #141414; margin-bottom: 8px; }
         .jb-empty p { font-size: 14px; color: #9ca3af; }
         @media (max-width: 768px) {
-          .jb-header { padding: 28px 20px 0; }
+          .jb-header { padding: 28px 20px 20px; }
           .jb-results-bar { padding: 0 20px 12px; }
           .jb-grid-wrap { padding: 0 20px 80px; }
           .jb-grid { grid-template-columns: 1fr; }
@@ -163,7 +132,7 @@ export default function Jobs() {
           .jb-title { font-size: 26px; }
           .jb-search-wrap { max-width: 100%; }
         }
-      `}</style>
+      \`}</style>
 
       <div className="jb">
         <Nav />
@@ -183,50 +152,30 @@ export default function Jobs() {
         <div className="jb-header">
           <div className="jb-header-top">
             <div>
-              <h1 className="jb-title">{loading ? 'Loading jobs…' : `${filtered.length.toLocaleString()} open roles`}</h1>
+              <h1 className="jb-title">{loading ? 'Loading jobs…' : \`\${filtered.length.toLocaleString()} open roles\`}</h1>
               <p className="jb-subtitle">Analytics, Product & Tech roles across India · Updated daily</p>
             </div>
             {!loading && <span className="jb-count-badge">{jobs.filter(j => daysAgo(j.posted_at) <= 7).length} new this week</span>}
           </div>
-
-          <div className="jb-search-row">
-            <div className="jb-search-wrap">
-              <input
-                className="jb-search"
-                placeholder="Search by title or company…"
-                value={q}
-                onChange={e => setFilter('q', e.target.value)}
-              />
-              {q
-                ? <button className="jb-search-clear" onClick={() => setFilter('q', '')}>×</button>
-                : <span className="jb-search-icon">⌕</span>
-              }
-            </div>
-          </div>
-
-          <div className="jb-cats">
-            <button className={`jb-cat${!cat ? ' active' : ''}`} onClick={() => setFilter('cat', '')}>
-              All roles
-              {!loading && <span className="jb-cat-count">{jobs.length}</span>}
-            </button>
-            {CATEGORIES.map(c => (
-              <button
-                key={c.id}
-                className={`jb-cat${cat === c.id ? ' active' : ''}`}
-                onClick={() => setFilter('cat', cat === c.id ? '' : c.id)}
-              >
-                {c.label}
-                {!loading && counts[c.id] > 0 && <span className="jb-cat-count">{counts[c.id]}</span>}
-              </button>
-            ))}
+          <div className="jb-search-wrap">
+            <input
+              className="jb-search"
+              placeholder="Search by title or company…"
+              value={q}
+              onChange={e => setQ(e.target.value)}
+            />
+            {q
+              ? <button className="jb-search-clear" onClick={() => setQ('')}>×</button>
+              : <span className="jb-search-icon">⌕</span>
+            }
           </div>
         </div>
 
         <div className="jb-results-bar">
           <span className="jb-results-text">
-            {loading ? 'LOADING…' : `${filtered.length.toLocaleString()} RESULT${filtered.length !== 1 ? 'S' : ''}${q ? ` FOR "${q.toUpperCase()}"` : ''}${cat ? ` IN ${cat.toUpperCase()}` : ''}`}
+            {loading ? 'LOADING…' : \`\${filtered.length.toLocaleString()} RESULT\${filtered.length !== 1 ? 'S' : ''}\${q ? \` FOR "\${q.toUpperCase()}"\` : ''}\`}
           </span>
-          {(q || cat) && <button className="jb-clear" onClick={() => { setFilter('q', ''); setFilter('cat', '') }}>Clear filters</button>}
+          {q && <button className="jb-clear" onClick={() => setQ('')}>Clear</button>}
         </div>
 
         <div className="jb-grid-wrap">
@@ -245,7 +194,7 @@ export default function Jobs() {
           {!loading && filtered.length === 0 && (
             <div className="jb-empty">
               <h3>No roles found</h3>
-              <p>Try a different search or category.</p>
+              <p>Try a different search term.</p>
             </div>
           )}
 
@@ -255,7 +204,7 @@ export default function Jobs() {
                 <div
                   key={job.id}
                   className="jb-card"
-                  onClick={() => navigate(`/jobs/${job.id}${searchParams.toString() ? '?' + searchParams.toString() : ''}`)}
+                  onClick={() => navigate(\`/jobs/\${job.id}\${q ? '?q=' + encodeURIComponent(q) : ''}\`)}
                 >
                   <div className="jb-card-top">
                     <div className="jb-card-left">
