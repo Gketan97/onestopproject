@@ -98,7 +98,7 @@ export default function Footer() {
               <p className="footer-col-label">NAVIGATE</p>
               <div className="footer-links">
                 <button className="footer-link" onClick={() => navigate('/')}>Home</button>
-                <button className="footer-link" onClick={() => navigate('/lab')}>The Lab</button>
+                <button className="footer-link" onClick={() => navigate('/case-study')}>Case Study</button>
                 <button className="footer-link" onClick={() => navigate('/diagnostic')}>Free Diagnostic</button>
               </div>
             </div>

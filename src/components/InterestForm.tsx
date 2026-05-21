@@ -39,7 +39,7 @@ export default function InterestForm({ open, onClose, waUrl }: Props) {
     const data = new FormData(form)
 
     try {
-      const res = await fetch(`https://formspree.io/f/xyzabc12`, {
+      const res = await fetch(`https://formspree.io/f/mjgldqdl`, {
         method: 'POST',
         body: data,
         headers: { Accept: 'application/json' },
@@ -53,7 +53,7 @@ export default function InterestForm({ open, onClose, waUrl }: Props) {
     }
   }
 
-  const WA_HREF = 'https://wa.me/919XXXXXXXXX?text=Hi%20Ketan%2C%20I%27d%20like%20to%20reserve%20a%20seat%20for%20the%20Friday%20AI%20Problem%20Solving%20Lab.'
+  const WA_HREF = 'https://wa.me/919019896747?text=Hi%20Ketan%2C%20I%27d%20like%20to%20reserve%20a%20seat%20for%20the%20Friday%20AI%20Problem%20Solving%20Lab.'
   if (!open) return null
 
   return (
@@ -174,7 +174,7 @@ export default function InterestForm({ open, onClose, waUrl }: Props) {
           {step === 'form' ? (
             <>
               <span className="iform-label">Reserve your seat</span>
-              <h2 className="iform-h2">Friday AI Problem<br />Solving Lab</h2>
+              <h2 className="iform-h2">Saturday AI Problem<br />Solving Lab</h2>
               <p className="iform-sub">Max 5 people. Ketan will confirm your seat and share payment details via WhatsApp within 24 hours.</p>
 
               <form onSubmit={handleSubmit}>

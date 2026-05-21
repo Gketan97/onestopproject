@@ -189,7 +189,7 @@ export default function PreRead({ onComplete }: PreReadProps) {
   return (
     <>
       <style>{`
-        .pr-shell { display:flex; flex-direction:column; height:100vh; background:var(--bg-base); overflow:hidden; }
+        .pr-shell { display:flex; flex-direction:column; height:100vh; height:100dvh; background:var(--bg-base); overflow:hidden; }
 
         /* topbar */
         .pr-top { height:58px; display:flex; align-items:center; justify-content:space-between; padding:0 40px; border-bottom:1px solid var(--border-subtle); background:rgba(8,8,12,0.92); backdrop-filter:blur(12px); flex-shrink:0; z-index:10; position:relative; }
@@ -295,7 +295,7 @@ export default function PreRead({ onComplete }: PreReadProps) {
         .pr-done-t { font-size:14px; color:var(--text-secondary); line-height:1.75; }
 
         /* footer */
-        .pr-foot { position:fixed; bottom:0; left:0; right:0; background:rgba(8,8,12,0.96); backdrop-filter:blur(14px); border-top:1px solid var(--border-subtle); padding:13px 40px; display:flex; align-items:center; justify-content:space-between; z-index:20; }
+        .pr-foot { position:fixed; bottom:0; left:0; right:0; background:rgba(8,8,12,0.96); backdrop-filter:blur(14px); border-top:1px solid var(--border-subtle); padding:13px 40px; padding-bottom:max(13px, calc(13px + env(safe-area-inset-bottom))); display:flex; align-items:center; justify-content:space-between; z-index:20; }
         .pr-foot-l { display:flex; flex-direction:column; gap:2px; }
         .pr-foot-pg { font-family:'DM Mono',monospace; font-size:11px; letter-spacing:0.07em; color:var(--text-tertiary); }
         .pr-foot-hint { font-family:'DM Mono',monospace; font-size:10px; color:rgba(168,85,247,0.55); letter-spacing:0.04em; }

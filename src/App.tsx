@@ -4,6 +4,8 @@ import Diagnostic from './pages/Diagnostic'
 import Evaluation from './pages/Evaluation'
 import CaseStudy from './pages/CaseStudy'
 import Cohort from './pages/Cohort'
+import Jobs from './pages/Jobs'
+import JobDetail from './pages/JobDetail'
 import './index.css'
 
 export default function App() {
@@ -15,6 +17,8 @@ export default function App() {
         <Route path="/evaluation" element={<Evaluation />} />
         <Route path="/case-study" element={<CaseStudy />} />
         <Route path="/cohort" element={<Cohort />} />
+        <Route path="/jobs" element={<Jobs />} />
+        <Route path="/jobs/:id" element={<JobDetail />} />  
       </Routes>
     </BrowserRouter>
   )

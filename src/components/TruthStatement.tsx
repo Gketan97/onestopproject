@@ -258,7 +258,7 @@ export default function TruthStatement() {
       `}</style>
 
       {/* ── Scenarios section ── */}
-      <section className="ts-section">
+      <section id="truth" className="ts-section">
         <div ref={ref} className="ts-inner">
 
           <p data-reveal className="ts-label">WHAT IS ACTUALLY CHANGING</p>

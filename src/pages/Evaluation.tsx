@@ -3,7 +3,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { useNavigate } from 'react-router-dom'
 import InterestForm from '../components/InterestForm'
 
-const WA_URL = 'https://wa.me/919XXXXXXXXX?text=Hi%20Ketan%2C%20I%27d%20like%20to%20reserve%20a%20seat%20for%20the%20Saturday%20AI%20Problem%20Solving%20Lab.'
+const WA_URL = 'https://wa.me/919019896747?text=Hi%20Ketan%2C%20I%27d%20like%20to%20reserve%20a%20seat%20for%20the%20Saturday%20AI%20Problem%20Solving%20Lab.'
 
 const SYSTEM = `You are a senior analytics hiring manager with 10 years evaluating problem-solving ability. You have a precise benchmark for what a great answer looks like and you evaluate every response against it — not against abstract criteria.
 

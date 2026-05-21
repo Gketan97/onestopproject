@@ -1559,7 +1559,7 @@ ORDER BY 1, sessions DESC;`}</pre>
                     Google Doc link or PDF. Ketan reviews all submissions before Saturday and will ask you to defend your reasoning live.
                   </p>
                   <a
-                    href="https://wa.me/919XXXXXXXXX?text=Hi%20Ketan%2C%20here%20is%20my%20PlanMyTrip%20case%20study%20submission%3A%20"
+                    href="https://wa.me/919019896747?text=Hi%20Ketan%2C%20here%20is%20my%20PlanMyTrip%20case%20study%20submission%3A%20"
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{ display: 'inline-flex', alignItems: 'center', gap: 10, background: '#25D366', border: 'none', borderRadius: 100, padding: '14px 32px', fontFamily: 'DM Sans, sans-serif', fontSize: 15, fontWeight: 600, color: '#fff', textDecoration: 'none' }}
