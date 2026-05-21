@@ -26,6 +26,8 @@ export default function Nav() {
     return () => { document.body.style.overflow = '' }
   }, [menuOpen])
 
+  const isHome = location.pathname === '/'
+
   const scrollTo = (id: string) => {
     setMenuOpen(false)
     if (location.pathname !== '/') {
@@ -36,35 +38,38 @@ export default function Nav() {
     }
   }
 
-  const isHome = location.pathname === '/'
-  const isEval = location.pathname === '/evaluation'
-  const ctaLabel = isEval ? 'Reserve My Seat →' : 'Test Yourself Free →'
-  const ctaAction = () => {
-    setMenuOpen(false)
-    if (isEval) {
-      document.querySelector<HTMLButtonElement>('.eval-lab-btn')?.click()
-    } else {
-      navigate('/diagnostic')
-    }
-  }
+  // Nav links — same on every page, desktop and mobile
+  // "The Problem" and "FAQ" only shown on homepage as scroll links
+  // All other links navigate to pages
+
+  const NAV_LINKS = [
+  { label: 'Home', action: () => { setMenuOpen(false); navigate('/') }, active: location.pathname === '/' },
+    { label: 'Jobs', action: () => { setMenuOpen(false); navigate('/jobs') }, active: location.pathname === '/jobs' || location.pathname.startsWith('/jobs/') },
+    { label: 'Case Study', action: () => { setMenuOpen(false); navigate('/case-study') }, active: location.pathname === '/case-study' },
+    { label: 'About Ketan', action: () => scrollTo('about'), active: false },
+  ]
 
   return (
     <>
       <style>{`
         .nav-root { position:fixed; top:0; left:0; right:0; z-index:100; background:rgba(8,8,12,0.80); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); border-bottom:1px solid rgba(255,255,255,0.07); transition:background 300ms ease; }
-        .nav-root.scrolled { background:rgba(8,8,12,0.96); border-bottom-color:var(--border-subtle); }
+        .nav-root.scrolled { background:rgba(8,8,12,0.96); border-bottom-color:rgba(255,255,255,0.1); }
         .nav-inner { max-width:1200px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; padding:0 32px; height:68px; }
-        .nav-brand { cursor:pointer; display:flex; flex-direction:column; gap:3px; }
+
+        /* Brand */
+        .nav-brand { cursor:pointer; display:flex; flex-direction:column; gap:3px; text-decoration:none; flex-shrink:0; }
         .nav-brand-name { font-family:'DM Mono',monospace; font-size:16px; letter-spacing:0.1em; color:#fff; font-weight:600; line-height:1; }
         .nav-brand-name span { background:linear-gradient(135deg,#FF6B9D,#A855F7); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
         .nav-brand-sub { font-family:'DM Mono',monospace; font-size:11px; letter-spacing:0.1em; color:rgba(255,255,255,0.45); line-height:1; }
+
+        /* Desktop links */
         .nav-links { display:flex; align-items:center; gap:28px; }
         .nav-link { font-family:'DM Sans',sans-serif; font-size:14px; color:rgba(255,255,255,0.6); background:none; border:none; cursor:pointer; transition:color 150ms; padding:0; white-space:nowrap; }
         .nav-link:hover { color:#fff; }
-        .nav-link.active { color:#fff; }
-        .nav-link.highlight { color:var(--accent); font-weight:500; }
-        .nav-link.highlight:hover { color:#c084fc; }
-        .nav-cta { font-family:'DM Sans',sans-serif; font-size:14px; font-weight:600; color:#fff; background:var(--accent); border:none; border-radius:100px; padding:10px 22px; cursor:pointer; transition:all 180ms; white-space:nowrap; }
+        .nav-link.active { color:#fff; font-weight:500; }
+
+        /* CTA */
+        .nav-cta { font-family:'DM Sans',sans-serif; font-size:14px; font-weight:600; color:#fff; background:var(--accent); border:none; border-radius:100px; padding:10px 22px; cursor:pointer; transition:all 180ms; white-space:nowrap; flex-shrink:0; }
         .nav-cta:hover { filter:brightness(1.1); }
 
         /* Hamburger */
@@ -79,16 +84,20 @@ export default function Nav() {
         .nav-backdrop.open { opacity:1; pointer-events:auto; }
 
         /* Mobile menu */
-        .nav-mobile { display:none; position:fixed; top:68px; left:0; right:0; z-index:200; background:rgba(8,8,12,0.98); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-bottom:1px solid var(--border-subtle); padding:8px 24px 28px; flex-direction:column; max-height:calc(100vh - 68px); overflow-y:auto; -webkit-overflow-scrolling:touch; }
+        .nav-mobile { display:none; position:fixed; top:68px; left:0; right:0; z-index:200; background:rgba(8,8,12,0.98); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-bottom:1px solid rgba(255,255,255,0.1); padding:8px 24px 28px; flex-direction:column; max-height:calc(100vh - 68px); overflow-y:auto; -webkit-overflow-scrolling:touch; }
         .nav-mobile.open { display:flex; }
-        .nav-mobile-link { font-family:'DM Sans',sans-serif; font-size:16px; color:rgba(255,255,255,0.65); background:none; border:none; cursor:pointer; text-align:left; padding:16px 0; border-bottom:1px solid var(--border-subtle); transition:color 150ms; width:100%; min-height:44px; }
+        .nav-mobile-link { font-family:'DM Sans',sans-serif; font-size:16px; color:rgba(255,255,255,0.65); background:none; border:none; cursor:pointer; text-align:left; padding:16px 0; border-bottom:1px solid rgba(255,255,255,0.07); transition:color 150ms; width:100%; min-height:44px; }
         .nav-mobile-link:last-of-type { border-bottom:none; }
-        .nav-mobile-link:hover { color:#fff; }
-        .nav-mobile-link.highlight { color:var(--accent); font-weight:500; }
+        .nav-mobile-link:hover, .nav-mobile-link.active { color:#fff; }
         .nav-mobile-cta { margin-top:16px; font-family:'DM Sans',sans-serif; font-size:16px; font-weight:600; color:#fff; background:var(--accent); border:none; border-radius:100px; padding:15px; cursor:pointer; text-align:center; width:100%; }
 
         @media (max-width:900px) { .nav-links { gap:18px; } }
-        @media (max-width:768px) { .nav-links { display:none; } .nav-cta { display:none; } .nav-hamburger { display:flex; } .nav-inner { padding:0 20px; } }
+        @media (max-width:768px) {
+          .nav-links { display:none; }
+          .nav-cta { display:none; }
+          .nav-hamburger { display:flex; }
+          .nav-inner { padding:0 20px; }
+        }
       `}</style>
 
       <nav className={`nav-root${scrolled ? ' scrolled' : ''}`}>
@@ -98,20 +107,22 @@ export default function Nav() {
             <span className="nav-brand-sub">AI PROBLEM SOLVING LAB</span>
           </div>
 
+          {/* Desktop links */}
           <div className="nav-links">
-            {isHome && (
-              <>
-                <button className="nav-link" onClick={() => scrollTo('truth')}>The Problem</button>
-                <button className="nav-link" onClick={() => scrollTo('about')}>About Ketan</button>
-                <button className="nav-link" onClick={() => scrollTo('faq')}>FAQ</button>
-                <button className={`nav-link${location.pathname === '/jobs' || location.pathname.startsWith('/jobs/') ? ' active' : ''}`} onClick={() => navigate('/jobs')}>Jobs</button>
-              </>
-            )}
-            <button className={`nav-link${location.pathname === '/case-study' ? ' active' : ''}`} onClick={() => navigate('/case-study')}>Case Study</button>
-            <button className="nav-link highlight" onClick={() => navigate('/case-study')}>The Lab ↗</button>
+            {NAV_LINKS.map(link => (
+              <button
+                key={link.label}
+                className={`nav-link${link.active ? ' active' : ''}`}
+                onClick={link.action}
+              >
+                {link.label}
+              </button>
+            ))}
           </div>
 
-          <button className="nav-cta" onClick={ctaAction}>{ctaLabel}</button>
+          <button className="nav-cta" onClick={() => navigate('/diagnostic')}>
+            Test Yourself Free →
+          </button>
 
           <button
             className={`nav-hamburger${menuOpen ? ' open' : ''}`}
@@ -125,7 +136,7 @@ export default function Nav() {
         </div>
       </nav>
 
-      {/* Backdrop — tap outside to close */}
+      {/* Backdrop */}
       <div
         className={`nav-backdrop${menuOpen ? ' open' : ''}`}
         onClick={() => setMenuOpen(false)}
@@ -134,18 +145,20 @@ export default function Nav() {
 
       <div style={{ height: 68 }} />
 
+      {/* Mobile menu — identical links */}
       <div className={`nav-mobile${menuOpen ? ' open' : ''}`}>
-        {isHome && (
-          <>
-            <button className="nav-mobile-link" onClick={() => scrollTo('truth')}>The Problem</button>
-            <button className="nav-mobile-link" onClick={() => scrollTo('about')}>About Ketan</button>
-            <button className="nav-mobile-link" onClick={() => scrollTo('faq')}>FAQ</button>
-            <button className="nav-mobile-link" onClick={() => { setMenuOpen(false); navigate('/jobs') }}>Jobs</button>
-          </>
-        )}
-        <button className="nav-mobile-link" onClick={() => { setMenuOpen(false); navigate('/case-study') }}>Case Study</button>
-        <button className="nav-mobile-link highlight" onClick={() => { setMenuOpen(false); navigate('/case-study') }}>The Lab ↗</button>
-        <button className="nav-mobile-cta" onClick={ctaAction}>{ctaLabel}</button>
+        {NAV_LINKS.map(link => (
+          <button
+            key={link.label}
+            className={`nav-mobile-link${link.active ? ' active' : ''}`}
+            onClick={link.action}
+          >
+            {link.label}
+          </button>
+        ))}
+        <button className="nav-mobile-cta" onClick={() => { setMenuOpen(false); navigate('/diagnostic') }}>
+          Test Yourself Free →
+        </button>
       </div>
     </>
   )

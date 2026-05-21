@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
+import Nav from '../components/Nav'
 
 const CDN = 'https://cdn.jsdelivr.net/gh/Gketan97/jobscout-date@main/data/jobs.json'
 
@@ -67,14 +68,10 @@ export default function JobDetail() {
         @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
         .jd { min-height: 100vh; background: #FAFAF8; font-family: 'DM Sans', sans-serif; color: #141414; }
-        .jd-nav { height: 56px; background: #fff; border-bottom: 1px solid #E8E8E4; display: flex; align-items: center; justify-content: space-between; padding: 0 32px; position: sticky; top: 0; z-index: 100; }
-        .jd-logo { font-family: 'DM Mono', monospace; font-size: 14px; font-weight: 500; color: #141414; cursor: pointer; letter-spacing: 0.04em; }
-        .jd-logo span { color: #A855F7; }
+        .jd-back-bar { max-width: 760px; margin: 0 auto; padding: 20px 32px 0; }
         .jd-back { font-size: 13px; color: #6b6b6b; background: #fff; border: 1.5px solid #E8E8E4; border-radius: 100px; padding: 7px 16px; cursor: pointer; transition: all 150ms; font-family: 'DM Sans', sans-serif; }
         .jd-back:hover { border-color: #A855F7; color: #7c3aed; }
-        .jd-body { max-width: 760px; margin: 0 auto; padding: 48px 32px 80px; }
-
-        /* Header */
+        .jd-body { max-width: 760px; margin: 0 auto; padding: 24px 32px 80px; }
         .jd-company-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
         .jd-dot { width: 10px; height: 10px; border-radius: 50%; }
         .jd-co { font-family: 'DM Mono', monospace; font-size: 12px; color: #9ca3af; letter-spacing: 0.06em; }
@@ -85,27 +82,19 @@ export default function JobDetail() {
         .jd-tag.fresh { color: #16a34a; background: #f0fdf4; }
         .jd-tag.remote { color: #16a34a; background: #f0fdf4; }
         .jd-divider { height: 1px; background: #E8E8E4; margin-bottom: 28px; }
-
-        /* Apply */
         .jd-apply-wrap { margin-bottom: 32px; }
         .jd-apply { display: inline-flex; align-items: center; gap: 8px; font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 600; color: #fff; background: #141414; border: none; border-radius: 100px; padding: 14px 36px; cursor: pointer; text-decoration: none; transition: all 200ms; }
         .jd-apply:hover { background: #A855F7; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(168,85,247,0.25); }
         .jd-apply-note { font-size: 12px; color: #9ca3af; margin-top: 8px; font-family: 'DM Mono', monospace; }
-
-        /* Info grid */
         .jd-info { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 32px; }
         .jd-info-card { background: #fff; border: 1.5px solid #E8E8E4; border-radius: 12px; padding: 14px 18px; }
         .jd-info-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: #9ca3af; margin-bottom: 4px; }
         .jd-info-val { font-size: 14px; font-weight: 500; color: #141414; }
-
-        /* Nudge */
         .jd-nudge { background: #F5F0FF; border: 1.5px solid #E8DAFF; border-radius: 14px; padding: 20px 22px; margin-bottom: 32px; }
         .jd-nudge-head { font-size: 14px; font-weight: 600; color: #6b21a8; margin-bottom: 6px; }
         .jd-nudge-body { font-size: 13px; color: #7c3aed; line-height: 1.6; margin-bottom: 14px; }
         .jd-nudge-btn { font-size: 13px; font-weight: 600; color: #fff; background: #7c3aed; border: none; border-radius: 100px; padding: 9px 20px; cursor: pointer; transition: background 150ms; }
         .jd-nudge-btn:hover { background: #6d28d9; }
-
-        /* Related */
         .jd-related-label { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.12em; color: #9ca3af; margin-bottom: 12px; }
         .jd-related-card { background: #fff; border: 1.5px solid #E8E8E4; border-radius: 12px; padding: 14px 18px; cursor: pointer; transition: all 150ms; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
         .jd-related-card:hover { border-color: #A855F7; }
@@ -113,20 +102,20 @@ export default function JobDetail() {
         .jd-related-meta { font-size: 12px; color: #9ca3af; }
         .jd-related-arrow { color: #d1d5db; font-size: 16px; flex-shrink: 0; transition: color 150ms; }
         .jd-related-card:hover .jd-related-arrow { color: #A855F7; }
-
         @media (max-width: 640px) {
-          .jd-nav { padding: 0 20px; }
-          .jd-body { padding: 28px 20px 60px; }
+          .jd-back-bar { padding: 16px 20px 0; }
+          .jd-body { padding: 20px 20px 60px; }
           .jd-info { grid-template-columns: 1fr; }
           .jd-apply { width: 100%; justify-content: center; }
         }
       `}</style>
 
       <div className="jd">
-        <nav className="jd-nav">
-          <span className="jd-logo" onClick={() => navigate('/')}>onestop<span>careers</span></span>
+        <Nav />
+
+        <div className="jd-back-bar">
           <button className="jd-back" onClick={() => navigate(backUrl)}>← All jobs</button>
-        </nav>
+        </div>
 
         <div className="jd-body">
           <div className="jd-company-row">
