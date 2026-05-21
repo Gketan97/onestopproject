@@ -66,10 +66,8 @@ export default function Jobs() {
       .catch(() => setLoading(false))
   }, [])
 
-  const TARGET_FNS = new Set(['data', 'analytics', 'product', 'engineering', 'bizops'])
-
   const filtered = useMemo(() => {
-    let result = jobs.filter(j => TARGET_FNS.has(j.fn))
+    let result = [...jobs]
     if (q) {
       const ql = q.toLowerCase()
       result = result.filter(j =>
@@ -88,7 +86,7 @@ export default function Jobs() {
   const hasMore = paginated.length < filtered.length
 
   const counts = useMemo(() => {
-    const base = jobs.filter(j => TARGET_FNS.has(j.fn))
+    const base = [...jobs]
     const c: Record<string, number> = {}
     CATEGORIES.forEach(cat => {
       c[cat.id] = base.filter(j => cat.fns.includes(j.fn)).length
@@ -203,7 +201,7 @@ export default function Jobs() {
           <div className="jb-cats">
             <button className={`jb-cat${!cat ? ' active' : ''}`} onClick={() => setFilter('cat', '')}>
               All roles
-              {!loading && <span className="jb-cat-count">{jobs.filter(j => TARGET_FNS.has(j.fn)).length}</span>}
+              {!loading && <span className="jb-cat-count">{jobs.length}</span>}
             </button>
             {CATEGORIES.map(c => (
               <button key={c.id} className={`jb-cat${cat === c.id ? ' active' : ''}`} onClick={() => setFilter('cat', cat === c.id ? '' : c.id)}>
