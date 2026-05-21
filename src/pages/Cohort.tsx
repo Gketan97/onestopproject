@@ -382,8 +382,8 @@ function ReflectionCheckpoint({ onComplete }: { onComplete: (answer: string) => 
 
   function handleSubmit() {
     if (answer.trim().length < 20) return
-    sessionStorage.setItem('phase2_reflection', answer.trim())
-    sessionStorage.setItem('phase2_reflection_ts', Date.now().toString())
+    localStorage.setItem('phase2_reflection', answer.trim())
+    localStorage.setItem('phase2_reflection_ts', Date.now().toString())
     setSubmitted(true)
     setTimeout(() => onComplete(answer.trim()), 800)
   }
@@ -445,7 +445,7 @@ function PhaseLock({ onUnlock }: { onUnlock: () => void }) {
 
   function tryUnlock() {
     if (kw.trim().toUpperCase() === PHASE2_KEYWORD) {
-      sessionStorage.setItem('cohort_unlocked', PHASE2_KEYWORD)
+      localStorage.setItem('cohort_unlocked', PHASE2_KEYWORD)
       onUnlock()
     } else {
       setErr(true)
@@ -518,26 +518,26 @@ export default function Cohort() {
   const [preReadExpanded, setPreReadExpanded] = useState(false)
 
   useEffect(() => {
-    if (sessionStorage.getItem('preread_done') === '1') setPreReadDone(true)
-    if (sessionStorage.getItem('cohort_unlocked') === PHASE2_KEYWORD) setPhase2Unlocked(true)
+    if (localStorage.getItem('preread_done') === '1') setPreReadDone(true)
+    if (localStorage.getItem('cohort_unlocked') === PHASE2_KEYWORD) setPhase2Unlocked(true)
     // Restore Phase 2 progress
-    const savedDatasets = sessionStorage.getItem('phase2_datasets_opened')
+    const savedDatasets = localStorage.getItem('phase2_datasets_opened')
     if (savedDatasets) {
       try { setDatasetsOpened(new Set(JSON.parse(savedDatasets))) } catch {}
     }
-    const savedReflection = sessionStorage.getItem('phase2_reflection')
+    const savedReflection = localStorage.getItem('phase2_reflection')
     if (savedReflection) {
       setReflectionDone(true)
       setReflectionAnswer(savedReflection)
     }
-    if (sessionStorage.getItem('phase2_complete') === '1') setPhase2Complete(true)
+    if (localStorage.getItem('phase2_complete') === '1') setPhase2Complete(true)
   }, [preReadDone])
 
   // Auto-scroll to current phase on load
   useEffect(() => {
     if (!preReadDone) return
-    const phase2Unlocked_ = sessionStorage.getItem('cohort_unlocked') === PHASE2_KEYWORD
-    const phase2Complete_ = sessionStorage.getItem('phase2_complete') === '1'
+    const phase2Unlocked_ = localStorage.getItem('cohort_unlocked') === PHASE2_KEYWORD
+    const phase2Complete_ = localStorage.getItem('phase2_complete') === '1'
     setTimeout(() => {
       let targetId = 'phase0-section'
       if (phase2Complete_) targetId = 'phase3-section'
@@ -548,14 +548,14 @@ export default function Cohort() {
         setTimeout(() => window.scrollBy(0, -145), 50)
       }
     }, 150)
-  }, [])
+  }, [preReadDone])
 
   const sec = (bg = 'var(--bg-base)') => ({ background: bg, borderTop: '1px solid var(--border-subtle)', padding: '72px 32px' } as React.CSSProperties)
   const inner = { maxWidth: 900, margin: '0 auto' } as React.CSSProperties
 
   if (!preReadDone) {
     return <PreRead onComplete={() => {
-    sessionStorage.setItem('preread_done', '1')
+    localStorage.setItem('preread_done', '1')
     setPreReadDone(true)
     setTimeout(() => {
       document.getElementById('phase0-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -655,8 +655,8 @@ export default function Cohort() {
             {(() => {
               const steps = [
                 { label: 'Pre-Read', sub: 'Business', done: preReadDone, unlocked: true, scrollTo: 'preread-section' },
-                { label: 'Phase 0', sub: 'Problem', done: preReadDone, unlocked: preReadDone, scrollTo: 'phase0-section' },
-                { label: 'Phase 1', sub: 'Onboarding', done: phase2Unlocked, unlocked: preReadDone, scrollTo: 'phase1-section' },
+                { label: 'Phase 0', sub: 'Problem', done: preReadDone, unlocked: true, scrollTo: 'phase0-section' },
+                { label: 'Phase 1', sub: 'Onboarding', done: phase2Unlocked, unlocked: true, scrollTo: 'phase1-section' },
                 { label: 'Phase 2', sub: 'Investigation', done: phase2Complete, unlocked: phase2Unlocked, scrollTo: 'phase2-section' },
                 { label: 'Phase 3', sub: 'Synthesis', done: false, unlocked: phase2Unlocked, scrollTo: 'phase3-section' },
                 { label: 'Session 2', sub: 'Evaluation', done: false, unlocked: phase2Complete, scrollTo: 'session2-section' },
@@ -706,56 +706,30 @@ export default function Cohort() {
 
 
 
-        {/* ═══════════════════════════════════════ */}
-        {/* PRE-READ — COLLAPSIBLE (always accessible) */}
-        {/* ═══════════════════════════════════════ */}
-        <section id="preread-section" style={{ background: 'var(--bg-base)', borderTop: '1px solid var(--border-subtle)', padding: '0' }}>
-          <div
-            onClick={() => setPreReadExpanded(v => !v)}
-            style={{ maxWidth: 900, margin: '0 auto', padding: '20px 32px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-              <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#4ade80', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'DM Mono, monospace', fontSize: 11, color: '#000', fontWeight: 700, flexShrink: 0 }}>✓</div>
-              <div>
-                <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>Pre-Read — Business Context</div>
-                <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: 'var(--text-tertiary)' }}>PlanMyTrip business model, metrics, and customer journey — click to review</div>
-              </div>
-            </div>
-            <span style={{ color: 'var(--accent)', fontSize: 20, flexShrink: 0 }}>{preReadExpanded ? '−' : '+'}</span>
-          </div>
-          {preReadExpanded && (
-            <div style={{ borderTop: '1px solid var(--border-subtle)', padding: '32px', maxWidth: 900, margin: '0 auto' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 28 }}>
-                {[
-                  { label: 'WHAT PLANMYTRIP DOES', content: 'India’s third-largest OTA for domestic travel. Primary product: flight search and booking. Revenue model: take rate (% of booking GMV) + ancillary (hotel, insurance, seat upgrades). ~65% of revenue from domestic flights.' },
-                  { label: 'HOW CONVERSION IS MEASURED', content: 'Search-to-booking conversion = confirmed bookings ÷ sessions with at least one flight search. Baseline: 21.3% (April–June 2024). Problem period: 15.2% (July–August 2024).' },
-                  { label: 'KEY METRICS TO KNOW', content: 'GMV = Gross Merchandise Value (total booking value before discounts). Net revenue = GMV × take rate − discounts. ARPU = Average Revenue Per User. Contribution margin = net revenue − variable costs.' },
-                  { label: 'CUSTOMER JOURNEY', content: 'Search → Browse listings → Select flight → Enter details → Apply coupon → Pay → Confirm. Conversion drop can happen at any step. The funnel shows which step loses the most users.' },
-                ].map((item, i) => (
-                  <div key={i} style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', borderRadius: 12, padding: '16px 20px' }}>
-                    <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.1em', color: 'var(--accent)', marginBottom: 8 }}>{item.label}</div>
-                    <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7 }}>{item.content}</div>
-                  </div>
-                ))}
-              </div>
-              <div style={{ background: 'rgba(168,85,247,0.04)', border: '1px solid rgba(168,85,247,0.15)', borderRadius: 10, padding: '14px 20px' }}>
-                <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.1em', color: 'var(--accent)', marginBottom: 8 }}>GLOSSARY</div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-                  {[
-                    ['Funnel', 'Each step users take: search → browse → checkout'],
-                    ['Cohort', 'Group of users acquired in the same time period'],
-                    ['Mix shift', 'Traffic composition changed (channel share shifted)'],
-                    ['Root cause', 'Primary factor explaining most of the decline'],
-                    ['SRM', 'Sample Ratio Mismatch — experiment randomisation bug'],
-                    ['Take rate', 'PlanMyTrip’s % cut of each booking value'],
-                  ].map(([term, def], i) => (
-                    <div key={i} style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.55 }}>
-                      <strong style={{ color: 'var(--text-primary)' }}>{term}:</strong> {def}
-                    </div>
-                  ))}
+        {/* PRE-READ */}
+        <section id="preread-section" style={{ background: 'var(--bg-base)', borderTop: '1px solid var(--border-subtle)' }}>
+          {preReadDone && (
+            <div onClick={() => setPreReadExpanded(v => !v)} style={{ maxWidth: 900, margin: '0 auto', padding: '14px 32px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: preReadExpanded ? '1px solid var(--border-subtle)' : 'none' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#4ade80', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'DM Mono, monospace', fontSize: 11, color: '#000', fontWeight: 700 }}>✓</div>
+                <div>
+                  <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 14, fontWeight: 600, color: '#4ade80' }}>Pre-Read Complete</div>
+                  <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: 'var(--text-tertiary)' }}>Click to review business context again</div>
                 </div>
               </div>
+              <span style={{ color: 'var(--accent)', fontSize: 18 }}>{preReadExpanded ? '−' : '+'}</span>
             </div>
+          )}
+          {(!preReadDone || preReadExpanded) && (
+            <PreRead onComplete={() => {
+              localStorage.setItem('preread_done', '1')
+              setPreReadDone(true)
+              setPreReadExpanded(false)
+              setTimeout(() => {
+                const el = document.getElementById('phase0-section')
+                if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); setTimeout(() => window.scrollBy(0, -145), 400) }
+              }, 150)
+            }} />
           )}
         </section>
 
@@ -1206,7 +1180,7 @@ export default function Cohort() {
                       setDatasetsOpened(prev => {
                         const next = new Set(prev)
                         next.add(id)
-                        sessionStorage.setItem('phase2_datasets_opened', JSON.stringify([...next]))
+                        localStorage.setItem('phase2_datasets_opened', JSON.stringify([...next]))
                         return next
                       })
                       // Trigger reflection checkpoint after Dataset 3 (competitor)
@@ -1300,7 +1274,7 @@ ORDER BY 1, sessions DESC;`}</pre>
                       <button
                         disabled={!canComplete}
                         onClick={() => {
-                          sessionStorage.setItem('phase2_complete', '1')
+                          localStorage.setItem('phase2_complete', '1')
                           setPhase2Complete(true)
                           setTimeout(() => {
                             document.getElementById('phase3-section')?.scrollIntoView({ behavior: 'smooth' })
@@ -1354,7 +1328,7 @@ ORDER BY 1, sessions DESC;`}</pre>
 
                 {/* Phase 2 hypothesis surfaced */}
                 {(() => {
-                  const saved = sessionStorage.getItem('phase2_reflection')
+                  const saved = localStorage.getItem('phase2_reflection')
                   if (!saved) return null
                   return (
                     <div style={{ background: 'rgba(168,85,247,0.04)', border: '1px solid rgba(168,85,247,0.15)', borderRadius: 12, padding: '16px 22px', marginBottom: 28 }}>
