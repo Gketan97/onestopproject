@@ -553,16 +553,7 @@ export default function Cohort() {
   const sec = (bg = 'var(--bg-base)') => ({ background: bg, borderTop: '1px solid var(--border-subtle)', padding: '72px 32px' } as React.CSSProperties)
   const inner = { maxWidth: 900, margin: '0 auto' } as React.CSSProperties
 
-  if (!preReadDone) {
-    return <PreRead onComplete={() => {
-    localStorage.setItem('preread_done', '1')
-    setPreReadDone(true)
-    setTimeout(() => {
-      document.getElementById('phase0-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      setTimeout(() => window.scrollBy(0, -145), 400)
-    }, 100)
-  }} />
-  }
+
 
   return (
     <>
@@ -654,12 +645,11 @@ export default function Cohort() {
           <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 0, overflowX: 'auto' }}>
             {(() => {
               const steps = [
-                { label: 'Pre-Read', sub: 'Business', done: preReadDone, unlocked: true, scrollTo: 'preread-section' },
-                { label: 'Phase 0', sub: 'Problem', done: preReadDone, unlocked: true, scrollTo: 'phase0-section' },
-                { label: 'Phase 1', sub: 'Onboarding', done: phase2Unlocked, unlocked: true, scrollTo: 'phase1-section' },
-                { label: 'Phase 2', sub: 'Investigation', done: phase2Complete, unlocked: phase2Unlocked, scrollTo: 'phase2-section' },
-                { label: 'Phase 3', sub: 'Synthesis', done: false, unlocked: phase2Unlocked, scrollTo: 'phase3-section' },
-                { label: 'Session 2', sub: 'Evaluation', done: false, unlocked: phase2Complete, scrollTo: 'session2-section' },
+                { label: 'Phase 0', sub: 'Pre-Read + Problem', done: preReadDone, unlocked: true, scrollTo: 'preread-section' },
+                { label: 'Phase 1', sub: 'Session with Ketan', done: phase2Unlocked, unlocked: true, scrollTo: 'phase1-section' },
+                { label: 'Phase 2', sub: 'Self Investigation', done: phase2Complete, unlocked: phase2Unlocked, scrollTo: 'phase2-section' },
+                { label: 'Phase 3', sub: 'Report Submission', done: false, unlocked: phase2Unlocked, scrollTo: 'phase3-section' },
+                { label: 'Phase 4', sub: 'Solution Discussion', done: false, unlocked: phase2Complete, scrollTo: 'session2-section' },
               ]
               const scrollTo = (id: string) => {
                 const el = document.getElementById(id)
